@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:open_mask/pages/register_page.dart';
 import 'package:open_mask/services/account_service.dart';
 import 'package:open_mask/services/snackbar_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../widgets/stretched_button.dart';
 import 'camera_page.dart';
-import '../widgets/password_reset_popup.dart';
 
 class LoginPage extends StatefulWidget {
   static const routePath = "/login";
@@ -19,11 +19,24 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _rememberMe = false;
+  bool _saveLogin = false;
+
+  // Gespeicherte Login daten werden geladen
+  void _loadSavedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _saveLogin = prefs.getBool('saveLogin') ?? false;
+      if (_saveLogin) {
+        _emailController.text = prefs.getString('email') ?? '';
+        _passwordController.text = prefs.getString('password') ?? '';
+      }
+    });
+  }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) {
@@ -39,10 +52,23 @@ class _LoginPageState extends State<LoginPage> {
         SnackBarService.showMessage('Bitte E-Mail und Passwort angeben!');
       }
 
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      //region [Wenn das Hackerl bei angemeldet bleiben true ist, werden die Daten gespeichert]
+      if (_rememberMe) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('email', email);
+        await prefs.setString('password', password);
+        await prefs.setBool('rememberMe', true);
+      } else {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+      }
+      //endregion
 
       // Überprüfen, ob die E-Mail schon verifiziert wurde
       if (userCredential.user!.emailVerified == false) {
@@ -51,7 +77,8 @@ class _LoginPageState extends State<LoginPage> {
 
         await FirebaseAuth.instance.signOut();
 
-        SnackBarService.showMessage('E-Mail wurde noch nicht verifiziert! \nBitte überprüfen Sie ihren Posteingang!');
+        SnackBarService.showMessage(
+            'E-Mail wurde noch nicht verifiziert! \nBitte überprüfen Sie ihren Posteingang!');
         return;
       }
 
@@ -83,10 +110,7 @@ class _LoginPageState extends State<LoginPage> {
             // Willkommen-Text
             const Text(
               'Willkommen!',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold
-              ),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             // Eingabefelder
@@ -99,14 +123,27 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     // Email-Adresse
                     const SizedBox(height: 3),
-                    TextFormField(controller: _emailController, decoration: InputDecoration(hintText: 'E-Mail-Adresse'), validator: (value) {
-                      return (value == null || value.isEmpty || !value.contains('@')) ? 'Bitte gültige E-Mail eingeben' : null;
-                    }),
+                    TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(hintText: 'E-Mail-Adresse'),
+                        validator: (value) {
+                          return (value == null ||
+                                  value.isEmpty ||
+                                  !value.contains('@'))
+                              ? 'Bitte gültige E-Mail eingeben'
+                              : null;
+                        }),
                     const SizedBox(height: 20),
                     // Passwort
-                    TextFormField(controller: _passwordController, decoration: InputDecoration(hintText: 'Passwort'), validator: (value) {
-                      return (value == null || value.isEmpty) ? 'Bitte Passwort eingeben' : null;
-                    }, obscureText: true),
+                    TextFormField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(hintText: 'Passwort'),
+                        validator: (value) {
+                          return (value == null || value.isEmpty)
+                              ? 'Bitte Passwort eingeben'
+                              : null;
+                        },
+                        obscureText: true),
                     const SizedBox(height: 10),
                     // Passwort vergessen
                     GestureDetector(
@@ -120,6 +157,19 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _rememberMe,
+                          onChanged: (val) {
+                            setState(() {
+                              _rememberMe = val ?? false;
+                            });
+                          },
+                        ),
+                        Text('Angemeldet bleiben'),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -130,11 +180,14 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: 20),
             // Registrieren-Link
             TextButton(
-                child: Text('Noch kein Konto? Jetzt registrieren', style: TextStyle(color: Colors.blue),),
+                child: Text(
+                  'Noch kein Konto? Jetzt registrieren',
+                  style: TextStyle(color: Colors.blue),
+                ),
                 onPressed: () {
                   // Registrierungsseite öffnen
                   context.push(RegisterPage.routePath);
-            }),
+                }),
             const SizedBox(height: 30),
             // Social Media Buttons (ohne Funktionalität)
             /* TODO: Anbieter einrichten und Logik implementieren
