@@ -45,3 +45,7 @@ desktop.ini
 
 # Selbst hinzugefügt
 android/app/.cxx/
+*.swift
+*.cmake
+*.cc
+*.lock
