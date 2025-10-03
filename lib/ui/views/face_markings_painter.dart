@@ -1,47 +1,17 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:open_mask/services/camera_service.dart';
-import 'package:open_mask/services/face_detection_service.dart';
-import 'package:provider/provider.dart';
-
-class FaceDetectorView extends StatelessWidget {
-  final bool _showMarkings;
-  final bool _showLandmarks;
-
-  const FaceDetectorView({super.key, bool showMarkings = true, bool showLandmarks = true}) : _showLandmarks = showLandmarks, _showMarkings = showMarkings;
-
-  @override
-  Widget build(BuildContext context) {
-    final faceDetectionService = Provider.of<FaceDetectionService>(context);
-    final cameraService = Provider.of<CameraService>(context);
-
-    if (!_showMarkings) {
-      return Container();
-    }
-
-    print("Face Detector View build");
-    return CustomPaint(
-      foregroundPainter: FaceMarkingsPainter(
-          faceDetectionService.faces,
-          faceDetectionService.imageSize,
-          isFrontCamera: cameraService.cameraController.description.lensDirection == CameraLensDirection.front,
-          showLandmarks: _showLandmarks
-      ),
-      size: cameraService.cameraController.value.previewSize!,
-    );
-  }
-}
 
 class FaceMarkingsPainter extends CustomPainter {
   final List<Face> _faces;
   final Size _imageSize;
   final bool isFrontCamera;
   final bool showLandmarks;
-  FaceMarkingsPainter(this._faces, this._imageSize, {this.isFrontCamera = false, this.showLandmarks = true});
+
+  FaceMarkingsPainter(this._faces, this._imageSize,
+      {this.isFrontCamera = false, this.showLandmarks = true});
 
   @override
   void paint(Canvas canvas, Size size) {

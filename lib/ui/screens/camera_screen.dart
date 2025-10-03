@@ -1,39 +1,45 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:open_mask/data/services/camera_service.dart';
+import 'package:open_mask/data/services/face_detection_service.dart';
+import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/filter/configs/mustache_config.dart';
-import 'package:open_mask/filter/filter_view.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/filter/templates/composite_filter.dart';
 import 'package:open_mask/filter/templates/mustache_filter.dart';
-import 'package:open_mask/services/camera_service.dart';
-import 'package:open_mask/services/face_detection_service.dart';
-import 'package:open_mask/services/snackbar_service.dart';
+import 'package:open_mask/ui/views/filter_view.dart';
+import 'package:open_mask/ui/widgets/navigation_bar.dart';
 import 'package:provider/provider.dart';
-import '../widgets/face_detector_view.dart';
-import 'package:open_mask/widgets/navigation_bar.dart';
 
-class CameraPage extends StatefulWidget {
+import '../views/face_detector_view.dart';
+
+class CameraScreen extends StatefulWidget {
   static const routePath = "/camera";
 
   final bool showMarkings;
   final bool showLandmarks;
-  const CameraPage({this.showMarkings = true, this.showLandmarks = true, super.key});
+
+  const CameraScreen(
+      {this.showMarkings = true, this.showLandmarks = true, super.key});
 
   @override
-  _CameraPageState createState() => _CameraPageState(showMarkings: showMarkings, showLandmarks: showLandmarks);
+  _CameraScreenState createState() => _CameraScreenState(
+      showMarkings: showMarkings, showLandmarks: showLandmarks);
 }
 
-class _CameraPageState extends State<CameraPage> {
-
+class _CameraScreenState extends State<CameraScreen> {
   final bool _showMarkings;
   final bool _showLandmarks;
   late FaceDetectionService _faceDetectionService;
   late CameraService _cameraService;
   bool _faceDetectionInitialized = false;
+
   // TODO: Filter auswählen
   IFilter? _filter;
 
-  _CameraPageState({bool showMarkings = true, bool showLandmarks = true}) : _showLandmarks = showLandmarks, _showMarkings = showMarkings;
+  _CameraScreenState({bool showMarkings = true, bool showLandmarks = true})
+      : _showLandmarks = showLandmarks,
+        _showMarkings = showMarkings;
 
   @override
   initState() {
@@ -42,7 +48,8 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   Future<void> initializeCamera() async {
-    _faceDetectionService = Provider.of<FaceDetectionService>(context, listen: false);
+    _faceDetectionService =
+        Provider.of<FaceDetectionService>(context, listen: false);
     _cameraService = Provider.of<CameraService>(context, listen: false);
     await _cameraService.initialize();
     await _faceDetectionService.initialize();
@@ -52,7 +59,8 @@ class _CameraPageState extends State<CameraPage> {
     MustacheConfig config = MustacheConfig(id: "m1", offsetY: 30);
     MustacheFilter mustacheFilter = MustacheFilter(config);
     await mustacheFilter.load();
-    MustacheConfig config2 = MustacheConfig(id: "m2", offsetY: 10, relativeWidth: 0.5, relativeHeight: 0.5);
+    MustacheConfig config2 = MustacheConfig(
+        id: "m2", offsetY: 10, relativeWidth: 0.5, relativeHeight: 0.5);
     MustacheFilter mustacheFilter2 = MustacheFilter(config2);
     CompositeFilter compositeFilter = CompositeFilter();
     final filterList = compositeFilter.filterList;
@@ -81,7 +89,8 @@ class _CameraPageState extends State<CameraPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_faceDetectionInitialized || !_cameraService.cameraController.value.isInitialized) {
+    if (!_faceDetectionInitialized ||
+        !_cameraService.cameraController.value.isInitialized) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -93,7 +102,8 @@ class _CameraPageState extends State<CameraPage> {
             child: Stack(
               children: [
                 CameraPreview(_cameraService.cameraController),
-                FaceDetectorView(showMarkings: _showMarkings, showLandmarks: _showLandmarks),
+                FaceDetectorView(
+                    showMarkings: _showMarkings, showLandmarks: _showLandmarks),
                 FilterView(_filter!),
               ],
             ),
@@ -117,17 +127,19 @@ class _CameraPageState extends State<CameraPage> {
                   FloatingActionButton(
                     backgroundColor: Colors.white,
                     onPressed: _takePicture,
-                    child: Icon(Icons.circle_outlined, color: Colors.white, size: 30),
+                    child: Icon(Icons.circle_outlined,
+                        color: Colors.white, size: 30),
                   ),
                   IconButton(
-                    icon: Icon(Icons.handyman_outlined, color: Colors.white, size: 30),
+                    icon: Icon(Icons.handyman_outlined,
+                        color: Colors.white, size: 30),
                     onPressed: () {},
                   ),
                 ],
               ),
             ),
           ),
-          CustomNavigationBar(currentRoute: CameraPage.routePath),
+          CustomNavigationBar(currentRoute: CameraScreen.routePath),
         ],
       ),
     );

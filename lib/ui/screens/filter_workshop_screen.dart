@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:open_mask/widgets/navigation_bar.dart';
+import 'package:open_mask/ui/widgets/navigation_bar.dart';
 
-class FilterWorkshopPage extends StatelessWidget {
+class FilterWorkshopScreen extends StatelessWidget {
   static const routePath = "/filter-workshop";
 
-  const FilterWorkshopPage({super.key});
+  const FilterWorkshopScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +94,7 @@ class FilterWorkshopPage extends StatelessWidget {
               ),
             ),
           ),
-          CustomNavigationBar(currentRoute: FilterWorkshopPage.routePath),
+          CustomNavigationBar(currentRoute: FilterWorkshopScreen.routePath),
         ],
       ),
     );

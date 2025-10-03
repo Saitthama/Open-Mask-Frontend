@@ -1,17 +1,15 @@
-
 import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/src/face_detector.dart';
+import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/filter/configs/mustache_config.dart';
 import 'package:open_mask/filter/i_filter.dart';
-import 'package:open_mask/filter/scale.dart';
 
-import '../../services/image_service.dart';
+import '../../data/services/image_service.dart';
 
 class MustacheFilter implements IFilter {
-
   @override
   MustacheConfig config;
 
@@ -27,7 +25,8 @@ class MustacheFilter implements IFilter {
   }
 
   @override
-  void apply(Face face, Canvas canvas, Size canvasSize, Scale scale, bool isFrontCamera) {
+  void apply(Face face, Canvas canvas, Size canvasSize, Scale scale,
+      bool isFrontCamera) {
     if (_image == null) {
       if (!isLoading) {
         load();
@@ -53,7 +52,7 @@ class MustacheFilter implements IFilter {
 
     final mustacheRect = Rect.fromCenter(
       center: Offset(x, y + offsetY),
-      width: filterWidth,  // Größe anpassen
+      width: filterWidth, // Größe anpassen
       height: filterHeight,
     );
 
@@ -67,5 +66,6 @@ class MustacheFilter implements IFilter {
     return json;
   }
 
-  factory MustacheFilter.fromJSON(Map<String, dynamic> json) => MustacheFilter(MustacheConfig.fromJSON(json));
+  factory MustacheFilter.fromJSON(Map<String, dynamic> json) =>
+      MustacheFilter(MustacheConfig.fromJSON(json));
 }

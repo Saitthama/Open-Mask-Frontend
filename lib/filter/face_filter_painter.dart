@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/filter/i_filter.dart';
-import 'package:open_mask/filter/scale.dart';
 
 class FaceFilterPainter extends CustomPainter {
   final List<Face> _faces;
@@ -16,7 +16,10 @@ class FaceFilterPainter extends CustomPainter {
     required Size imageSize,
     required bool isFrontCamera,
     required IFilter filter,
-  }) : _imageSize = imageSize, _faces = faces, _isFrontCamera = isFrontCamera, _filter = filter;
+  })  : _imageSize = imageSize,
+        _faces = faces,
+        _isFrontCamera = isFrontCamera,
+        _filter = filter;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -45,4 +48,3 @@ class FaceFilterPainter extends CustomPainter {
     return oldDelegate._faces != _faces || oldDelegate._filter != _filter;
   }
 }
-

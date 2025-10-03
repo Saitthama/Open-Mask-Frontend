@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:open_mask/services/snackbar_service.dart';
+import 'package:open_mask/data/services/snackbar_service.dart';
 
 class CameraService {
   late CameraController cameraController;
@@ -14,15 +14,18 @@ class CameraService {
     final cameras = await availableCameras();
     // Bevorzugt die Frontkamera wählen:
     camera = cameras.firstWhere(
-          (camera) => camera.lensDirection == CameraLensDirection.front,
+      (camera) => camera.lensDirection == CameraLensDirection.front,
       orElse: () => cameras.first,
     );
 
     // Kamera Controller initialisieren:
-    cameraController = CameraController(camera, resolutionPreset,
+    cameraController = CameraController(
+      camera, resolutionPreset,
       imageFormatGroup: Platform.isAndroid
-          ? ImageFormatGroup.nv21 // Format, das für Android verwendet werden soll
-          : ImageFormatGroup.bgra8888, // Format, das für iOS verwendet werden soll
+          ? ImageFormatGroup
+              .nv21 // Format, das für Android verwendet werden soll
+          : ImageFormatGroup
+              .bgra8888, // Format, das für iOS verwendet werden soll
     );
     await cameraController.initialize();
   }

@@ -1,10 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:open_mask/data/services/camera_service.dart';
+import 'package:open_mask/data/services/face_detection_service.dart';
 import 'package:open_mask/routing/routes.dart';
-import 'package:open_mask/services/automatic_login_service.dart';
-import 'package:open_mask/services/camera_service.dart';
-import 'package:open_mask/services/face_detection_service.dart';
 import 'package:provider/provider.dart';
+
+import 'data/services/automatic_login_service.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();

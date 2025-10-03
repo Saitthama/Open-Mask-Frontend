@@ -1,5 +1,3 @@
-
-import 'package:open_mask/filter/configs/mustache_config.dart';
 import 'package:open_mask/filter/templates/composite_filter.dart';
 import 'package:open_mask/filter/templates/mustache_filter.dart';
 
