@@ -4,16 +4,33 @@ import 'package:open_mask/ui/view_models/login_view_model.dart';
 import 'package:open_mask/ui/widgets/stretched_button.dart';
 import 'package:provider/provider.dart';
 
-class LoginFromView extends StatelessWidget {
+class LoginFormView extends StatefulWidget {
+  const LoginFormView({super.key});
+
+  @override
+  State<LoginFormView> createState() => _LoginFormViewState();
+}
+
+class _LoginFormViewState extends State<LoginFormView> {
   final _formKey = GlobalKey<FormState>();
 
-  GlobalKey<FormState> get formKey => _formKey;
+  late TextEditingController _emailController;
 
-  final TextEditingController _emailController = TextEditingController();
+  late TextEditingController _passwordController;
 
-  final TextEditingController _passwordController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
+  }
 
-  LoginFromView({super.key});
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -51,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
                   // Eingabefelder
-                  LoginFromView(),
+                  LoginFormView(),
                   const SizedBox(height: 20),
                   // Registrieren-Link
                   TextButton(
