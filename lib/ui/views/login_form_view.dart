@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:open_mask/data/services/auth_service.dart';
-import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/ui/view_models/login_view_model.dart';
 import 'package:open_mask/ui/widgets/stretched_button.dart';
 import 'package:provider/provider.dart';
 
 class LoginFromView extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
+
   GlobalKey<FormState> get formKey => _formKey;
 
   final TextEditingController _emailController = TextEditingController();
@@ -32,8 +32,8 @@ class LoginFromView extends StatelessWidget {
                 decoration: InputDecoration(hintText: 'E-Mail-Adresse'),
                 validator: (value) {
                   return (value == null ||
-                      value.isEmpty ||
-                      !value.contains('@'))
+                          value.isEmpty ||
+                          !value.contains('@'))
                       ? 'Bitte gültige E-Mail eingeben'
                       : null;
                 }),
@@ -64,7 +64,9 @@ class LoginFromView extends StatelessWidget {
             const SizedBox(height: 30),
             // Login-Button
             StretchedButton('Login', () {
-              vm.login(_emailController.text, _passwordController.text);
+              if (_formKey.currentState!.validate()) {
+                vm.login(_emailController.text, _passwordController.text);
+              }
             }, 0.9),
           ],
         ),
