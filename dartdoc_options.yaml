@@ -1,0 +1,9 @@
+dartdoc:
+  showUndocumentedCategories: true
+  categories:
+    Core:
+      name: "Kernmodule"
+      description: "Enthält Basisklassen und zentrale Logik."
+  examplePathPrefix: "example"
+  title: "Open-Mask"
+  description: "Offizielle Dokumentation von Open-Mask."
