@@ -9,9 +9,10 @@ import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/ui/widgets/form_header_text.dart';
 
 // TODO: Umstellen auf Java Backend
+/// Service, welches die Authentifizierung verwaltet
 class AuthService {
   /// Meldet den Benutzer an und überprüft, ob die E-Mail verifiziert wurde. Liefert true zurück, wenn die Anmeldung erfolgreich war.
-  static Future<bool> login(String email, String password) async {
+  static Future<bool> login(final String email, final String password) async {
     UserCredential userCredential;
     try {
       userCredential = await AuthRepository.signIn(email, password);
