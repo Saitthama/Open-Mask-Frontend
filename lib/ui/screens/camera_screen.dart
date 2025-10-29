@@ -1,9 +1,11 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/camera_service.dart';
 import 'package:open_mask/data/services/face_detection_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
-import 'package:open_mask/filter/configs/mustache_config.dart';
+import 'package:open_mask/filter/configs/image_filter_config.dart';
+import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/filter/templates/composite_filter.dart';
 import 'package:open_mask/filter/templates/mustache_filter.dart';
@@ -42,7 +44,7 @@ class _CameraScreenState extends State<CameraScreen> {
         _showMarkings = showMarkings;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     initializeCamera();
   }
@@ -56,13 +58,28 @@ class _CameraScreenState extends State<CameraScreen> {
     _faceDetectionInitialized = true;
 
     // TODO: ersetzen durch Filterauswahl, Filter sollen in der Filter Factory oder im Filter-Editor gebaut werden.
-    MustacheConfig config = MustacheConfig(id: "m1", offsetY: 30);
-    MustacheFilter mustacheFilter = MustacheFilter(config);
+    ImageFilterConfig config = ImageFilterConfig(
+        imagePath: MustacheFilter.standardImagePath,
+        scale: MustacheFilter.standardScale,
+        offset: MustacheFilter.standardOffset);
+    FilterMeta meta = FilterMeta(
+        name: 'Mustache Filter 1', description: 'Unterer Schnurrbart');
+    MustacheFilter mustacheFilter = MustacheFilter(config: config, meta: meta);
     await mustacheFilter.load();
-    MustacheConfig config2 = MustacheConfig(
-        id: "m2", offsetY: 10, relativeWidth: 0.5, relativeHeight: 0.5);
-    MustacheFilter mustacheFilter2 = MustacheFilter(config2);
-    CompositeFilter compositeFilter = CompositeFilter();
+
+    FilterMeta meta2 = FilterMeta(
+        name: 'Mustache Filter 2', description: 'Oberer Schnurrbart');
+    ImageFilterConfig config2 = ImageFilterConfig(
+        imagePath: MustacheFilter.standardImagePath,
+        offset: const Offset(0, -5),
+        scale: const Scale(0.5, 0.5));
+    MustacheFilter mustacheFilter2 =
+        MustacheFilter(config: config2, meta: meta2);
+    await mustacheFilter2.load();
+
+    FilterMeta metaComposite = FilterMeta(
+        name: 'Double Mustache Filter', description: 'Doppelter Schnurrbart');
+    CompositeFilter compositeFilter = CompositeFilter(meta: metaComposite);
     final filterList = compositeFilter.filterList;
     filterList.add(mustacheFilter);
     filterList.add(mustacheFilter2);
@@ -72,7 +89,7 @@ class _CameraScreenState extends State<CameraScreen> {
     setState(() {});
   }
 
-  void _takePicture() async {
+  Future<void> _takePicture() async {
     try {
       final image = await _cameraService.takePicture();
       // TODO: Bildverarbeitung hier einfügen
@@ -88,7 +105,7 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     if (!_faceDetectionInitialized ||
         !_cameraService.cameraController.value.isInitialized) {
       return const Center(child: CircularProgressIndicator());
@@ -127,11 +144,11 @@ class _CameraScreenState extends State<CameraScreen> {
                   FloatingActionButton(
                     backgroundColor: Colors.white,
                     onPressed: _takePicture,
-                    child: Icon(Icons.circle_outlined,
+                    child: const Icon(Icons.circle_outlined,
                         color: Colors.white, size: 30),
                   ),
                   IconButton(
-                    icon: Icon(Icons.handyman_outlined,
+                    icon: const Icon(Icons.handyman_outlined,
                         color: Colors.white, size: 30),
                     onPressed: () {},
                   ),
@@ -139,7 +156,7 @@ class _CameraScreenState extends State<CameraScreen> {
               ),
             ),
           ),
-          CustomNavigationBar(currentRoute: CameraScreen.routePath),
+          const CustomNavigationBar(currentRoute: CameraScreen.routePath),
         ],
       ),
     );

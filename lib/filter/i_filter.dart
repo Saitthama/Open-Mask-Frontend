@@ -5,15 +5,16 @@ import 'package:open_mask/data/model/scale.dart';
 
 import 'configs/filter_config.dart';
 
-/// Grundlage für alle Filter, welche die nötigen Funktionen von Filtern vorgibt.
+/// Inteface für alle Filter.
+/// Definiert gemeinsame Operationen für die Anwendung und Serialisierung von Filtern.
 abstract class IFilter {
-  /// Wendet den Filter auf das Gesicht an.
+  /// Wendet den Filter auf das angegebene Gesicht an.
   void apply(final Face face, final Canvas canvas, final Size canvasSize,
       final Scale scale, final bool isFrontCamera);
 
-  /// Jede Filter‑Instanz hält selbst eine Config.
+  /// Liefert die jeweilige Konfiguration der Filter‑Instanz zurück.
   FilterConfig? get config;
 
-  /// Wandelt den Filter in JSON um.
+  /// Methode zur JSON‑Serialisierung, welche den Filter in ein JSON-Objekt umwandelt.
   Map<String, dynamic> toJSON();
 }

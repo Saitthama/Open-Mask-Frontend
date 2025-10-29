@@ -2,53 +2,56 @@ import 'dart:ui';
 
 import 'package:google_mlkit_face_detection/src/face_detector.dart';
 import 'package:open_mask/data/model/scale.dart';
-import 'package:open_mask/filter/configs/filter_config.dart';
 import 'package:open_mask/filter/filter_factory.dart';
+import 'package:open_mask/filter/filter_meta.dart';
+import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/i_filter.dart';
+import 'package:open_mask/filter/templates/filter.dart';
 
-class CompositeFilter implements IFilter {
-  CompositeFilter();
+/// Kombination mehrerer Filter.
+/// Wendet alle enthaltenen Filter auf dasselbe Gesicht an.
+class CompositeFilter extends Filter {
+  CompositeFilter({required super.meta})
+      : super(config: null, type: FilterType.composite);
 
-  /// Keine Config
+  /// Factory-Methode zur JSON‑Deserialisierung.
+  factory CompositeFilter.fromJSON(final Map<String, dynamic> json) {
+    CompositeFilter compositeFilter =
+        CompositeFilter(meta: FilterMeta.fromJson(json['meta']));
+
+    List<IFilter> filterList = compositeFilter.filterList;
+    List<Map<String, dynamic>> filterListAsJSON = json['filterList'];
+    for (final Map<String, dynamic> filterAsJSON in filterListAsJSON) {
+      filterList.add(FilterFactory.create(filterAsJSON));
+    }
+
+    return compositeFilter;
+  }
+
+  /// Liste von Filtern, welche auf das Gesicht angewandt werden.
+  final List<Filter> _filterList = <Filter>[];
+
+  /// Liefert eine Liste von Filtern, welche auf das Gesicht angewandt werden.
+  List<Filter> get filterList => _filterList;
+
   @override
-  FilterConfig? get config => null;
-
-  final List<IFilter> _filterList = <IFilter>[];
-
-  List<IFilter> get filterList => _filterList;
-
-  @override
-  void apply(Face face, Canvas canvas, Size canvasSize, Scale scale,
-      bool isFrontCamera) {
-    for (IFilter filter in _filterList) {
+  void apply(final Face face, final Canvas canvas, final Size canvasSize,
+      final Scale scale, final bool isFrontCamera) {
+    for (final IFilter filter in _filterList) {
       filter.apply(face, canvas, canvasSize, scale, isFrontCamera);
     }
   }
 
   @override
   Map<String, dynamic> toJSON() {
-    Map<String, dynamic> json = {
-      'type': 'composite',
-    };
+    Map<String, dynamic> json = super.toJSON();
 
     List<Map<String, dynamic>> filterListAsJSON = <Map<String, dynamic>>[];
-    for (IFilter filter in _filterList) {
+    for (final Filter filter in _filterList) {
       filterListAsJSON.add(filter.toJSON());
     }
     json['filterList'] = filterListAsJSON;
 
     return json;
-  }
-
-  factory CompositeFilter.fromJSON(Map<String, dynamic> json) {
-    CompositeFilter compositeFilter = CompositeFilter();
-
-    List<IFilter> filterList = compositeFilter.filterList;
-    List<Map<String, dynamic>> filterListAsJSON = json['filterList'];
-    for (Map<String, dynamic> filterAsJSON in filterListAsJSON) {
-      filterList.add(FilterFactory.create(filterAsJSON));
-    }
-
-    return compositeFilter;
   }
 }
