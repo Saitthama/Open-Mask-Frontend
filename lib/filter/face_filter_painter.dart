@@ -5,7 +5,9 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/filter/i_filter.dart';
 
+/// Ein [CustomPainter], welcher dazu dient einen Filter auf mehrere Gesichter anzuwenden.
 class FaceFilterPainter extends CustomPainter {
+  /// Standard-Konstruktor.
   FaceFilterPainter({
     required final List<Face> faces,
     required final Size imageSize,
@@ -16,9 +18,16 @@ class FaceFilterPainter extends CustomPainter {
         _isFrontCamera = isFrontCamera,
         _filter = filter;
 
+  /// Gesichter, auf die der angegebene Filter [_filter] angewendet werden soll.
   final List<Face> _faces;
+
+  /// Größe des aufgenommenen und analysierten Bildes.
   final Size _imageSize;
+
+  /// Gibt an, ob die verwendete Kamera die Frontkamera ist und das Bild daher gespiegelt ist.
   final bool _isFrontCamera;
+
+  /// Der Filter, der auf die Gesichter [_faces] angewendet werden soll.
   final IFilter _filter;
 
   @override

@@ -6,7 +6,7 @@ import 'package:open_mask/filter/i_filter.dart';
 /// Abstrakte Basisklasse für alle konkreten Filter.
 /// Enthält Metadaten, Konfiguration und Filtertyp.
 abstract class Filter implements IFilter {
-  /// Standard-Konstruktor
+  /// Standard-Konstruktor.
   Filter(
       {this.id, required this.meta, required final config, required this.type})
       : _config = config;

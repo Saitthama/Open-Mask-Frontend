@@ -8,6 +8,7 @@ import 'package:open_mask/filter/templates/mustache_filter.dart';
 
 import 'i_filter.dart';
 
+/// Factory-Klasse zum Erstellen von konkreten Filter-Instanzen.
 class FilterFactory {
   /// Erzeugt einen neuen Filter mit dem passenden Typ.
   static IFilter create(final FilterType type) {

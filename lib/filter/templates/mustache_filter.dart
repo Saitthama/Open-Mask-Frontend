@@ -12,7 +12,7 @@ import 'package:open_mask/filter/templates/image_filter.dart';
 /// Filter, der einen Schnurrbart (Mustache) darstellt.
 /// Bildfilter, der relativ zur Nase positioniert wird.
 class MustacheFilter extends ImageFilter {
-  /// Standard-Konstruktor
+  /// Standard-Konstruktor.
   MustacheFilter({super.id, required super.meta, required super.config})
       : super(type: FilterType.mustache);
 

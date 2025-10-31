@@ -6,7 +6,7 @@ import 'package:open_mask/filter/configs/filter_config.dart';
 /// Erweiterte Konfiguration für bildbasierte Filter.
 /// Enthält zusätzlich den Pfad oder die Quelle des Bildes.
 class ImageFilterConfig extends FilterConfig {
-  /// Standard-Konstruktor
+  /// Standard-Konstruktor.
   ImageFilterConfig(
       {this.imagePath,
       super.offset,

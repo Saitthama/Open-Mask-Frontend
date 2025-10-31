@@ -4,7 +4,7 @@ import 'package:open_mask/data/model/scale.dart';
 
 /// Allgemeine Parameter für die Positionierung und Transformation eines Filters.
 class FilterConfig {
-  /// Standard-Konstruktor
+  /// Standard-Konstruktor.
   FilterConfig(
       {this.offset = defaultOffset,
       this.scale = defaultScale,

@@ -2,7 +2,7 @@ import 'package:open_mask/data/model/user.dart';
 
 /// Enthält alle Metadaten eines Filters.
 class FilterMeta {
-  /// Standard-Konstruktor
+  /// Standard-Konstruktor.
   FilterMeta(
       {this.id,
       this.name = defaultName,
@@ -27,6 +27,7 @@ class FilterMeta {
   /// Standardmäßiger Name ([name]).
   static const String defaultName = 'Neuer Filter';
 
+  /// Standardmäßige Beschreibung ([description]).
   static const String defaultDescription = 'Neu ersteller Filter';
 
   /// Stellt die Id aus der Datenbank dar.

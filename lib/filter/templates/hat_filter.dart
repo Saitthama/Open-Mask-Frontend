@@ -11,7 +11,7 @@ import 'package:open_mask/filter/templates/image_filter.dart';
 
 /// Filter, der einen Hut auf dem Kopf platziert.
 class HatFilter extends ImageFilter {
-  /// Standard-Konstruktor
+  /// Standard-Konstruktor.
   HatFilter({super.id, required super.meta, required super.config})
       : super(type: FilterType.hat);
 

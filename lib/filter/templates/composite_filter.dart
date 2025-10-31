@@ -11,7 +11,7 @@ import 'package:open_mask/filter/templates/filter.dart';
 /// Kombination mehrerer Filter.
 /// Wendet alle enthaltenen Filter auf dasselbe Gesicht an.
 class CompositeFilter extends Filter {
-  /// Standard-Konstruktor
+  /// Standard-Konstruktor.
   CompositeFilter({required super.meta})
       : super(config: null, type: FilterType.composite);
 

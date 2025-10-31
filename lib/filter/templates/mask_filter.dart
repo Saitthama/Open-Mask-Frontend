@@ -11,7 +11,7 @@ import 'package:open_mask/filter/templates/image_filter.dart';
 
 /// Filter, welcher eine Maske über das Gesicht legt (Positionierung basierend auf der Bounding-Box des Gesichts).
 class MaskFilter extends ImageFilter {
-  /// Standard-Konstruktor
+  /// Standard-Konstruktor.
   MaskFilter({super.id, required super.meta, required super.config})
       : super(type: FilterType.mask);
 

@@ -1,5 +1,5 @@
 class User {
-  /// Standard-Konstruktor
+  /// Standard-Konstruktor.
   const User(
       {required this.id, required this.username, required this.displayName});
 
