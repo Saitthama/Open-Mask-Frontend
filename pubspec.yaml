@@ -89,7 +89,10 @@ flutter_icons:
 flutter:
   assets:
     - assets/images/app_logo_login_screen.jpeg
+    - assets/images/default_avatar.png
     - assets/images/mustache.png
+    - assets/images/hat.png
+    - assets/images/mask.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

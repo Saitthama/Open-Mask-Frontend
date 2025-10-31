@@ -5,24 +5,33 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/filter/i_filter.dart';
 
+/// Ein [CustomPainter], welcher dazu dient einen Filter auf mehrere Gesichter anzuwenden.
 class FaceFilterPainter extends CustomPainter {
-  final List<Face> _faces;
-  final Size _imageSize;
-  final bool _isFrontCamera;
-  final IFilter _filter;
-
+  /// Standard-Konstruktor.
   FaceFilterPainter({
-    required List<Face> faces,
-    required Size imageSize,
-    required bool isFrontCamera,
-    required IFilter filter,
+    required final List<Face> faces,
+    required final Size imageSize,
+    required final bool isFrontCamera,
+    required final IFilter filter,
   })  : _imageSize = imageSize,
         _faces = faces,
         _isFrontCamera = isFrontCamera,
         _filter = filter;
 
+  /// Gesichter, auf die der angegebene Filter [_filter] angewendet werden soll.
+  final List<Face> _faces;
+
+  /// Größe des aufgenommenen und analysierten Bildes.
+  final Size _imageSize;
+
+  /// Gibt an, ob die verwendete Kamera die Frontkamera ist und das Bild daher gespiegelt ist.
+  final bool _isFrontCamera;
+
+  /// Der Filter, der auf die Gesichter [_faces] angewendet werden soll.
+  final IFilter _filter;
+
   @override
-  void paint(Canvas canvas, Size size) {
+  void paint(final Canvas canvas, final Size size) {
     // richtige Zuordnung von Breite und Höhe
     final double canvasWidth = min(size.width, size.height);
     final double canvasHeight = max(size.width, size.height);
@@ -34,17 +43,17 @@ class FaceFilterPainter extends CustomPainter {
     final Scale scale = Scale(scaleX, scaleY);
 
     // Debug-Ausgabe:
-    print("Face Filter:");
-    print("Canvas size: $size, Image size: $_imageSize");
-    print("ScaleX: $scaleX, ScaleY: $scaleY");
+    print('Face Filter:');
+    print('Canvas size: $size, Image size: $_imageSize');
+    print('ScaleX: $scaleX, ScaleY: $scaleY');
 
-    for (Face face in _faces) {
+    for (final Face face in _faces) {
       _filter.apply(face, canvas, size, scale, _isFrontCamera);
     }
   }
 
   @override
-  bool shouldRepaint(covariant FaceFilterPainter oldDelegate) {
+  bool shouldRepaint(covariant final FaceFilterPainter oldDelegate) {
     return oldDelegate._faces != _faces || oldDelegate._filter != _filter;
   }
 }

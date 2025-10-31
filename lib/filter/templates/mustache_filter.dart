@@ -1,33 +1,54 @@
 import 'dart:math';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/src/face_detector.dart';
 import 'package:open_mask/data/model/scale.dart';
-import 'package:open_mask/filter/configs/mustache_config.dart';
-import 'package:open_mask/filter/i_filter.dart';
+import 'package:open_mask/data/services/geometry_service.dart';
+import 'package:open_mask/filter/configs/image_filter_config.dart';
+import 'package:open_mask/filter/filter_meta.dart';
+import 'package:open_mask/filter/filter_type.dart';
+import 'package:open_mask/filter/templates/image_filter.dart';
 
-import '../../data/services/image_service.dart';
+/// Filter, der einen Schnurrbart (Mustache) darstellt.
+/// Bildfilter, der relativ zur Nase positioniert wird.
+class MustacheFilter extends ImageFilter {
+  /// Standard-Konstruktor.
+  MustacheFilter({super.id, required super.meta, required super.config})
+      : super(type: FilterType.mustache);
 
-class MustacheFilter implements IFilter {
-  @override
-  MustacheConfig config;
+  /// Factory-Methode zur JSON‑Deserialisierung.
+  factory MustacheFilter.fromJSON(final Map<String, dynamic> json) {
+    Map<String, dynamic> configJson = json['config'] ?? {};
+    configJson.putIfAbsent('imagePath', () => defaultImagePath);
+    configJson.putIfAbsent('scaleX', () => defaultScale.scaleX);
+    configJson.putIfAbsent('scaleY', () => defaultScale.scaleY);
+    configJson.putIfAbsent('offsetX', () => defaultOffset.dx);
+    configJson.putIfAbsent('offsetY', () => defaultOffset.dy);
 
-  ui.Image? _image;
-  bool isLoading = false;
+    ImageFilterConfig imageFilterConfig =
+        ImageFilterConfig.fromJSON(configJson);
 
-  MustacheFilter(this.config);
+    MustacheFilter mustacheFilter = MustacheFilter(
+        id: int.parse(json['id']),
+        meta: FilterMeta.fromJson(json['meta']),
+        config: imageFilterConfig);
 
-  Future<void> load() async {
-    isLoading = true;
-    _image = await ImageService.loadImage(config.assetPath);
-    isLoading = false;
+    return mustacheFilter;
   }
 
+  /// Standarmäßiger Asset-Path ([config.imagePath]).
+  static const String defaultImagePath = 'assets/images/mustache.png';
+
+  /// Standardmäßige relative Position unter der Nase.
+  static const Offset defaultOffset = Offset(0.0, 10);
+
+  /// Standardmäßiger Scale.
+  static const Scale defaultScale = Scale(0.4, 0.4);
+
   @override
-  void apply(Face face, Canvas canvas, Size canvasSize, Scale scale,
-      bool isFrontCamera) {
-    if (_image == null) {
+  void apply(final Face face, final Canvas canvas, final Size canvasSize,
+      final Scale scale, final bool isFrontCamera) {
+    if (image == null) {
       if (!isLoading) {
         load();
       }
@@ -46,26 +67,47 @@ class MustacheFilter implements IFilter {
         : noseBase.position.x.toDouble() * scale.scaleX;
     final double y = noseBase.position.y.toDouble() * scale.scaleY;
 
-    double offsetY = config.offsetY;
-    double filterWidth = face.boundingBox.width * config.relativeWidth;
-    double filterHeight = face.boundingBox.height * config.relativeHeight;
+    // Rotation berechnen
+    final faceRotation =
+        (isFrontCamera ? -face.headEulerAngleZ! : face.headEulerAngleZ!) *
+            pi /
+            180;
+
+    final extraRotation =
+        (isFrontCamera ? -config.rotation : config.rotation) * pi / 180;
+    final totalRotation = faceRotation + extraRotation;
+
+    // Gesichtsgröße und Offset berechnen
+    final faceWidth = face.boundingBox.width * scale.scaleX;
+    final faceHeight = face.boundingBox.height * scale.scaleY;
+
+    final offset = Offset((config.offset.dx) / 100 * faceWidth,
+        (config.offset.dy) / 100 * faceHeight);
+    final rotatedOffset = GeometryService.rotateOffset(offset, totalRotation);
+
+    final filterWidth = faceWidth * config.scale.scaleX;
+    final filterHeight = faceHeight * config.scale.scaleY;
 
     final mustacheRect = Rect.fromCenter(
-      center: Offset(x, y + offsetY),
-      width: filterWidth, // Größe anpassen
+      center: Offset(x + rotatedOffset.dx, y + rotatedOffset.dy),
+      width: filterWidth,
       height: filterHeight,
     );
 
-    paintImage(canvas: canvas, rect: mustacheRect, image: _image!);
-  }
+    canvas.save();
 
-  @override
-  Map<String, dynamic> toJSON() {
-    Map<String, dynamic> json = config.toJSON();
-    json['type'] = 'mustache';
-    return json;
-  }
+    // Gesichtsrotation (Neigung) + ExtraRotation berechnen
+    canvas.translate(mustacheRect.center.dx, mustacheRect.center.dy);
+    canvas.rotate(isFrontCamera ? -totalRotation : totalRotation);
+    canvas.translate(-mustacheRect.center.dx, -mustacheRect.center.dy);
 
-  factory MustacheFilter.fromJSON(Map<String, dynamic> json) =>
-      MustacheFilter(MustacheConfig.fromJSON(json));
+    paintImage(
+        canvas: canvas,
+        rect: mustacheRect,
+        image: image!,
+        opacity: config.opacity,
+        filterQuality: FilterQuality.high);
+
+    canvas.restore();
+  }
 }

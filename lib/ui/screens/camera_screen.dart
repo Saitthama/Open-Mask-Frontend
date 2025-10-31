@@ -1,11 +1,16 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/camera_service.dart';
 import 'package:open_mask/data/services/face_detection_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
-import 'package:open_mask/filter/configs/mustache_config.dart';
+import 'package:open_mask/filter/configs/image_filter_config.dart';
+import 'package:open_mask/filter/filter_factory.dart';
+import 'package:open_mask/filter/filter_meta.dart';
+import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/filter/templates/composite_filter.dart';
+import 'package:open_mask/filter/templates/hat_filter.dart';
 import 'package:open_mask/filter/templates/mustache_filter.dart';
 import 'package:open_mask/ui/views/filter_view.dart';
 import 'package:open_mask/ui/widgets/navigation_bar.dart';
@@ -42,7 +47,7 @@ class _CameraScreenState extends State<CameraScreen> {
         _showMarkings = showMarkings;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     initializeCamera();
   }
@@ -56,23 +61,47 @@ class _CameraScreenState extends State<CameraScreen> {
     _faceDetectionInitialized = true;
 
     // TODO: ersetzen durch Filterauswahl, Filter sollen in der Filter Factory oder im Filter-Editor gebaut werden.
-    MustacheConfig config = MustacheConfig(id: "m1", offsetY: 30);
-    MustacheFilter mustacheFilter = MustacheFilter(config);
-    await mustacheFilter.load();
-    MustacheConfig config2 = MustacheConfig(
-        id: "m2", offsetY: 10, relativeWidth: 0.5, relativeHeight: 0.5);
-    MustacheFilter mustacheFilter2 = MustacheFilter(config2);
-    CompositeFilter compositeFilter = CompositeFilter();
+    ImageFilterConfig mustacheConfig = ImageFilterConfig(
+        imagePath: MustacheFilter.defaultImagePath,
+        scale: MustacheFilter.defaultScale,
+        offset: MustacheFilter.defaultOffset);
+    FilterMeta meta = FilterMeta(
+        name: 'Mustache Filter 1', description: 'Unterer Schnurrbart');
+    MustacheFilter mustacheFilter =
+        MustacheFilter(config: mustacheConfig, meta: meta);
+
+    FilterMeta meta2 = FilterMeta(
+        name: 'Mustache Filter 2', description: 'Oberer Schnurrbart');
+    ImageFilterConfig config2 = ImageFilterConfig(
+        imagePath: MustacheFilter.defaultImagePath,
+        offset: const Offset(0, 6),
+        scale: const Scale(0.5, 0.5),
+        opacity: 0.5);
+    MustacheFilter mustacheFilter2 =
+        MustacheFilter(config: config2, meta: meta2);
+
+    FilterMeta hatMeta =
+        FilterMeta(name: 'Hat Filter', description: 'Hut-Filter');
+    ImageFilterConfig hatConfig = ImageFilterConfig(
+        imagePath: 'assets/images/hat.png', scale: const Scale(1.3, 1.2));
+    HatFilter hatFilter = HatFilter(meta: hatMeta, config: hatConfig);
+
+    FilterMeta metaComposite = FilterMeta(
+        name: 'Hut-Schnurrbart-Filter', description: 'Schnurrbart und Hut');
+    CompositeFilter compositeFilter = CompositeFilter(meta: metaComposite);
     final filterList = compositeFilter.filterList;
     filterList.add(mustacheFilter);
     filterList.add(mustacheFilter2);
+    filterList.add(hatFilter);
+    filterList
+        .add(FilterFactory.create(FilterType.mask)..config?.opacity = 0.5);
     _filter = compositeFilter;
 
     if (!mounted) return;
     setState(() {});
   }
 
-  void _takePicture() async {
+  Future<void> _takePicture() async {
     try {
       final image = await _cameraService.takePicture();
       // TODO: Bildverarbeitung hier einfügen
@@ -88,7 +117,7 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     if (!_faceDetectionInitialized ||
         !_cameraService.cameraController.value.isInitialized) {
       return const Center(child: CircularProgressIndicator());
@@ -108,7 +137,7 @@ class _CameraScreenState extends State<CameraScreen> {
               ],
             ),
           ),
-          // TODO: extrahieren
+          // TODO: extrahieren & korrigieren, dass Positioned in einem Column ist (muss in einem Stack sein, oder darf nicht verwendet werden)
           // Schwarze Leiste mit Buttons
           Positioned(
             bottom: 0,
@@ -127,11 +156,11 @@ class _CameraScreenState extends State<CameraScreen> {
                   FloatingActionButton(
                     backgroundColor: Colors.white,
                     onPressed: _takePicture,
-                    child: Icon(Icons.circle_outlined,
+                    child: const Icon(Icons.circle_outlined,
                         color: Colors.white, size: 30),
                   ),
                   IconButton(
-                    icon: Icon(Icons.handyman_outlined,
+                    icon: const Icon(Icons.handyman_outlined,
                         color: Colors.white, size: 30),
                     onPressed: () {},
                   ),
@@ -139,7 +168,7 @@ class _CameraScreenState extends State<CameraScreen> {
               ),
             ),
           ),
-          CustomNavigationBar(currentRoute: CameraScreen.routePath),
+          const CustomNavigationBar(currentRoute: CameraScreen.routePath),
         ],
       ),
     );
