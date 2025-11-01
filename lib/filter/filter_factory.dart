@@ -1,4 +1,5 @@
-import 'package:open_mask/filter/configs/image_filter_config.dart';
+import 'package:open_mask/filter/configs/filter_config.dart';
+import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/templates/composite_filter.dart';
@@ -18,20 +19,26 @@ class FilterFactory {
       case FilterType.mustache:
         return MustacheFilter(
             meta: FilterMeta(),
-            config: ImageFilterConfig(
-                imagePath: MustacheFilter.defaultImagePath,
+            config: FilterConfig(
                 offset: MustacheFilter.defaultOffset,
-                scale: MustacheFilter.defaultScale));
+                scale: MustacheFilter.defaultScale),
+            filterImage: FilterImage(
+                filename: MustacheFilter.defaultImageFilename,
+                assetPath: MustacheFilter.defaultAssetPath));
       case FilterType.hat:
         return HatFilter(
             meta: FilterMeta(),
-            config: ImageFilterConfig(imagePath: HatFilter.defaultImagePath));
+            config: FilterConfig(),
+            filterImage: FilterImage(
+                filename: HatFilter.defaultImageFilename,
+                assetPath: HatFilter.defaultAssetPath));
       case FilterType.mask:
         return MaskFilter(
             meta: FilterMeta(),
-            config: ImageFilterConfig(
-                imagePath: MaskFilter.defaultImagePath,
-                offset: MaskFilter.defaultOffset));
+            config: FilterConfig(offset: MaskFilter.defaultOffset),
+            filterImage: FilterImage(
+                filename: MaskFilter.defaultImageFilename,
+                assetPath: MaskFilter.defaultAssetPath));
       // TODO: weitere Filterarten
     }
   }

@@ -5,7 +5,7 @@ class User {
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory User.fromJson(final Map<String, dynamic> json) => User(
-        id: json['id'],
+        id: int.parse(json['id']),
         username: json['username'],
         displayName: json['displayName'],
       );

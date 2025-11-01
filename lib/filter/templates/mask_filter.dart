@@ -4,7 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:google_mlkit_face_detection/src/face_detector.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/geometry_service.dart';
-import 'package:open_mask/filter/configs/image_filter_config.dart';
+import 'package:open_mask/filter/configs/filter_config.dart';
+import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/templates/image_filter.dart';
@@ -12,27 +13,38 @@ import 'package:open_mask/filter/templates/image_filter.dart';
 /// Filter, welcher eine Maske über das Gesicht legt (Positionierung basierend auf der Bounding-Box des Gesichts).
 class MaskFilter extends ImageFilter {
   /// Standard-Konstruktor.
-  MaskFilter({super.id, required super.meta, required super.config})
+  MaskFilter(
+      {super.id,
+      required super.meta,
+      required super.config,
+      required super.filterImage})
       : super(type: FilterType.mask);
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory MaskFilter.fromJSON(final Map<String, dynamic> json) {
     Map<String, dynamic> configJson = json['config'] ?? {};
-    configJson.putIfAbsent('imagePath', () => defaultImagePath);
     configJson.putIfAbsent('offsetX', () => defaultOffset.dx);
     configJson.putIfAbsent('offsetY', () => defaultOffset.dy);
 
-    ImageFilterConfig imageFilterConfig =
-        ImageFilterConfig.fromJSON(configJson);
+    FilterConfig filterConfig = FilterConfig.fromJSON(configJson);
+
+    Map<String, dynamic> filterImageJson = json['filterImage'] ?? {};
+    filterImageJson.putIfAbsent('assetPath', () => defaultAssetPath);
+    filterImageJson.putIfAbsent('filename', () => defaultImageFilename);
+    FilterImage filterImage = FilterImage.fromJSON(filterImageJson);
 
     return MaskFilter(
-        id: int.parse(json['id']),
+        id: int.tryParse(json['id']),
         meta: FilterMeta.fromJson(json['meta']),
-        config: imageFilterConfig);
+        config: filterConfig,
+        filterImage: filterImage);
   }
 
-  /// Standarmäßiger Asset-Path ([config.imagePath]).
-  static const String defaultImagePath = 'assets/images/mask.png';
+  /// Standarmäßiger Asset-Path ([filterImage.assetPath]).
+  static const String defaultAssetPath = 'assets/images/mask.png';
+
+  /// Standardmäßiger Dateiname des Filter-Bildes ([filterImage.filename]).
+  static const String defaultImageFilename = 'mask';
 
   /// Standardmäßige relative Position der Maske.
   static const Offset defaultOffset = Offset(0.0, 25);
@@ -40,8 +52,8 @@ class MaskFilter extends ImageFilter {
   @override
   void apply(final Face face, final Canvas canvas, final Size canvasSize,
       final Scale scale, final bool isFrontCamera) {
-    if (image == null) {
-      if (!isLoading) load();
+    if (filterImage.image == null) {
+      if (!filterImage.isLoading) filterImage.load();
       return;
     }
 
@@ -95,7 +107,7 @@ class MaskFilter extends ImageFilter {
     paintImage(
       canvas: canvas,
       rect: maskRect,
-      image: image!,
+      image: filterImage.image!,
       opacity: config.opacity,
       filterQuality: FilterQuality.high,
     );

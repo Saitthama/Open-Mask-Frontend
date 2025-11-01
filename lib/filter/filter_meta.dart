@@ -4,22 +4,18 @@ import 'package:open_mask/data/model/user.dart';
 class FilterMeta {
   /// Standard-Konstruktor.
   FilterMeta(
-      {this.id,
-      this.name = defaultName,
+      {this.name = defaultName,
       this.description = defaultDescription,
       this.createdBy,
-      this.parentId,
       this.createdAt,
       this.updatedAt,
-      this.published = false});
+      this.isPublic = false});
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory FilterMeta.fromJson(final Map<String, dynamic> json) => FilterMeta(
-      id: json['id'],
       name: json['name'],
       description: json['description'],
-      published: json['published'],
-      parentId: json['parentId'],
+      isPublic: json['published'],
       createdBy: json['createdBy'] ?? User.fromJson(json['createdBy']),
       createdAt: DateTime.tryParse(json['createdAt']),
       updatedAt: DateTime.tryParse(json['updatedAt']));
@@ -30,9 +26,6 @@ class FilterMeta {
   /// Standardmäßige Beschreibung ([description]).
   static const String defaultDescription = 'Neu ersteller Filter';
 
-  /// Stellt die Id aus der Datenbank dar.
-  final int? id;
-
   /// Name des Filters.
   String name;
 
@@ -42,9 +35,6 @@ class FilterMeta {
   /// Ersteller des Filters.
   final User? createdBy;
 
-  /// Id der Parent-Filter-Meta-Daten, falls der Filter ein Fork ist.
-  final int? parentId;
-
   /// Erstellungsdatum des Filters.
   final DateTime? createdAt;
 
@@ -52,25 +42,23 @@ class FilterMeta {
   DateTime? updatedAt;
 
   /// Veröffentlichungsstatus, welcher aussagt, ob der Filter veröffentlich worden ist oder nicht.
-  bool published;
+  bool isPublic;
 
   /// Methode zur JSON‑Serialisierung für die Backend-Kommunikation.
   Map<String, dynamic> toJSON() => {
-        if (id != null) 'id': id,
         'name': name,
         'description': description,
         if (createdBy != null) 'createdById': createdBy?.id,
-        if (parentId != null) 'parentId': parentId,
         if (createdAt != null) 'createdAt': createdAt?.toIso8601String(),
         if (updatedAt != null) 'updatedAt': updatedAt?.toIso8601String(),
-        'published': published
+        'published': isPublic
       };
 
   /// Methode zur JSON-Serialisierung für die lokale Speicherung oder den Export
   Map<String, dynamic> toExportAsJSON() => {
         'name': name,
         'description': description,
-        'published': published,
+        'published': isPublic,
         'createdBy': createdBy?.toJSON(),
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),

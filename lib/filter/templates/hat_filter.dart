@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/src/face_detector.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/geometry_service.dart';
-import 'package:open_mask/filter/configs/image_filter_config.dart';
+import 'package:open_mask/filter/configs/filter_config.dart';
+import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/templates/image_filter.dart';
@@ -12,32 +13,41 @@ import 'package:open_mask/filter/templates/image_filter.dart';
 /// Filter, der einen Hut auf dem Kopf platziert.
 class HatFilter extends ImageFilter {
   /// Standard-Konstruktor.
-  HatFilter({super.id, required super.meta, required super.config})
+  HatFilter(
+      {super.id,
+      required super.meta,
+      required super.config,
+      required super.filterImage})
       : super(type: FilterType.hat);
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory HatFilter.fromJSON(final Map<String, dynamic> json) {
-    Map<String, dynamic> configJson = json['config'] ?? {};
-    configJson.putIfAbsent('imagePath', () => defaultImagePath);
+    Map<String, dynamic> filterImageJson = json['filterImage'] ?? {};
+    filterImageJson.putIfAbsent('assetPath', () => defaultAssetPath);
+    filterImageJson.putIfAbsent('filename', () => defaultImageFilename);
+    FilterImage filterImage = FilterImage.fromJSON(filterImageJson);
 
-    ImageFilterConfig imageFilterConfig =
-        ImageFilterConfig.fromJSON(configJson);
+    FilterConfig filterConfig = FilterConfig.fromJSON(json['config'] ?? {});
 
     return HatFilter(
-        id: int.parse(json['id']),
+        id: int.tryParse(json['id']),
         meta: FilterMeta.fromJson(json['meta']),
-        config: imageFilterConfig);
+        config: filterConfig,
+        filterImage: filterImage);
   }
 
-  /// Standarmäßiger Asset-Path ([config.imagePath]).
-  static const String defaultImagePath = 'assets/images/hat.png';
+  /// Standarmäßiger Asset-Path ([filterImage.assetPath]).
+  static const String defaultAssetPath = 'assets/images/hat.png';
+
+  /// Standardmäßiger Dateiname des Filter-Bildes ([filterImage.filename]).
+  static const String defaultImageFilename = 'hat';
 
   @override
   void apply(final Face face, final Canvas canvas, final Size canvasSize,
       final Scale scale, final bool isFrontCamera) {
-    if (image == null) {
-      if (!isLoading) {
-        load();
+    if (filterImage.image == null) {
+      if (!filterImage.isLoading) {
+        filterImage.load();
       }
       return;
     }
@@ -122,9 +132,9 @@ class HatFilter extends ImageFilter {
     paintImage(
       canvas: canvas,
       rect: hatRect,
-      image: image!,
-      fit: (image!.height.toDouble() / hatHeight >
-              image!.width.toDouble() / hatWidth)
+      image: filterImage.image!,
+      fit: (filterImage.image!.height.toDouble() / hatHeight >
+              filterImage.image!.width.toDouble() / hatWidth)
           ? BoxFit.fitHeight
           : BoxFit.fitWidth,
       opacity: config.opacity,
