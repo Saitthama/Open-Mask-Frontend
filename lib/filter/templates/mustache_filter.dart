@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/src/face_detector.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/geometry_service.dart';
-import 'package:open_mask/filter/configs/image_filter_config.dart';
+import 'package:open_mask/filter/configs/filter_config.dart';
+import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/templates/image_filter.dart';
@@ -13,31 +14,41 @@ import 'package:open_mask/filter/templates/image_filter.dart';
 /// Bildfilter, der relativ zur Nase positioniert wird.
 class MustacheFilter extends ImageFilter {
   /// Standard-Konstruktor.
-  MustacheFilter({super.id, required super.meta, required super.config})
+  MustacheFilter(
+      {super.id,
+      required super.meta,
+      required super.config,
+      required super.filterImage})
       : super(type: FilterType.mustache);
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory MustacheFilter.fromJSON(final Map<String, dynamic> json) {
     Map<String, dynamic> configJson = json['config'] ?? {};
-    configJson.putIfAbsent('imagePath', () => defaultImagePath);
     configJson.putIfAbsent('scaleX', () => defaultScale.scaleX);
     configJson.putIfAbsent('scaleY', () => defaultScale.scaleY);
     configJson.putIfAbsent('offsetX', () => defaultOffset.dx);
     configJson.putIfAbsent('offsetY', () => defaultOffset.dy);
 
-    ImageFilterConfig imageFilterConfig =
-        ImageFilterConfig.fromJSON(configJson);
+    Map<String, dynamic> filterImageJson = json['filterImage'] ?? {};
+    filterImageJson.putIfAbsent('assetPath', () => defaultAssetPath);
+    filterImageJson.putIfAbsent('filename', () => defaultImageFilename);
+
+    FilterConfig filterConfig = FilterConfig.fromJSON(configJson);
 
     MustacheFilter mustacheFilter = MustacheFilter(
-        id: int.parse(json['id']),
+        id: int.tryParse(json['id']),
         meta: FilterMeta.fromJson(json['meta']),
-        config: imageFilterConfig);
+        config: filterConfig,
+        filterImage: FilterImage.fromJSON(filterImageJson));
 
     return mustacheFilter;
   }
 
-  /// Standarmäßiger Asset-Path ([config.imagePath]).
-  static const String defaultImagePath = 'assets/images/mustache.png';
+  /// Standarmäßiger Asset-Path ([filterImage.assetPath]).
+  static const String defaultAssetPath = 'assets/images/mustache.png';
+
+  /// Standardmäßiger Dateiname des Filter-Bildes ([filterImage.filename]).
+  static const String defaultImageFilename = 'mustache';
 
   /// Standardmäßige relative Position unter der Nase.
   static const Offset defaultOffset = Offset(0.0, 10);
@@ -48,9 +59,9 @@ class MustacheFilter extends ImageFilter {
   @override
   void apply(final Face face, final Canvas canvas, final Size canvasSize,
       final Scale scale, final bool isFrontCamera) {
-    if (image == null) {
-      if (!isLoading) {
-        load();
+    if (filterImage.image == null) {
+      if (!filterImage.isLoading) {
+        filterImage.load();
       }
       return;
     }
@@ -104,7 +115,7 @@ class MustacheFilter extends ImageFilter {
     paintImage(
         canvas: canvas,
         rect: mustacheRect,
-        image: image!,
+        image: filterImage.image!,
         opacity: config.opacity,
         filterQuality: FilterQuality.high);
 

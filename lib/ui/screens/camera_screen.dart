@@ -4,8 +4,9 @@ import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/camera_service.dart';
 import 'package:open_mask/data/services/face_detection_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
-import 'package:open_mask/filter/configs/image_filter_config.dart';
+import 'package:open_mask/filter/configs/filter_config.dart';
 import 'package:open_mask/filter/filter_factory.dart';
+import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/i_filter.dart';
@@ -61,30 +62,33 @@ class _CameraScreenState extends State<CameraScreen> {
     _faceDetectionInitialized = true;
 
     // TODO: ersetzen durch Filterauswahl, Filter sollen in der Filter Factory oder im Filter-Editor gebaut werden.
-    ImageFilterConfig mustacheConfig = ImageFilterConfig(
-        imagePath: MustacheFilter.defaultImagePath,
+    FilterConfig mustacheConfig = FilterConfig(
         scale: MustacheFilter.defaultScale,
         offset: MustacheFilter.defaultOffset);
     FilterMeta meta = FilterMeta(
         name: 'Mustache Filter 1', description: 'Unterer Schnurrbart');
-    MustacheFilter mustacheFilter =
-        MustacheFilter(config: mustacheConfig, meta: meta);
+    FilterImage mustacheImage = FilterImage(
+        filename: MustacheFilter.defaultImageFilename,
+        assetPath: MustacheFilter.defaultAssetPath);
+    MustacheFilter mustacheFilter = MustacheFilter(
+        config: mustacheConfig, meta: meta, filterImage: mustacheImage);
 
     FilterMeta meta2 = FilterMeta(
         name: 'Mustache Filter 2', description: 'Oberer Schnurrbart');
-    ImageFilterConfig config2 = ImageFilterConfig(
-        imagePath: MustacheFilter.defaultImagePath,
-        offset: const Offset(0, 6),
+    FilterConfig config2 = FilterConfig(
+        offset: const Offset(0, 10),
         scale: const Scale(0.5, 0.5),
         opacity: 0.5);
-    MustacheFilter mustacheFilter2 =
-        MustacheFilter(config: config2, meta: meta2);
+    FilterImage onlineMustacheImage = FilterImage(
+        filename: 'online_mustache',
+        imageUrl: 'https://pngimg.com/uploads/moustache/moustache_PNG43.png');
+    MustacheFilter mustacheFilter2 = MustacheFilter(
+        config: config2, meta: meta2, filterImage: onlineMustacheImage);
 
-    FilterMeta hatMeta =
-        FilterMeta(name: 'Hat Filter', description: 'Hut-Filter');
-    ImageFilterConfig hatConfig = ImageFilterConfig(
-        imagePath: 'assets/images/hat.png', scale: const Scale(1.3, 1.2));
-    HatFilter hatFilter = HatFilter(meta: hatMeta, config: hatConfig);
+    HatFilter hatFilter = FilterFactory.create(FilterType.hat) as HatFilter;
+    hatFilter.meta.name = 'Hat Filter';
+    hatFilter.meta.description = 'Hut-Filter';
+    hatFilter.config.scale = const Scale(1.3, 1.2);
 
     FilterMeta metaComposite = FilterMeta(
         name: 'Hut-Schnurrbart-Filter', description: 'Schnurrbart und Hut');
