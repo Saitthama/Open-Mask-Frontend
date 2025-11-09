@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,12 +8,22 @@ import 'package:go_router/go_router.dart';
 import 'package:open_mask/data/repositories/auth_repository.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/ui/widgets/form_header_text.dart';
+import 'package:http/http.dart' as http;
 
 // TODO: Umstellen auf Java Backend
-/// Service, welches die Authentifizierung verwaltet
 class AuthService {
   /// Meldet den Benutzer an und überprüft, ob die E-Mail verifiziert wurde. Liefert true zurück, wenn die Anmeldung erfolgreich war.
-  static Future<bool> login(final String email, final String password) async {
+
+  static Future<http.Response> logintest(String email, String password) async{
+
+      var url = Uri.https('openmask.fabianmild.dev', '/api/notauth/login');
+      var response = await http.get(url, headers: {"email" : email, "Password" : password});
+
+      
+      return response;
+  }
+
+  static Future<bool> login(String email, String password) async {
     UserCredential userCredential;
     try {
       userCredential = await AuthRepository.signIn(email, password);
@@ -35,7 +46,45 @@ class AuthService {
     return false;
   }
 
+  static Future<bool> registert (String email, String password, String username, String name) async{
+
+    var url = Uri.https('openmask.fabianmild.dev', '/api/notauth/login');
+    var response = await http.get(url, headers: {"email" : email, "Password" : password,"username": username, "name" : name});
+    if(response.statusCode != "200"){
+      return false;
+    }
+
+    return true;
+  }
+
   /// Registriert den Benutzer
+
+  static Future<bool> registertest(String email, String password, String username, String name) async{
+
+    var url = Uri.https('openmask.fabianmild.dev', '/api/notauth/register');
+    try {
+      var response = await http.post(url, headers: {
+        'Content-Type': 'application/json',
+      },
+          body: jsonEncode({
+            'email': email,
+            'password': password,
+            'username': username,
+            'name': name,
+          }),
+      );
+      SnackBarService.showMessage(
+          'Registrierung erfolgreich!');
+      return true;
+    } catch(e){
+      SnackBarService.showMessage('Fehler: ${e.toString()}');
+      return false;
+    }
+
+
+
+  }
+
   static Future<bool> register(
       String email, String password, String username, String name) async {
     try {
