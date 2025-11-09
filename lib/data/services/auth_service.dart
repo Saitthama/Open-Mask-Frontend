@@ -15,9 +15,20 @@ class AuthService {
 
   static Future<bool> logintest(String email, String password) async{
 
-      var url = Uri.https('openmask.fabianmild.dev', '/api/notauth/login');
+    var url = Uri.https(
+      'openmask.fabianmild.dev',
+      '/api/notauth/login',
+      {
+        'email': email,
+        'password': password,
+      },
+    );
       try{
-        var response = await http.get(url, headers: {"email" : email, "Password" : password});
+        var response = await http.get(url);
+        if(response.statusCode != 200){
+          SnackBarService.showMessage('Email oder Passwort ist falsch!');
+          return false;
+        }
         SnackBarService.showMessage('Du bist eingelogt');
         return true;
       } catch(e){

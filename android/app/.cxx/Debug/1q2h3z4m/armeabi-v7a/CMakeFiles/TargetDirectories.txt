@@ -1,0 +1,2 @@
+C:/Users/maxim/Desktop/Schule/5. Klasse/Projekt/Frontend/open_mask_frontend/android/app/.cxx/Debug/1q2h3z4m/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/maxim/Desktop/Schule/5. Klasse/Projekt/Frontend/open_mask_frontend/android/app/.cxx/Debug/1q2h3z4m/armeabi-v7a/CMakeFiles/rebuild_cache.dir
