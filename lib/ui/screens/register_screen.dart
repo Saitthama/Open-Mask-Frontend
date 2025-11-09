@@ -50,7 +50,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     String name = _nameController.text.trim();
 
     bool authSuccessful =
-        await AuthService.register(email, password, username, name);
+<<<<<<< Updated upstream
+        await AuthService.registertest(email, password, username, name);
+=======
+        await AuthService.registert(email, password, username, name);
+>>>>>>> Stashed changes
     if (authSuccessful) {
       context.pop();
     }
