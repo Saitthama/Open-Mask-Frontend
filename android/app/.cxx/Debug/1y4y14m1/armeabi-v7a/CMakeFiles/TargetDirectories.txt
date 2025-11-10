@@ -1,2 +1,0 @@
-C:/Users/matth/dev/open_mask/android/app/.cxx/Debug/1y4y14m1/armeabi-v7a/CMakeFiles/edit_cache.dir
-C:/Users/matth/dev/open_mask/android/app/.cxx/Debug/1y4y14m1/armeabi-v7a/CMakeFiles/rebuild_cache.dir
