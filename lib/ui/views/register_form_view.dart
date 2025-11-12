@@ -6,12 +6,10 @@ import '../widgets/form_header_text.dart';
 import '../widgets/stretched_button.dart';
 
 class RegisterFormView extends StatefulWidget {
-  static const routePath = "/register";
-
   const RegisterFormView({super.key});
 
   @override
-  _RegisterFormViewState createState() => _RegisterFormViewState();
+  State<RegisterFormView> createState() => _RegisterFormViewState();
 }
 
 class _RegisterFormViewState extends State<RegisterFormView> {

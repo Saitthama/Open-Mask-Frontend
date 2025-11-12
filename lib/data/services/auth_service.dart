@@ -5,17 +5,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:open_mask/data/repositories/auth_repository.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/ui/widgets/form_header_text.dart';
-import 'package:http/http.dart' as http;
 
 // TODO: Umstellen auf Java Backend
+// TODO: nicht static machen und Anmeldedaten etc. speichern
 class AuthService {
   /// Meldet den Benutzer an und überprüft, ob die E-Mail verifiziert wurde. Liefert true zurück, wenn die Anmeldung erfolgreich war.
-
-  static Future<bool> logintest(String email, String password) async{
-
+  static Future<bool> login(final String email, final String password) async {
     var url = Uri.https(
       'openmask.fabianmild.dev',
       '/api/notauth/login',
@@ -24,22 +23,22 @@ class AuthService {
         'password': password,
       },
     );
-      try{
-        var response = await http.get(url);
-        if(response.statusCode != 200){
-          SnackBarService.showMessage('Email oder Passwort ist falsch!');
-          return false;
-        }
-        SnackBarService.showMessage('Du bist eingelogt');
-        return true;
-      } catch(e){
-
-        SnackBarService.showMessage('Error: ${e.toString()}');
+    try {
+      var response = await http.get(url);
+      if (response.statusCode != 200) {
+        SnackBarService.showMessage('Email oder Passwort ist falsch!');
         return false;
       }
+      SnackBarService.showMessage('Du bist eingelogt');
+      return true;
+    } catch (e) {
+      SnackBarService.showMessage('Error: ${e.toString()}');
+      return false;
+    }
   }
 
-  static Future<bool> login(String email, String password) async {
+  static Future<bool> loginFirebase(
+      final String email, final String password) async {
     UserCredential userCredential;
     try {
       userCredential = await AuthRepository.signIn(email, password);
@@ -62,38 +61,34 @@ class AuthService {
     return false;
   }
 
-
-
   /// Registriert den Benutzer
 
-  static Future<bool> registertest(String email, String password, String username, String name) async{
-
+  static Future<bool> register(final String email, final String password,
+      final String username, final String name) async {
     var url = Uri.https('openmask.fabianmild.dev', '/api/notauth/register');
     try {
-      var response = await http.post(url, headers: {
-        'Content-Type': 'application/json',
-      },
-          body: jsonEncode({
-            'email': email,
-            'password': password,
-            'username': username,
-            'name': name,
-          }),
+      var response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+          'username': username,
+          'name': name,
+        }),
       );
-      SnackBarService.showMessage(
-          'Registrierung erfolgreich!');
+      SnackBarService.showMessage('Registrierung erfolgreich!');
       return true;
-    } catch(e){
+    } catch (e) {
       SnackBarService.showMessage('Fehler: ${e.toString()}');
       return false;
     }
-
-
-
   }
 
-  static Future<bool> register(
-      String email, String password, String username, String name) async {
+  static Future<bool> registerFirebase(final String email,
+      final String password, final String username, final String name) async {
     try {
       // Benutzer erstellen
       UserCredential userCredential =
@@ -116,38 +111,39 @@ class AuthService {
     }
   }
 
-  static Future<void> editName(BuildContext context) async {
+  static Future<void> editName(final BuildContext context) async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      SnackBarService.showMessage("Kein Benutzer eingeloggt!");
+      SnackBarService.showMessage('Kein Benutzer eingeloggt!');
       return;
     }
 
     String userId = user.uid;
 
     DocumentSnapshot userDoc =
-        await FirebaseFirestore.instance.collection("User").doc(userId).get();
+        await FirebaseFirestore.instance.collection('User').doc(userId).get();
 
     if (!userDoc.exists) {
-      SnackBarService.showMessage("Benutzerdaten nicht gefunden!");
+      SnackBarService.showMessage('Benutzerdaten nicht gefunden!');
       return;
     }
 
-    String currentName = userDoc["name"] ?? "";
+    String currentName = userDoc['name'] ?? '';
     TextEditingController nameController =
         TextEditingController(text: currentName);
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (final BuildContext context) {
         return AlertDialog(
-          title: Text("Benutzer bearbeiten"),
+          title: const Text('Benutzer bearbeiten'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
-                decoration: InputDecoration(labelText: "Neuen Namen eingeben"),
+                decoration:
+                    const InputDecoration(labelText: 'Neuen Namen eingeben'),
               ),
             ],
           ),

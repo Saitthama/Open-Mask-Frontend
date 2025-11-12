@@ -40,7 +40,7 @@ class AuthRepository {
 
   /// Sendet eine Verifizierungsemail
   static Future<void> sendEmailVerification(
-      UserCredential userCredential) async {
+      final UserCredential userCredential) async {
     return userCredential.user?.sendEmailVerification();
   }
 }

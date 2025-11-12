@@ -8,12 +8,12 @@ import '../widgets/form_header_text.dart';
 import '../widgets/stretched_button.dart';
 
 class RegisterScreen extends StatefulWidget {
-  static const routePath = "/register";
+  static const routePath = '/register';
 
   const RegisterScreen({super.key});
 
   @override
-  _RegisterScreenState createState() => _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
@@ -50,7 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     String name = _nameController.text.trim();
 
     bool authSuccessful =
-        await AuthService.registertest(email, password, username, name);
+        await AuthService.register(email, password, username, name);
 
     if (authSuccessful) {
       context.pop();

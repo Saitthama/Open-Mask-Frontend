@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:open_mask/ui/widgets/navigation_bar.dart';
 
 class FilterWorkshopScreen extends StatelessWidget {
-  static const routePath = "/filter-workshop";
+  static const routePath = '/filter-workshop';
 
   const FilterWorkshopScreen({super.key});
 

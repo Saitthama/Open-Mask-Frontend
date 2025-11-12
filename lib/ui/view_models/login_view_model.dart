@@ -20,7 +20,7 @@ class LoginViewModel extends ChangeNotifier {
       SnackBarService.showMessage('Bitte E-Mail und Passwort angeben!');
     }
 
-    _isLoggedIn = await AuthService.logintest(email, password);
+    _isLoggedIn = await AuthService.login(email, password);
 
     if (isLoggedIn) {
       SnackBarService.showMessage('Login erfolgreich!');

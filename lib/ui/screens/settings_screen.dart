@@ -7,26 +7,28 @@ import 'package:open_mask/ui/widgets/navigation_bar.dart';
 import '../../data/services/auth_service.dart';
 
 class SettingsScreen extends StatefulWidget {
-  static const routePath = "/settings";
+  static const routePath = '/settings';
 
   const SettingsScreen({super.key});
 
   @override
-  _SettingsScreenState createState() => _SettingsScreenState();
-}
-
-File? _profileImage;
-
-Future<void> _changeProfilePicture() async {
-  final image = await AuthService.changeProfilepicture();
-  if (image != null) {
-    _profileImage = image;
-  }
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  // TODO: In User verschieben
+  File? _profileImage;
+
+  // TODO: in Service verschieben
+  Future<void> _changeProfilePicture() async {
+    final image = await AuthService.changeProfilepicture();
+    if (image != null) {
+      _profileImage = image;
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: Column(

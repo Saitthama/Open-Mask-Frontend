@@ -15,6 +15,7 @@ void main() async {
 
   await Firebase.initializeApp(); // Initialisiert Firebase
 
+  // TODO: Andere Services zum Provider hinzufügen
   final cameraService = CameraService();
   final faceDetectionService = FaceDetectionService(cameraService);
   AutomaticLoginService.autoLogin();

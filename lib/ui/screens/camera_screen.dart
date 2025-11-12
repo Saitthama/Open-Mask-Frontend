@@ -20,20 +20,24 @@ import 'package:provider/provider.dart';
 import '../views/face_detector_view.dart';
 
 class CameraScreen extends StatefulWidget {
-  static const routePath = "/camera";
+  const CameraScreen(
+      {this.showMarkings = true, this.showLandmarks = true, super.key});
+
+  static const routePath = '/camera';
 
   final bool showMarkings;
   final bool showLandmarks;
 
-  const CameraScreen(
-      {this.showMarkings = true, this.showLandmarks = true, super.key});
-
   @override
-  _CameraScreenState createState() => _CameraScreenState(
-      showMarkings: showMarkings, showLandmarks: showLandmarks);
+  State<CameraScreen> createState() =>
+      _CameraScreenState(
+          showMarkings: showMarkings, showLandmarks: showLandmarks);
 }
 
 class _CameraScreenState extends State<CameraScreen> {
+  _CameraScreenState({bool showMarkings = true, bool showLandmarks = true})
+      : _showLandmarks = showLandmarks,
+        _showMarkings = showMarkings;
   final bool _showMarkings;
   final bool _showLandmarks;
   late FaceDetectionService _faceDetectionService;
@@ -42,10 +46,6 @@ class _CameraScreenState extends State<CameraScreen> {
 
   // TODO: Filter auswählen
   IFilter? _filter;
-
-  _CameraScreenState({bool showMarkings = true, bool showLandmarks = true})
-      : _showLandmarks = showLandmarks,
-        _showMarkings = showMarkings;
 
   @override
   void initState() {
@@ -98,7 +98,8 @@ class _CameraScreenState extends State<CameraScreen> {
     filterList.add(mustacheFilter2);
     filterList.add(hatFilter);
     filterList
-        .add(FilterFactory.create(FilterType.mask)..config?.opacity = 0.5);
+        .add(FilterFactory.create(FilterType.mask)
+      ..config?.opacity = 0.5);
     _filter = compositeFilter;
 
     if (!mounted) return;

@@ -8,12 +8,12 @@ import '../../filter/face_filter_painter.dart';
 import '../../filter/i_filter.dart';
 
 class FilterView extends StatelessWidget {
-  final IFilter _filter;
-
   const FilterView(this._filter, {super.key});
 
+  final IFilter _filter;
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final faceDetectionService = Provider.of<FaceDetectionService>(context);
     final cameraService = Provider.of<CameraService>(context);
     return CustomPaint(

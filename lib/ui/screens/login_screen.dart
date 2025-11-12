@@ -8,17 +8,17 @@ import 'package:provider/provider.dart';
 import 'camera_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  static const routePath = "/login";
-
   const LoginScreen({super.key});
 
+  static const routePath = '/login';
+
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => LoginViewModel(),
       child: Consumer<LoginViewModel>(
@@ -55,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                   // Registrieren-Link
                   TextButton(
-                      child: Text(
+                      child: const Text(
                         'Noch kein Konto? Jetzt registrieren',
                         style: TextStyle(color: Colors.blue),
                       ),

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import './snackbar_service.dart';
 
 // TODO: vielleicht eher in Auth Service integrieren
+// TODO: überlegen ob static oder mit Instanz (eher Instanz wegen Variablen/State)
 class AutomaticLoginService {
   static bool _rememberMe = false;
 
@@ -35,7 +36,7 @@ class AutomaticLoginService {
     if (_rememberMe) {
       String email = prefs.getString('email') ?? '';
       String password = prefs.getString('password') ?? '';
-      bool success = await AuthService.logintest(email, password);
+      bool success = await AuthService.login(email, password);
       //-> login Seite
       // am Besten über Routing
       // (z.B. Loading/Starting Screen (route: "/") machen,
