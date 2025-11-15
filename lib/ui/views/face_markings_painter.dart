@@ -3,18 +3,19 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:open_mask/data/services/geometry_service.dart';
 
 class FaceMarkingsPainter extends CustomPainter {
+  FaceMarkingsPainter(this._faces, this._imageSize,
+      {this.isFrontCamera = false, this.showLandmarks = true});
+
   final List<Face> _faces;
   final Size _imageSize;
   final bool isFrontCamera;
   final bool showLandmarks;
 
-  FaceMarkingsPainter(this._faces, this._imageSize,
-      {this.isFrontCamera = false, this.showLandmarks = true});
-
   @override
-  void paint(Canvas canvas, Size size) {
+  void paint(final Canvas canvas, final Size size) {
     // richtige Zuordnung von Breite und Höhe
     final double canvasWidth = min(size.width, size.height);
     final double canvasHeight = max(size.width, size.height);
@@ -30,11 +31,6 @@ class FaceMarkingsPainter extends CustomPainter {
     print('ScaleX: $scaleX, ScaleY: $scaleY');
     print(_faces.length);
 
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
-      ..color = Colors.red;
-
     for (final Face face in _faces) {
       double left = isFrontCamera
           ? size.width - face.boundingBox.left * scaleX // spiegeln
@@ -45,22 +41,65 @@ class FaceMarkingsPainter extends CustomPainter {
           : face.boundingBox.right * scaleX;
       double bottom = face.boundingBox.bottom * scaleY;
 
-      final rect = Rect.fromLTRB(left, top, right, bottom);
+      final Rect faceRect = Rect.fromLTRB(left, top, right, bottom);
 
-      canvas.drawRect(rect, paint);
+      final double faceWidthPortion =
+          ((faceRect.width < 0) ? -faceRect.width : faceRect.width) /
+              canvasWidth;
+      final double faceHeightPortion =
+          ((faceRect.height < 0) ? -faceRect.height : faceRect.height) /
+              canvasHeight;
+      final double facePortion = (faceWidthPortion + faceHeightPortion) / 2;
+
+      final double faceRectRadius = 70.0 * facePortion;
+      final roundedFaceRect = RRect.fromRectAndCorners(faceRect,
+          topLeft: Radius.circular(faceRectRadius),
+          topRight: Radius.circular(faceRectRadius),
+          bottomLeft: Radius.circular(faceRectRadius),
+          bottomRight: Radius.circular(faceRectRadius));
+
+      final Paint faceRectPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 6.0 * facePortion
+        ..color = Colors.white;
+      final Paint faceRectInnerPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0 * facePortion
+        ..color = Colors.blueAccent;
+
+      // Debug-Ausgabe
+      //print('Gesichtsbreite: ${faceRect.width}');
+      //print('Gesichtshöhe: ${faceRect.height}');
+      //print('Canvas-Breite: $canvasWidth');
+      //print('Canvas-Höhe: $canvasHeight');
+      //print('Gesichtshöhe: ${faceRect.height}');
+      //print('Anteil der Gesichtsbreite: $faceWidthPortion');
+      //print('Anteil der Gesichtshöhe: $faceHeightPortion');
+      //print('Anteil des Gesichts: $facePortion');
+
+      final totalRotation =
+          GeometryService.calculateFaceZRotation(face, inverseX: isFrontCamera);
+
+      // Canvas-Transformationen
+      canvas.save();
+
+      // Um Mittelpunkt des Gesichts rotieren
+      canvas.translate(faceRect.center.dx, faceRect.center.dy);
+      canvas.rotate(isFrontCamera ? -totalRotation : totalRotation);
+      canvas.translate(-faceRect.center.dx, -faceRect.center.dy);
+
+      canvas.drawRRect(roundedFaceRect, faceRectPaint);
+      canvas.drawRRect(roundedFaceRect, faceRectInnerPaint);
+
+      canvas.restore();
 
       if (!showLandmarks) {
         continue;
       }
       // Gesichts-Features:
       if (face.landmarks.isNotEmpty) {
-        Paint pointPaint = Paint()
-          ..style = PaintingStyle.fill
-          ..strokeWidth = 2.0
-          ..color = Colors.white;
-
         List<Offset> points = List.from([], growable: true);
-        for (FaceLandmarkType landmarkType in face.landmarks.keys) {
+        for (final FaceLandmarkType landmarkType in face.landmarks.keys) {
           Point<int> landmarkPosition = face.landmarks[landmarkType]!.position;
           double x = isFrontCamera
               ? size.width - landmarkPosition.x.toDouble() * scaleX // spiegeln
@@ -70,6 +109,14 @@ class FaceMarkingsPainter extends CustomPainter {
           Offset offset = Offset(x, y);
           points.add(offset);
         }
+
+        final strokeWidth = 3.0 * facePortion;
+        final Paint pointPaint = Paint()
+          ..style = PaintingStyle.fill
+          ..strokeWidth = strokeWidth
+          ..color = Colors.white.withAlpha(150)
+          ..strokeCap = StrokeCap.round;
+
         canvas.drawPoints(PointMode.points, points, pointPaint);
       }
     }

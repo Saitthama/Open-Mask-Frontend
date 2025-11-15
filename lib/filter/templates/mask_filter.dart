@@ -81,8 +81,8 @@ class MaskFilter extends ImageFilter {
     final Offset relativeOffset =
         GeometryService.scaleOffset(config.offset, faceWidth, faceHeight);
 
-    final totalRotation = GeometryService.calculateFaceZRotation(
-        face, config.rotation, isFrontCamera);
+    final totalRotation = GeometryService.calculateFaceZRotation(face,
+        extraRotation: config.rotation, inverseX: isFrontCamera);
 
     // Rotiertes Offset anwenden
     Offset rotatedOffset =

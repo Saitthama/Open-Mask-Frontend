@@ -26,9 +26,9 @@ class GeometryService {
     return Offset(offset.dx / 100 * width, offset.dy / 100 * height);
   }
 
-  /// Wandelt die Rotation eines Gesichts [face] mit zusätzlicher Rotation [extraRotation] von Grad in Radiant um und spiegelt sie, wenn nötig ([inverseX] == true).
-  static double calculateFaceZRotation(
-      final Face face, final double extraRotation, final bool inverseX) {
+  /// Wandelt die Rotation eines Gesichts [face] von Grad in Radiant um. Berücksichtigt, wenn nötig, auch zusätzliche Rotation [extraRotation] und Spiegelung ([inverseX] == true).
+  static double calculateFaceZRotation(final Face face,
+      {final double extraRotation = 0.0, final bool inverseX = false}) {
     final faceRotation =
         (inverseX ? -face.headEulerAngleZ! : face.headEulerAngleZ!) * pi / 180;
     final double extraRotationInRadiant =
