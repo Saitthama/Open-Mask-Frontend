@@ -75,7 +75,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         const SizedBox(height: 15),
                         _buildSettingButton(
                             'Passwort ändern',
-                            () => )
+                              () => AccountService.changePassword(context)),
+                            
                         const SizedBox(height: 15),
                         _buildSettingButton(
                           'Account löschen',
