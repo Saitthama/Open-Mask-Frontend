@@ -1,17 +1,15 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:open_mask/data/services/image_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
 
-import 'camera_service.dart';
-
+/// Service zur Verwaltung der Gesichtserkennung.
 class FaceDetectionService extends ChangeNotifier {
+  FaceDetectionService();
+
   bool _isDetecting = false;
   List<Face> _faces = [];
-  late Size _imageSize;
-  late FaceDetector _faceDetector;
-  final CameraService _cameraService;
+  Size? _imageSize;
+  FaceDetector? _faceDetector;
 
   bool _initialized = false;
 
@@ -19,16 +17,12 @@ class FaceDetectionService extends ChangeNotifier {
 
   List<Face> get faces => _faces;
 
-  Size get imageSize => _imageSize;
+  Size? get imageSize => _imageSize;
 
-  FaceDetector get faceDetector => _faceDetector;
-
-  CameraService get cameraService => _cameraService;
-
-  FaceDetectionService(this._cameraService);
+  FaceDetector? get faceDetector => _faceDetector;
 
   // aktualisiert Variablen und benachrichtigt Beobachter
-  void _update(List<Face> newFaces, Size newImageSize) {
+  void _update(final List<Face> newFaces, final Size newImageSize) {
     _faces = newFaces;
     _imageSize = newImageSize;
     notifyListeners();
@@ -44,40 +38,28 @@ class FaceDetectionService extends ChangeNotifier {
 
   Future<void> initialize() async {
     _initialized = false;
-
     // FaceDetector initialisieren:
     _faceDetector = FaceDetector(options: _faceDetectorOptions);
-    // Vorübergehend, damit es einen Wert hat. Bekommt später die Originalgröße
-    _imageSize = _cameraService.cameraController.value.previewSize!;
-
-    await _cameraService.cameraController
-        .startImageStream((final CameraImage image) {
-      if (_isDetecting) return;
-      _isDetecting = true;
-      _processImage(image);
-    });
-
     _initialized = true;
+    notifyListeners();
   }
 
-  Future<void> _processImage(final CameraImage image) async {
+  Future<void> processImage(final InputImage image) async {
+    if (_isDetecting) return;
+    _processImage(image);
+  }
+
+  Future<void> _processImage(final InputImage image) async {
+    _isDetecting = true;
+    if (faceDetector == null) {
+      return;
+    }
     try {
-      // CameraImage in InputImage umwandeln:
-      final InputImage? inputImage = ImageService.inputImageFromCameraImage(
-          image, _cameraService.camera, _cameraService.cameraController);
-
-      if (inputImage == null) {
-        SnackBarService.showMessage(
-            'Fehler bei der Umwandlung des Bildformates (${InputImageFormatValue.fromRawValue(image.format.raw)})');
-        return;
-      }
-
       // Originalgröße zuweisen
-      Size newImageSize = inputImage.metadata!.size;
+      Size newImageSize = image.metadata!.size;
 
       // Bild mit dem FaceDetector verarbeiten:
-      final List<Face> detectedFaces =
-          await _faceDetector.processImage(inputImage);
+      final List<Face> detectedFaces = await _faceDetector!.processImage(image);
 
       _update(detectedFaces, newImageSize);
     } catch (e) {
@@ -87,9 +69,16 @@ class FaceDetectionService extends ChangeNotifier {
     }
   }
 
+  Future<void> stopDetection() async {
+    _initialized = false;
+    await _faceDetector?.close();
+    _faceDetector = null;
+    notifyListeners();
+  }
+
   @override
   void dispose() {
+    stopDetection();
     super.dispose();
-    _faceDetector.close();
   }
 }

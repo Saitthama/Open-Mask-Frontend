@@ -7,7 +7,7 @@ import 'package:open_mask/data/services/geometry_service.dart';
 
 class FaceMarkingsPainter extends CustomPainter {
   FaceMarkingsPainter(this._faces, this._imageSize,
-      {this.isFrontCamera = false, this.showLandmarks = true});
+      {this.isFrontCamera = true, this.showLandmarks = true});
 
   final List<Face> _faces;
   final Size _imageSize;
