@@ -5,6 +5,8 @@ import 'package:open_mask/ui/view_models/login_view_model.dart';
 import 'package:open_mask/ui/widgets/stretched_button.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/services/account_service.dart';
+
 class LoginFormView extends StatefulWidget {
   const LoginFormView({super.key});
 
@@ -73,7 +75,7 @@ class _LoginFormViewState extends State<LoginFormView> {
               // Passwort vergessen
               GestureDetector(
                 onTap: () {
-                  AuthService.resetPassword(context);
+                  AccountService.resetPassword(context);
                 },
                 child: const Text(
                   'Passwort vergessen?',

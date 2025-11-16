@@ -22,7 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // TODO: in Service verschieben
   Future<void> _changeProfilePicture() async {
-    final image = await AuthService.changeProfilepicture();
+    final image = await AccountService.changeProfilepicture();
     if (image != null) {
       _profileImage = image;
     }
@@ -59,17 +59,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         const SizedBox(height: 15),
                         _buildSettingButton(
                           'Benutzername ändern',
-                          () => AuthService.editUsername(context),
+                          () => AccountService.editUsername(context),
                         ),
                         const SizedBox(height: 15),
                         _buildSettingButton(
                           'Email zurücksetzen',
-                          () => AuthService.resetEmail(context),
+                          () => AccountService.resetEmail(context),
                         ),
                         const SizedBox(height: 15),
                         _buildSettingButton(
                           'Passwort zurücksetzen',
-                          () => AuthService.resetPassword(context),
+                          () => AccountService.resetPassword(context),
                         ),
                         const SizedBox(height: 15),
                         _buildSettingButton(
