@@ -55,8 +55,11 @@ class ImageService {
   };
 
   /// Umwandlung eines [CameraImage] in ein [InputImage], damit es für das Google ML Kit lesbar ist (https://pub.dev/packages/google_mlkit_commons).
-  static InputImage? inputImageFromCameraImage(final CameraImage image,
-      final CameraDescription camera, final CameraController cameraController) {
+  static InputImage? inputImageFromCameraImage(
+      final CameraImage image,
+      final CameraDescription camera,
+      final CameraController? cameraController) {
+    if (cameraController == null) return null;
     // get image rotation
     // it is used in android to convert the InputImage from Dart to Java
     // `rotation` is not used in iOS to convert the InputImage from Dart to Obj-C

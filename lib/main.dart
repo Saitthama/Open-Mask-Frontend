@@ -16,8 +16,8 @@ void main() async {
   await Firebase.initializeApp(); // Initialisiert Firebase
 
   // TODO: Andere Services zum Provider hinzufügen
+  final faceDetectionService = FaceDetectionService();
   final cameraService = CameraService();
-  final faceDetectionService = FaceDetectionService(cameraService);
   AutomaticLoginService.autoLogin();
 
   runApp(
@@ -33,16 +33,16 @@ void main() async {
 }
 
 class OpenMask extends StatelessWidget {
+  const OpenMask({super.key, required this.useFirebase});
+
   // um die Nutzung von Firebase für den Smoke-Test zu umgehen
   final bool useFirebase;
 
-  const OpenMask({super.key, required this.useFirebase});
-
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     if (!useFirebase) {
-      return MaterialApp(title: "Test", home: PlaceholderHomeScreen());
+      return const MaterialApp(title: 'Test', home: PlaceholderHomeScreen());
     }
 
     return MaterialApp.router(
@@ -52,13 +52,13 @@ class OpenMask extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
-            titleTextStyle: const TextStyle(color: Colors.black, fontSize: 23)),
+            titleTextStyle: TextStyle(color: Colors.black, fontSize: 23)),
         inputDecorationTheme: InputDecorationTheme(
-          errorStyle: TextStyle(color: Colors.red),
-          hintStyle: TextStyle(color: Colors.grey),
+          errorStyle: const TextStyle(color: Colors.red),
+          hintStyle: const TextStyle(color: Colors.grey),
           filled: true,
           fillColor: Colors.grey[5],
           border: OutlineInputBorder(
@@ -71,13 +71,13 @@ class OpenMask extends StatelessWidget {
         brightness: Brightness.dark,
         primaryColor: Colors.blue,
         scaffoldBackgroundColor: Colors.black,
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
             backgroundColor: Colors.black,
             foregroundColor: Colors.white,
-            titleTextStyle: const TextStyle(color: Colors.white, fontSize: 23)),
+            titleTextStyle: TextStyle(color: Colors.white, fontSize: 23)),
         inputDecorationTheme: InputDecorationTheme(
-          errorStyle: TextStyle(color: Colors.red),
-          hintStyle: TextStyle(color: Colors.grey),
+          errorStyle: const TextStyle(color: Colors.red),
+          hintStyle: const TextStyle(color: Colors.grey),
           filled: true,
           fillColor: Colors.grey[900],
           border: OutlineInputBorder(
@@ -97,10 +97,10 @@ class PlaceholderHomeScreen extends StatelessWidget {
   const PlaceholderHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Smoke Test Placeholder')),
-      body: Center(child: Text('App is running!')),
+      appBar: AppBar(title: const Text('Smoke Test Placeholder')),
+      body: const Center(child: Text('App is running!')),
     );
   }
 }

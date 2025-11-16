@@ -7,33 +7,35 @@ import 'package:provider/provider.dart';
 import 'face_markings_painter.dart';
 
 class FaceDetectorView extends StatelessWidget {
-  final bool _showMarkings;
-  final bool _showLandmarks;
-
   const FaceDetectorView(
-      {super.key, bool showMarkings = true, bool showLandmarks = true})
+      {super.key,
+      final bool showMarkings = true,
+      final bool showLandmarks = true})
       : _showLandmarks = showLandmarks,
         _showMarkings = showMarkings;
 
+  final bool _showMarkings;
+  final bool _showLandmarks;
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final faceDetectionService = Provider.of<FaceDetectionService>(context);
     final cameraService = Provider.of<CameraService>(context);
 
-    if (!_showMarkings) {
+    if (!_showMarkings || faceDetectionService.imageSize == null) {
       return Container();
     }
 
     print('Face Detector View build');
     return CustomPaint(
       foregroundPainter: FaceMarkingsPainter(
-          faceDetectionService.faces, faceDetectionService.imageSize,
+          faceDetectionService.faces, faceDetectionService.imageSize!,
           isFrontCamera:
-              cameraService.cameraController.description.lensDirection ==
+              cameraService.cameraController?.description.lensDirection ==
                   CameraLensDirection.front,
           showLandmarks: _showLandmarks),
-      size: (cameraService.cameraController.value.previewSize != null)
-          ? cameraService.cameraController.value.previewSize!
+      size: (cameraService.cameraController?.value.previewSize != null)
+          ? cameraService.cameraController!.value.previewSize!
           : Size.zero,
     );
   }
