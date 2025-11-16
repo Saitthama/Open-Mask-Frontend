@@ -5,6 +5,7 @@ import 'package:open_mask/data/services/account_service.dart';
 import 'package:open_mask/ui/widgets/logout_button.dart';
 import 'package:open_mask/ui/widgets/navigation_bar.dart';
 
+import '../../data/services/account_service.dart';
 import '../../data/services/auth_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -71,6 +72,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           'Passwort zurücksetzen',
                           () => AccountService.resetPassword(context),
                         ),
+                        const SizedBox(height: 15),
+                        _buildSettingButton(
+                            'Passwort ändern',
+                              () => AccountService.changePassword(context)),
+                            
                         const SizedBox(height: 15),
                         _buildSettingButton(
                           'Account löschen',

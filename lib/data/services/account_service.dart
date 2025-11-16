@@ -9,8 +9,11 @@ import 'package:http/http.dart' as http;
 import 'package:open_mask/data/repositories/auth_repository.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/ui/widgets/form_header_text.dart';
+import 'package:open_mask/data/model/user.dart' as ATMUser;
 
 class AccountService{
+
+  static ATMUser.User? user;
 
   static Future<void> editName(final BuildContext context) async {
     User? user = FirebaseAuth.instance.currentUser;
