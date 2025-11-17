@@ -6,8 +6,8 @@ import 'package:provider/provider.dart';
 
 import 'face_markings_painter.dart';
 
-class FaceDetectorView extends StatelessWidget {
-  const FaceDetectorView(
+class FaceMarkingsView extends StatelessWidget {
+  const FaceMarkingsView(
       {super.key,
       final bool showMarkings = true,
       final bool showLandmarks = true})

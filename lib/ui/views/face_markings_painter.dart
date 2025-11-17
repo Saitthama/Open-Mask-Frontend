@@ -100,6 +100,9 @@ class FaceMarkingsPainter extends CustomPainter {
       if (face.landmarks.isNotEmpty) {
         List<Offset> points = List.from([], growable: true);
         for (final FaceLandmarkType landmarkType in face.landmarks.keys) {
+          if (face.landmarks[landmarkType] == null) {
+            continue;
+          }
           Point<int> landmarkPosition = face.landmarks[landmarkType]!.position;
           double x = isFrontCamera
               ? size.width - landmarkPosition.x.toDouble() * scaleX // spiegeln

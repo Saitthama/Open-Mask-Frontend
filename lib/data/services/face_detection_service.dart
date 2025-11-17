@@ -1,11 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
 
-/// Service zur Verwaltung der Gesichtserkennung.
+/// Service zur Verwaltung der Gesichtserkennung bzw. des Gesichtstrackings.
 class FaceDetectionService extends ChangeNotifier {
-  FaceDetectionService();
-
   bool _isDetecting = false;
   List<Face> _faces = [];
   Size? _imageSize;
@@ -21,21 +21,25 @@ class FaceDetectionService extends ChangeNotifier {
 
   FaceDetector? get faceDetector => _faceDetector;
 
-  // aktualisiert Variablen und benachrichtigt Beobachter
+  // TODO: über Settings steuern
+  /// Optionen für den Face Detector
+  final _faceDetectorOptions = FaceDetectorOptions(
+      enableContours: true,
+      // Aktiviert zusätzliche Kontur-Informationen
+      enableLandmarks: true,
+      // Aktiviert die Erkennung von Augen, Nase, Mund usw.
+      enableClassification: true,
+      // zusätzliche Klassifikationen: z.B. Lächeln, Augen offen
+      minFaceSize: 0.3);
+
+  /// Aktualisiert Gesichter ([faces]) und Bildgröße ([imageSize]) und benachrichtigt Beobachter.
   void _update(final List<Face> newFaces, final Size newImageSize) {
     _faces = newFaces;
     _imageSize = newImageSize;
     notifyListeners();
   }
 
-  // Optionen für den Face Detector
-  final _faceDetectorOptions = FaceDetectorOptions(
-    enableContours: true, // Aktiviert zusätzliche Kontur-Informationen
-    enableLandmarks: true, // Aktiviert die Erkennung von Augen, Nase, Mund usw.
-    enableClassification:
-        true, // zusätzliche Klassifikationen: z.B. Lächeln, Augen offen
-  );
-
+  /// Initialisiert den [faceDetector] und, wenn nötig, das [cameraService] und startet den Bild-Stream für die Verarbeitung der Bilder.
   Future<void> initialize() async {
     _initialized = false;
     // FaceDetector initialisieren:
@@ -69,6 +73,7 @@ class FaceDetectionService extends ChangeNotifier {
     }
   }
 
+  /// Beendet den Bild-Stream und den [faceDetector].
   Future<void> stopDetection() async {
     _initialized = false;
     await _faceDetector?.close();
@@ -80,5 +85,6 @@ class FaceDetectionService extends ChangeNotifier {
   void dispose() {
     stopDetection();
     super.dispose();
+    _initialized = false;
   }
 }

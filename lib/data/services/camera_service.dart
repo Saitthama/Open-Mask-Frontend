@@ -100,8 +100,6 @@ class CameraService {
       return;
     }
     _cameraLive = true;
-    cameraController?.startImageStream(_processCameraImage);
-    _cameraLive = true;
   }
 
   /// Stoppt die Kamera und den Bild-Stream an [onImage].

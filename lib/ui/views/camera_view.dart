@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:open_mask/data/services/image_service.dart';
 import 'package:open_mask/ui/screens/camera_screen.dart';
 import 'package:open_mask/ui/view_models/camera_view_model.dart';
+import 'package:open_mask/ui/views/face_markings_view.dart';
 import 'package:open_mask/ui/views/filter_view.dart';
 import 'package:open_mask/ui/widgets/camera_shutter_button.dart';
 import 'package:open_mask/ui/widgets/gallery_popup.dart';
 import 'package:provider/provider.dart';
-
-import '../views/face_detector_view.dart';
 
 /// View, welches die UI für die Kameraanzeige selbst enthält und für [CameraScreen] bereitstellt. Nutzt [CameraViewModel] für Logik.
 class CameraView extends StatelessWidget {
@@ -34,7 +33,7 @@ class CameraView extends StatelessWidget {
                 : CameraPreview(vm.cameraService.cameraController!),
           ),
           Center(
-            child: FaceDetectorView(
+            child: FaceMarkingsView(
                 showMarkings: vm.showMarkings, showLandmarks: vm.showLandmarks),
           ),
           if (vm.filter != null) Center(child: FilterView(vm.filter!)),
