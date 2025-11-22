@@ -19,7 +19,7 @@ class CameraScreen extends StatelessWidget {
       child: const Scaffold(
         body: CameraView(),
         bottomNavigationBar:
-            CustomNavigationBar(currentRoute: CameraScreen.routePath),
+            CustomNavigationBar(currentRoutePath: CameraScreen.routePath),
       ),
     );
   }

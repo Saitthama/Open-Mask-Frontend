@@ -85,7 +85,7 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/app_icon.png"
+  image_path: "assets/images/icons/app-icon_round.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -93,11 +93,13 @@ flutter_icons:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - assets/images/app_logo_login_screen.jpeg
+    - assets/images/icons/app-icon.jpeg
+    - assets/images/icons/app-icon_round.png
+    - assets/images/app-logo_login_screen.jpeg
     - assets/images/default_avatar.png
-    - assets/images/mustache.png
-    - assets/images/hat.png
-    - assets/images/mask.png
+    - assets/images/filter/mustache.png
+    - assets/images/filter/hat.png
+    - assets/images/filter/mask.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
