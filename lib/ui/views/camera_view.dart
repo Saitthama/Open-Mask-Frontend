@@ -40,7 +40,7 @@ class CameraView extends StatelessWidget {
 
           // --- Buttons Overlay ---
           Positioned(
-            bottom: 0,
+            bottom: 10,
             left: 0,
             right: 0,
             child: Row(
@@ -49,8 +49,9 @@ class CameraView extends StatelessWidget {
                 // Linker Button
                 GestureDetector(
                     onTap: () => _openGalleryFilterSelection(context, vm),
-                    child: const Icon(Icons.photo_library,
-                        color: Colors.white, size: 28)),
+                    child: Icon(Icons.photo_library,
+                        color: ButtonTheme.of(context).colorScheme?.primary,
+                        size: 28)),
 
                 // TODO: ausgewählten Filter anzeigen
                 // Auslöse-Button
@@ -59,8 +60,9 @@ class CameraView extends StatelessWidget {
                 // Rechter Button
                 GestureDetector(
                     onTap: vm.switchLiveCamera,
-                    child: const Icon(Icons.cameraswitch,
-                        color: Colors.white, size: 28)),
+                    child: Icon(Icons.cameraswitch,
+                        color: ButtonTheme.of(context).colorScheme?.primary,
+                        size: 28)),
               ],
             ),
           ),
@@ -75,21 +77,18 @@ class CameraView extends StatelessWidget {
       final BuildContext context, final CameraViewModel vm) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.black87,
       builder: (final _) {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo, color: Colors.white),
-              title: const Text('Fotogalerie anzeigen',
-                  style: TextStyle(color: Colors.white)),
+              leading: const Icon(Icons.photo),
+              title: const Text('Fotogalerie anzeigen'),
               onTap: () => _openGalleryPopup(context),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_filter, color: Colors.white),
-              title: const Text('Filter auswählen',
-                  style: TextStyle(color: Colors.white)),
+              leading: const Icon(Icons.photo_filter),
+              title: const Text('Filter auswählen'),
               onTap: () {},
             ),
           ],

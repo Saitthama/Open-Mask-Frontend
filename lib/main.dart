@@ -52,6 +52,9 @@ class OpenMask extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.black),
+        buttonTheme: const ButtonThemeData(
+            colorScheme: ColorScheme.highContrastLight(primary: Colors.black)),
         appBarTheme: const AppBarTheme(
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
@@ -71,10 +74,13 @@ class OpenMask extends StatelessWidget {
         brightness: Brightness.dark,
         primaryColor: Colors.blue,
         scaffoldBackgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
         appBarTheme: const AppBarTheme(
             backgroundColor: Colors.black,
             foregroundColor: Colors.white,
             titleTextStyle: TextStyle(color: Colors.white, fontSize: 23)),
+        buttonTheme: const ButtonThemeData(
+            colorScheme: ColorScheme.highContrastDark(primary: Colors.white)),
         inputDecorationTheme: InputDecorationTheme(
           errorStyle: const TextStyle(color: Colors.red),
           hintStyle: const TextStyle(color: Colors.grey),

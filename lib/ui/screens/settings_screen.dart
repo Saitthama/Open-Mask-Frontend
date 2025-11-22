@@ -5,9 +5,6 @@ import 'package:open_mask/data/services/account_service.dart';
 import 'package:open_mask/ui/widgets/logout_button.dart';
 import 'package:open_mask/ui/widgets/navigation_bar.dart';
 
-import '../../data/services/account_service.dart';
-import '../../data/services/auth_service.dart';
-
 class SettingsScreen extends StatefulWidget {
   static const routePath = '/settings';
 
@@ -32,7 +29,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(final BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+          automaticallyImplyLeading: false, title: const Text('Settings')),
       body: Column(
         children: [
           Expanded(
@@ -48,14 +46,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           radius: 60,
                           backgroundImage: _profileImage != null
                               ? FileImage(_profileImage!)
-                              : AssetImage('assets/images/default_avatar.png')
+                              : const AssetImage(
+                                      'assets/images/default_avatar.png')
                                   as ImageProvider,
                         ),
-                        SizedBox(height: 15),
+                        const SizedBox(height: 15),
                         ElevatedButton.icon(
                           onPressed: _changeProfilePicture,
-                          icon: Icon(Icons.image),
-                          label: Text("Change Profile Picture"),
+                          icon: const Icon(Icons.image),
+                          label: const Text('Change Profile Picture'),
                         ),
                         const SizedBox(height: 15),
                         _buildSettingButton(
@@ -73,10 +72,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           () => AccountService.resetPassword(context),
                         ),
                         const SizedBox(height: 15),
-                        _buildSettingButton(
-                            'Passwort ändern',
-                              () => AccountService.changePassword(context)),
-                            
+                        _buildSettingButton('Passwort ändern',
+                            () => AccountService.changePassword(context)),
                         const SizedBox(height: 15),
                         _buildSettingButton(
                           'Account löschen',
@@ -91,9 +88,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
-          CustomNavigationBar(currentRoute: SettingsScreen.routePath)
         ],
       ),
+      bottomNavigationBar:
+          const CustomNavigationBar(currentRoutePath: SettingsScreen.routePath),
     );
   }
 

@@ -37,7 +37,7 @@ class HatFilter extends ImageFilter {
   }
 
   /// Standarmäßiger Asset-Path ([filterImage.assetPath]).
-  static const String defaultAssetPath = 'assets/images/hat.png';
+  static const String defaultAssetPath = 'assets/images/filter/hat.png';
 
   /// Standardmäßiger Dateiname des Filter-Bildes ([filterImage.filename]).
   static const String defaultImageFilename = 'hat';

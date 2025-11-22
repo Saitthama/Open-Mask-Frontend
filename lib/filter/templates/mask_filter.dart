@@ -41,7 +41,7 @@ class MaskFilter extends ImageFilter {
   }
 
   /// Standarmäßiger Asset-Path ([filterImage.assetPath]).
-  static const String defaultAssetPath = 'assets/images/mask.png';
+  static const String defaultAssetPath = 'assets/images/filter/mask.png';
 
   /// Standardmäßiger Dateiname des Filter-Bildes ([filterImage.filename]).
   static const String defaultImageFilename = 'mask';

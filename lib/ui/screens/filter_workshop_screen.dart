@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:open_mask/ui/widgets/navigation_bar.dart';
 
 class FilterWorkshopScreen extends StatelessWidget {
-  static const routePath = '/filter-workshop';
-
   const FilterWorkshopScreen({super.key});
 
+  static const routePath = '/filter-workshop';
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Filterwerkstatt'),
         actions: [
           IconButton(
@@ -94,9 +95,10 @@ class FilterWorkshopScreen extends StatelessWidget {
               ),
             ),
           ),
-          CustomNavigationBar(currentRoute: FilterWorkshopScreen.routePath),
         ],
       ),
+      bottomNavigationBar: const CustomNavigationBar(
+          currentRoutePath: FilterWorkshopScreen.routePath),
     );
   }
 }

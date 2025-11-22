@@ -65,7 +65,9 @@ class _CameraShutterButtonState extends State<CameraShutterButton>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white,
+                  color: (ButtonTheme.of(context).colorScheme == null)
+                      ? Colors.white
+                      : ButtonTheme.of(context).colorScheme!.primary,
                   width: widget.size * 0.07,
                 ),
               ),
@@ -80,8 +82,8 @@ class _CameraShutterButtonState extends State<CameraShutterButton>
                   child: Container(
                     width: widget.size * 0.72,
                     height: widget.size * 0.72,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).buttonTheme.colorScheme?.primary,
                       shape: BoxShape.circle,
                     ),
                   ),

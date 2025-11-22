@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:http/http.dart' as http;
@@ -10,6 +11,35 @@ import 'package:path_provider/path_provider.dart';
 
 /// Service für bildbezogene Operationen.
 class ImageService {
+  /// Schwarz-Weiß-Version des App-Icons.
+  static final colourlessAppIcon = ColorFiltered(
+      colorFilter: const ColorFilter.matrix([
+        0.33,
+        0.33,
+        0.33,
+        0,
+        0,
+        0.33,
+        0.33,
+        0.33,
+        0,
+        0,
+        0.33,
+        0.33,
+        0.33,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+      ]),
+      child: CircleAvatar(
+        foregroundImage: Image.asset('assets/images/icons/app-icon.jpeg').image,
+        radius: 32,
+      ));
+
   /// Lädt ein Bild als [Uint8List] aus einem Asset.
   static Future<Uint8List?> loadImageFromAsset(final String assetPath) async {
     try {

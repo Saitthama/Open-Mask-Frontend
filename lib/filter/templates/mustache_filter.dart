@@ -45,7 +45,7 @@ class MustacheFilter extends ImageFilter {
   }
 
   /// Standarmäßiger Asset-Path ([filterImage.assetPath]).
-  static const String defaultAssetPath = 'assets/images/mustache.png';
+  static const String defaultAssetPath = 'assets/images/filter/mustache.png';
 
   /// Standardmäßiger Dateiname des Filter-Bildes ([filterImage.filename]).
   static const String defaultImageFilename = 'mustache';

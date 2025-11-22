@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     margin: const EdgeInsets.only(top: 0),
                     child: Image.asset(
-                      'assets/images/app_logo_login_screen.jpeg',
+                      'assets/images/app-logo_login_screen.jpeg',
                       // Pfad zum Logo
                       width: MediaQuery.of(context).size.width,
                     ),
