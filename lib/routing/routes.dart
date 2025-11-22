@@ -6,7 +6,11 @@ import 'package:open_mask/ui/screens/login_screen.dart';
 import 'package:open_mask/ui/screens/register_screen.dart';
 import 'package:open_mask/ui/screens/settings_screen.dart';
 
-final router = GoRouter(initialLocation: LoginScreen.routePath, routes: [
+final routeObserver = RouteObserver<ModalRoute<void>>();
+
+final router = GoRouter(initialLocation: LoginScreen.routePath, observers: [
+  routeObserver
+], routes: [
   GoRoute(
       path: LoginScreen.routePath,
       builder: (final context, final state) => const LoginScreen()),

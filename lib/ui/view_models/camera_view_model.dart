@@ -63,6 +63,9 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
   /// Aktuell ausgewählter Filter.
   IFilter? filter;
 
+  /// Gibt an, ob die Seite sichtbar wird und wird in [CameraScreen] gesetzt.
+  bool pageVisible = false;
+
   /// Lädt die Filter. Initialisiert die Kamera und Gesichtserkennung über [initializeCamera].
   Future<void> initialize() async {
     _initializedAndLive = false;
@@ -173,7 +176,7 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
   void didChangeAppLifecycleState(final AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
       stopCamera();
-    } else if (state == AppLifecycleState.resumed) {
+    } else if (state == AppLifecycleState.resumed && pageVisible) {
       startCamera(); // neu starten
     }
   }
@@ -181,6 +184,7 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
   @override
   void dispose() {
     _initializedAndLive = false;
+    pageVisible = false;
     WidgetsBinding.instance.removeObserver(this);
     cameraService.stopCamera();
     faceDetectionService.stopDetection();
