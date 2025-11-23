@@ -45,12 +45,7 @@ class HatFilter extends ImageFilter {
   @override
   void apply(final Face face, final Canvas canvas, final Size canvasSize,
       final Scale scale, final bool isFrontCamera) {
-    if (filterImage.image == null) {
-      if (!filterImage.isLoading) {
-        filterImage.load();
-      }
-      return;
-    }
+    if (filterImage.image == null) return;
 
     final landmarks = face.landmarks;
 

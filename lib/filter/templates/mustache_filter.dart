@@ -59,12 +59,7 @@ class MustacheFilter extends ImageFilter {
   @override
   void apply(final Face face, final Canvas canvas, final Size canvasSize,
       final Scale scale, final bool isFrontCamera) {
-    if (filterImage.image == null) {
-      if (!filterImage.isLoading) {
-        filterImage.load();
-      }
-      return;
-    }
+    if (filterImage.image == null) return;
 
     final double canvasWidth = min(canvasSize.width, canvasSize.height);
 

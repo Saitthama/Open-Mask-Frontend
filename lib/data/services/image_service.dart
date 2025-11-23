@@ -57,7 +57,7 @@ class ImageService {
 
     if (response.statusCode / 100 != 2) {
       SnackBarService.showMessage(
-          'Fehler beim Laden des Filter-Bildes: ${response.statusCode}');
+          'Fehler beim Laden des Filter-Bildes von $imageUrl (Status: ${response.statusCode})');
       return null;
     }
     final Uint8List bytes = response.bodyBytes;

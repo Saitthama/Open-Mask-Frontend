@@ -15,6 +15,10 @@ abstract class IFilter {
   /// Liefert die jeweilige Konfiguration der Filter‑Instanz zurück.
   FilterConfig? get config;
 
+  /// Lädt alle externen Ressourcen für die Filter. <br>
+  /// Der zurückgelieferte Boolean gibt an, ob das Laden erfolgreich war.
+  Future<bool> load();
+
   /// Methode zur JSON‑Serialisierung, welche den Filter in ein JSON-Objekt umwandelt.
   Map<String, dynamic> toJSON();
 }

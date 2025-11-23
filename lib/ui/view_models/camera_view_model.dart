@@ -88,7 +88,7 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  /// Lädt den Filter in die lokale Variable [filter].
+  /// Lädt den Filter in die lokale Variable [filter] und startet das asynchrone Laden der externen Ressourcen mit [IFilter.load].
   Future<void> _loadFilter() async {
     // TODO: ersetzen durch Filterauswahl, Filter sollen in der Filter Factory oder im Filter-Editor gebaut werden.
     FilterConfig mustacheConfig = FilterConfig(
@@ -129,6 +129,8 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
     filterList
         .add(FilterFactory.create(FilterType.mask)..config?.opacity = 0.5);
     filter = compositeFilter;
+    // Laden der externen Resourcen asynchron starten, damit die Kamera nicht blockiert wird.
+    filter?.load();
   }
 
   /// Initialisiert die Kamera und Gesichtserkennung.

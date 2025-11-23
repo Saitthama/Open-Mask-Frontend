@@ -22,6 +22,12 @@ abstract class ImageFilter extends Filter {
   @override
   FilterConfig get config => _config;
 
+  /// Lädt [filterImage] mit [FilterImage.load]. Der zurückgelieferte Boolean gibt an, ob das Laden erfolgreich war.
+  @override
+  Future<bool> load() async {
+    return await filterImage.load();
+  }
+
   @override
   Map<String, dynamic> toJSON() =>
       {...super.toJSON(), 'filterImage': filterImage.toJSON()};

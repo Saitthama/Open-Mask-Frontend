@@ -43,6 +43,17 @@ class CompositeFilter extends Filter {
     }
   }
 
+  /// Lädt alle externen Ressourcen für die Filter. <br>
+  /// Der zurückgelieferte Boolean gibt an, ob die Ressourcen aller Bilder geladen werden konnten.
+  @override
+  Future<bool> load() async {
+    bool loadedAll = true;
+    for (final IFilter filter in _filterList) {
+      loadedAll = await filter.load();
+    }
+    return loadedAll;
+  }
+
   @override
   Map<String, dynamic> toJSON() {
     Map<String, dynamic> json = super.toJSON();
