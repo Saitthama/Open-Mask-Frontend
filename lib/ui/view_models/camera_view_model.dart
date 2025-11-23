@@ -71,8 +71,8 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
   /// Gibt an, ob die Seite sichtbar wird und wird in [CameraScreen] gesetzt.
   bool pageVisible = false;
 
-  /// Lädt die Filter. Initialisiert die Kamera und startet die Gesichtserkennung über [initializeCamera]. <br>
-  /// Falls die Initialisierung bereits erfolgt ist ([initialized] == true), wird nur [initializeCamera] ausgeführt.
+  /// Lädt Filter. Initialisiert die Kamera und startet die Gesichtserkennung über [initializeCamera]. <br>
+  /// Falls die Initialisierung bereits erfolgt ist ([initialized] == [true]), wird nur [initializeCamera] ausgeführt.
   Future<void> initialize() async {
     if (initialized) {
       if (!cameraLive) initializeCamera();
@@ -80,7 +80,7 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
     }
     _cameraLive = false;
 
-    await _loadFilter();
+    await loadFilter();
 
     await initializeCamera();
     _initialized = true;
@@ -89,7 +89,7 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   /// Lädt den Filter in die lokale Variable [filter] und startet das asynchrone Laden der externen Ressourcen mit [IFilter.load].
-  Future<void> _loadFilter() async {
+  Future<void> loadFilter() async {
     // TODO: ersetzen durch Filterauswahl, Filter sollen in der Filter Factory oder im Filter-Editor gebaut werden.
     FilterConfig mustacheConfig = FilterConfig(
         scale: MustacheFilter.defaultScale,

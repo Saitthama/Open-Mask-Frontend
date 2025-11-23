@@ -27,7 +27,7 @@ abstract class Filter implements IFilter {
   @override
   FilterConfig? get config => _config;
 
-  /// Typ des Filters (z. B. mustache, hat, mask).
+  /// Typ des Filters (z.B. mustache, hat, mask).
   final FilterType type;
 
   /// Id des Partent-Filters, falls der Filter ein Fork ist.
