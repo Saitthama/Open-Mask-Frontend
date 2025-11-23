@@ -73,8 +73,8 @@ class FilterImage {
   bool get failedToLoad => _failedToLoad;
 
   /// Lädt das Bild aus dem Asset. <br>
-  /// Liefert [true] zurück, wenn das Bild erfolgreich geladen werden konnte.
-  /// [failedToLoad] wird auf [true] gesetzt, falls das Laden fehlgeschlagen ist.
+  /// Liefert true zurück, wenn das Bild erfolgreich geladen werden konnte.
+  /// [failedToLoad] wird auf true gesetzt, falls das Laden fehlgeschlagen ist.
   Future<bool> loadFromAsset() async {
     if (assetPath == null || isLoading) {
       return false;
@@ -96,8 +96,8 @@ class FilterImage {
   }
 
   /// Lädt das Bild aus dem Internet über die URL. <br>
-  /// Liefert [true] zurück, wenn das Bild erfolgreich heruntergeladen wurde.
-  /// [failedToLoad] wird auf [true] gesetzt, falls das Laden fehlgeschlagen ist.
+  /// Liefert true zurück, wenn das Bild erfolgreich heruntergeladen wurde.
+  /// [failedToLoad] wird auf true gesetzt, falls das Laden fehlgeschlagen ist.
   Future<bool> loadFromURL() async {
     if (imageUrl == null || isLoading) {
       return false;
@@ -116,7 +116,7 @@ class FilterImage {
 
   /// Versucht das Bild aus der URL ([loadFromURL]) und dem Asset ([loadFromAsset]) zu laden, je nachdem was angegeben wurde. <br>
   /// Falls beides angegeben wurde, wird das Asset zuerst versucht zu laden). <br>
-  /// [failedToLoad] wird auf [true] gesetzt, falls das Laden fehlgeschlagen ist.
+  /// [failedToLoad] wird auf true gesetzt, falls das Laden fehlgeschlagen ist.
   Future<bool> load() async {
     if (isLoading) {
       return false;

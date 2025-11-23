@@ -5,6 +5,7 @@ import 'package:google_mlkit_face_detection/src/face_detector.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/geometry_service.dart';
 import 'package:open_mask/filter/configs/filter_config.dart';
+import 'package:open_mask/filter/configs/image_filter_config.dart';
 import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_type.dart';
@@ -44,13 +45,13 @@ class MustacheFilter extends ImageFilter {
     return mustacheFilter;
   }
 
-  /// Standarmäßiger Asset-Path ([filterImage.assetPath]).
+  /// Standarmäßiger Asset-Path ([FilterImage.assetPath]).
   static const String defaultAssetPath = 'assets/images/filter/mustache.png';
 
-  /// Standardmäßiger Dateiname des Filter-Bildes ([filterImage.filename]).
+  /// Standardmäßiger Dateiname des Filter-Bildes ([FilterImage.filename]).
   static const String defaultImageFilename = 'mustache';
 
-  /// Standardmäßige relative Position unter der Nase.
+  /// Standardmäßige relative Position unter der Nase ([ImageFilterConfig.offset]).
   static const Offset defaultOffset = Offset(0.0, 10);
 
   /// Standardmäßiger Scale.

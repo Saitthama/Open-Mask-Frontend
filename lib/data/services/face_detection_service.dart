@@ -39,7 +39,7 @@ class FaceDetectionService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Initialisiert den [faceDetector] und, wenn nötig, das [cameraService] und startet den Bild-Stream für die Verarbeitung der Bilder.
+  /// Initialisiert den [faceDetector] und startet den Bild-Stream für die Verarbeitung der Bilder.
   Future<void> initialize() async {
     _initialized = false;
     // FaceDetector initialisieren:

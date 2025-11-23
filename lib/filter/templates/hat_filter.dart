@@ -36,10 +36,10 @@ class HatFilter extends ImageFilter {
         filterImage: filterImage);
   }
 
-  /// Standarmäßiger Asset-Path ([filterImage.assetPath]).
+  /// Standarmäßiger Asset-Path ([FilterImage.assetPath]).
   static const String defaultAssetPath = 'assets/images/filter/hat.png';
 
-  /// Standardmäßiger Dateiname des Filter-Bildes ([filterImage.filename]).
+  /// Standardmäßiger Dateiname des Filter-Bildes ([FilterImage.filename]).
   static const String defaultImageFilename = 'hat';
 
   @override

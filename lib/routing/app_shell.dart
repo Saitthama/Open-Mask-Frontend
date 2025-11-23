@@ -10,7 +10,7 @@ import 'package:open_mask/routing/navigation_bar.dart';
 ///   <li>Koordiniert Tab-Wechsel.</li>
 /// </ul>
 class AppShell extends StatefulWidget {
-  /// Erstellt eine AppShell mit dem gegebenen [navigationShell].
+  /// Erstellt eine AppShell mit der gegebenen [navigationShell].
   const AppShell({required this.navigationShell, super.key});
 
   /// Shell mit den drei Branches der App.

@@ -12,8 +12,8 @@ final notAuthNavigatorKey = GlobalKey<NavigatorState>();
 
 /// [GoRoute]-Liste mit drei Branches/Tabs zur Navigation in der App für nicht authentifizierte Benutzer.
 /// <ul>
-///   <li>Login-Seite</li>
-///   <li>Registrierungs-Seite</li>
+///   <li>Login-Seite ([LoginScreen.routePath])</li>
+///   <li>Registrierungs-Seite ([RegisterScreen.routePath])</li>
 /// </ul>
 final notAuthRoutes = [
   GoRoute(
@@ -25,19 +25,28 @@ final notAuthRoutes = [
 ];
 
 /// Navigationsschlüssel für den Filterwerkstatt-Branch des authentifizierten Bereichs der App.
-final _shellFilterWorkshopNavigatorKey = GlobalKey<NavigatorState>();
+final shellFilterWorkshopNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Navigationsschlüssel für den Filteranwendungs-Branch des authentifizierten Bereichs der App.
-final _shellCameraNavigatorKey = GlobalKey<NavigatorState>();
+final shellCameraNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Navigationsschlüssel für den Einstellungen-Branch des authentifizierten Bereichs der App.
-final _shellSettingsNavigatorKey = GlobalKey<NavigatorState>();
+final shellSettingsNavigatorKey = GlobalKey<NavigatorState>();
 
-/// [StatefulShellRoute] (in einer Liste als einzelnes Element) mit drei Branches/Tabs zur Navigation in der App für authentifizierte Benutzer.
+/// Eine [StatefulShellRoute] (in einer Liste als einziges Element) mit drei Branches/Tabs zur Navigation in der App für authentifizierte Benutzer.
 /// <ul>
-///   <li>FilterWorkshop (Tab 0)</li>
-///   <li>Camera (Tab 1)</li>
-///   <li>Settings (Tab 2)</li>
+///   <li>Filterwerkstatt (Tab 0) <br>
+///   Route: [FilterWorkshopScreen.routePath] <br>
+///   Navigationsschlüssel: [shellFilterWorkshopNavigatorKey]
+///   </li>
+///   <li>Kamera/Filterverwendung (Tab 1) <br>
+///   Route: [CameraScreen.routePath] <br>
+///   Navigationsschlüssel: [shellCameraNavigatorKey]
+///   </li>
+///   <li>Einstellungen (Tab 2) <br>
+///   Route: [SettingsScreen.routePath] <br>
+///   Navigationsschlüssel: [shellSettingsNavigatorKey]
+///   </li>
 /// </ul>
 /// Jeder Branch besitzt einen eigenen Navigator für unabhängige Stacks.
 final authRoutes = [
@@ -46,9 +55,9 @@ final authRoutes = [
         return AppShell(navigationShell: navigationShell);
       },
       branches: [
-        /// FilterWorkshop-Branch
+        /// Filterwerkstatt-Branch
         StatefulShellBranch(
-            navigatorKey: _shellFilterWorkshopNavigatorKey,
+            navigatorKey: shellFilterWorkshopNavigatorKey,
             routes: [
               GoRoute(
                   path: FilterWorkshopScreen.routePath,
@@ -58,8 +67,8 @@ final authRoutes = [
                   ),
             ]),
 
-        /// Kamera-Branch
-        StatefulShellBranch(navigatorKey: _shellCameraNavigatorKey, routes: [
+        /// Kamera/Filterverwendung-Branch
+        StatefulShellBranch(navigatorKey: shellCameraNavigatorKey, routes: [
           GoRoute(
               path: CameraScreen.routePath,
               builder: (final context, final state) => const CameraScreen(),
@@ -68,7 +77,7 @@ final authRoutes = [
         ]),
 
         /// Einstellungen-Branch
-        StatefulShellBranch(navigatorKey: _shellSettingsNavigatorKey, routes: [
+        StatefulShellBranch(navigatorKey: shellSettingsNavigatorKey, routes: [
           GoRoute(
               path: SettingsScreen.routePath,
               builder: (final context, final state) => const SettingsScreen(),

@@ -8,9 +8,9 @@ import 'package:open_mask/ui/screens/settings_screen.dart';
 class CustomNavigationBar extends StatelessWidget {
   /// Standard-Konstruktor.
   /// <ul>
-  ///   <li>[currentIndex] Gibt den Index der Route der aktuellen Seite an, zu der nicht navigiert werden können soll.</li>
-  ///   <li>[onBranchSelected] Wird bei der Auswahl eines Branches aufgerufen. <br>
-  ///   [destinationIndex] Gibt den Index der Seite an, zu der navigiert werden soll.
+  ///   <li>[currentIndex] gibt den Index der Route der aktuellen Seite an, zu der nicht navigiert werden können soll.</li>
+  ///   <li>[onBranchSelected] wird bei der Auswahl eines Branches aufgerufen. <br>
+  ///   Der [destinationIndex] gibt den Index der Seite an, zu der navigiert werden soll.
   ///   </li>
   /// </ul>
   const CustomNavigationBar(
@@ -20,7 +20,7 @@ class CustomNavigationBar extends StatelessWidget {
   final int currentIndex;
 
   /// Wird bei der Auswahl eines Branches aufgerufen. <br>
-  /// [destinationIndex] Gibt den Index der Seite an, zu der navigiert werden soll.
+  /// Der [destinationIndex] gibt den Index der Seite an, zu der navigiert werden soll.
   final void Function(int destinationIndex) onBranchSelected;
 
   @override

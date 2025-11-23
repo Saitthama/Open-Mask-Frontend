@@ -72,7 +72,7 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
   bool pageVisible = false;
 
   /// Lädt Filter. Initialisiert die Kamera und startet die Gesichtserkennung über [initializeCamera]. <br>
-  /// Falls die Initialisierung bereits erfolgt ist ([initialized] == [true]), wird nur [initializeCamera] ausgeführt.
+  /// Falls die Initialisierung bereits erfolgt ist ([initialized] == true), wird nur [initializeCamera] ausgeführt.
   Future<void> initialize() async {
     if (initialized) {
       if (!cameraLive) initializeCamera();
