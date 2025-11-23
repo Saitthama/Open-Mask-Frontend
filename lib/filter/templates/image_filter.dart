@@ -2,7 +2,7 @@ import 'package:open_mask/filter/configs/filter_config.dart';
 import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/templates/filter.dart';
 
-/// Abstrakte Basisklasse für Filter, die ein Bild verwenden (z. B. Bart, Hut, Maske).
+/// Abstrakte Basisklasse für Filter, die ein Bild verwenden (z.B. Bart, Hut, Maske).
 abstract class ImageFilter extends Filter {
   /// Standard-Konstruktor.
   ImageFilter(
