@@ -1,11 +1,10 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/src/face_detector.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/geometry_service.dart';
 import 'package:open_mask/filter/configs/filter_config.dart';
 import 'package:open_mask/filter/configs/image_filter_config.dart';
+import 'package:open_mask/filter/face_geometry_calculator.dart';
 import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_type.dart';
@@ -58,45 +57,35 @@ class MustacheFilter extends ImageFilter {
   static const Scale defaultScale = Scale(0.4, 0.4);
 
   @override
-  void apply(final Face face, final Canvas canvas, final Size canvasSize,
-      final Scale scale, final bool isFrontCamera) {
+  void apply(
+      final Face face, final Canvas canvas, final FaceGeometryCalculator fgc) {
     if (filterImage.image == null) return;
-
-    final double canvasWidth = min(canvasSize.width, canvasSize.height);
 
     // Beispiel: Nasensteg als Referenzpunkt
     final noseBase = face.landmarks[FaceLandmarkType.noseBase];
     if (noseBase == null) return;
 
     // Position transformieren
-    final double x = isFrontCamera
-        ? canvasWidth - noseBase.position.x.toDouble() * scale.scaleX
-        : noseBase.position.x.toDouble() * scale.scaleX;
-    final double y = noseBase.position.y.toDouble() * scale.scaleY;
+    final Offset noseBaseOffset = fgc.transformPoint(noseBase.position);
 
     // Rotation berechnen
-    final faceRotation =
-        (isFrontCamera ? -face.headEulerAngleZ! : face.headEulerAngleZ!) *
-            pi /
-            180;
-
-    final extraRotation =
-        (isFrontCamera ? -config.rotation : config.rotation) * pi / 180;
-    final totalRotation = faceRotation + extraRotation;
+    final totalRotation =
+        fgc.calculateFaceZRotation(face, extraRotation: config.rotation);
 
     // Gesichtsgröße und Offset berechnen
-    final faceWidth = face.boundingBox.width * scale.scaleX;
-    final faceHeight = face.boundingBox.height * scale.scaleY;
+    final faceBox = fgc.transformBoundingBox(face.boundingBox);
 
-    final offset = Offset((config.offset.dx) / 100 * faceWidth,
-        (config.offset.dy) / 100 * faceHeight);
-    final rotatedOffset = GeometryService.rotateOffset(offset, totalRotation);
+    final Offset relativeOffset = GeometryService.scaleOffset(
+        config.offset, faceBox.width, faceBox.height);
+    final rotatedOffset =
+        GeometryService.rotateOffset(relativeOffset, totalRotation);
 
-    final filterWidth = faceWidth * config.scale.scaleX;
-    final filterHeight = faceHeight * config.scale.scaleY;
+    final filterWidth = faceBox.width * config.scale.scaleX;
+    final filterHeight = faceBox.height * config.scale.scaleY;
 
     final mustacheRect = Rect.fromCenter(
-      center: Offset(x + rotatedOffset.dx, y + rotatedOffset.dy),
+      center: Offset(noseBaseOffset.dx + rotatedOffset.dx,
+          noseBaseOffset.dy + rotatedOffset.dy),
       width: filterWidth,
       height: filterHeight,
     );
@@ -105,7 +94,7 @@ class MustacheFilter extends ImageFilter {
 
     // Gesichtsrotation (Neigung) + ExtraRotation berechnen
     canvas.translate(mustacheRect.center.dx, mustacheRect.center.dy);
-    canvas.rotate(isFrontCamera ? -totalRotation : totalRotation);
+    canvas.rotate(totalRotation);
     canvas.translate(-mustacheRect.center.dx, -mustacheRect.center.dy);
 
     paintImage(

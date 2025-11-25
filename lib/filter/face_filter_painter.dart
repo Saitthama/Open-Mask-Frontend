@@ -1,8 +1,6 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:open_mask/data/model/scale.dart';
+import 'package:open_mask/filter/face_geometry_calculator.dart';
 import 'package:open_mask/filter/i_filter.dart';
 
 /// Ein [CustomPainter], welcher dazu dient einen Filter auf mehrere Gesichter anzuwenden.
@@ -38,23 +36,11 @@ class FaceFilterPainter extends CustomPainter {
 
   @override
   void paint(final Canvas canvas, final Size size) {
-    // richtige Zuordnung von Breite und Höhe
-    final double canvasWidth = min(size.width, size.height);
-    final double canvasHeight = max(size.width, size.height);
-    final double originalWidth = min(_imageSize.width, _imageSize.height);
-    final double originalHeight = max(_imageSize.width, _imageSize.height);
-    // Scale ausrechnen
-    final double scaleX = canvasWidth / originalWidth;
-    final double scaleY = canvasHeight / originalHeight;
-    final Scale scale = Scale(scaleX, scaleY);
-
-    // Debug-Ausgabe:
-    print('Face Filter:');
-    print('Canvas size: $size, Image size: $_imageSize');
-    print('ScaleX: $scaleX, ScaleY: $scaleY');
+    FaceGeometryCalculator faceCoordinateTransformer = FaceGeometryCalculator(
+        imageSize: _imageSize, canvasSize: size, isFrontCamera: _isFrontCamera);
 
     for (final Face face in _faces) {
-      _filter.apply(face, canvas, size, scale, _isFrontCamera);
+      _filter.apply(face, canvas, faceCoordinateTransformer);
     }
   }
 

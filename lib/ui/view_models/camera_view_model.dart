@@ -95,7 +95,7 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
         scale: MustacheFilter.defaultScale,
         offset: MustacheFilter.defaultOffset);
     FilterMeta meta = FilterMeta(
-        name: 'Mustache Filter 1', description: 'Unterer Schnurrbart');
+        name: 'Mustache Filter 1', description: 'Oberer Schnurrbart');
     FilterImage mustacheImage = FilterImage(
         filename: MustacheFilter.defaultImageFilename,
         assetPath: MustacheFilter.defaultAssetPath);
@@ -103,9 +103,9 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
         config: mustacheConfig, meta: meta, filterImage: mustacheImage);
 
     FilterMeta meta2 = FilterMeta(
-        name: 'Mustache Filter 2', description: 'Oberer Schnurrbart');
+        name: 'Mustache Filter 2', description: 'Unterer Schnurrbart');
     FilterConfig config2 = FilterConfig(
-        offset: const Offset(0, 10),
+        offset: const Offset(0, 11.5),
         scale: const Scale(0.5, 0.5),
         opacity: 0.5);
     FilterImage onlineMustacheImage = FilterImage(

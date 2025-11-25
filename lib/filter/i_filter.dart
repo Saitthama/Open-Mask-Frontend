@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:open_mask/data/model/scale.dart';
+import 'package:open_mask/filter/face_geometry_calculator.dart';
 
 import 'configs/filter_config.dart';
 
@@ -9,8 +9,8 @@ import 'configs/filter_config.dart';
 /// Definiert gemeinsame Operationen für die Anwendung und Serialisierung von Filtern.
 abstract class IFilter {
   /// Wendet den Filter auf das angegebene Gesicht an.
-  void apply(final Face face, final Canvas canvas, final Size canvasSize,
-      final Scale scale, final bool isFrontCamera);
+  void apply(
+      final Face face, final Canvas canvas, final FaceGeometryCalculator fgc);
 
   /// Liefert die jeweilige Konfiguration der Filter‑Instanz zurück.
   FilterConfig? get config;

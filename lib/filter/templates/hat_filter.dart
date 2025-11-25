@@ -1,10 +1,8 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/src/face_detector.dart';
-import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/geometry_service.dart';
 import 'package:open_mask/filter/configs/filter_config.dart';
+import 'package:open_mask/filter/face_geometry_calculator.dart';
 import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_type.dart';
@@ -43,13 +41,11 @@ class HatFilter extends ImageFilter {
   static const String defaultImageFilename = 'hat';
 
   @override
-  void apply(final Face face, final Canvas canvas, final Size canvasSize,
-      final Scale scale, final bool isFrontCamera) {
+  void apply(
+      final Face face, final Canvas canvas, final FaceGeometryCalculator fgc) {
     if (filterImage.image == null) return;
 
     final landmarks = face.landmarks;
-
-    final double canvasWidth = min(canvasSize.width, canvasSize.height);
 
     // Wichtige Landmarken prüfen
     final leftEye = landmarks[FaceLandmarkType.leftEye];
@@ -59,51 +55,32 @@ class HatFilter extends ImageFilter {
     if (leftEye == null || rightEye == null || noseBase == null) return;
 
     // Gesichtsmitte aus Landmarken berechnen
-    final leftEyePosition = Offset(
-        isFrontCamera
-            ? canvasWidth - leftEye.position.x * scale.scaleX
-            : leftEye.position.x * scale.scaleX,
-        leftEye.position.y * scale.scaleY);
-    final rightEyePosition = Offset(
-        isFrontCamera
-            ? canvasWidth - rightEye.position.x * scale.scaleX
-            : rightEye.position.x * scale.scaleX,
-        rightEye.position.y * scale.scaleY);
+    final leftEyePosition = fgc.transformPoint(leftEye.position);
+    final rightEyePosition = fgc.transformPoint(rightEye.position);
     final eyeCenter =
         GeometryService.midpoint(leftEyePosition, rightEyePosition);
 
     // Gesichtszentrum und Breite/Höhe bestimmen
-    final noseBasePosition = Offset(
-        isFrontCamera
-            ? canvasWidth - noseBase.position.x * scale.scaleX
-            : noseBase.position.x * scale.scaleX,
-        noseBase.position.y * scale.scaleY);
+    final noseBasePosition = fgc.transformPoint(noseBase.position);
     final faceCenter = GeometryService.midpoint(eyeCenter, noseBasePosition);
 
-    final faceWidth = face.boundingBox.width * scale.scaleX;
-    final faceHeight = face.boundingBox.height * scale.scaleY;
+    final faceWidth = fgc.transformBoundingBox(face.boundingBox).width;
+    final faceHeight = fgc.transformBoundingBox(face.boundingBox).height;
 
     // Rotation berechnen
-    final faceRotation =
-        (isFrontCamera ? -face.headEulerAngleZ! : face.headEulerAngleZ!) *
-            pi /
-            180;
-
-    final extraRotation =
-        (isFrontCamera ? -config.rotation : config.rotation) * pi / 180;
-    final totalRotation = faceRotation + extraRotation;
+    final totalRotation =
+        fgc.calculateFaceZRotation(face, extraRotation: config.rotation);
 
     // Skalierung & Offsets aus Config
-    final configScaleX = config.scale.scaleX;
-    final configScaleY = config.scale.scaleY;
-
-    final hatWidth = faceWidth * configScaleX;
-    final hatHeight = faceHeight * configScaleY;
+    final hatWidth = faceWidth * config.scale.scaleX;
+    final hatHeight = faceHeight * config.scale.scaleY;
 
     final hatOffsetY = -0.6 * hatHeight;
-    final offset = Offset((config.offset.dx) / 100 * faceWidth,
-        (config.offset.dy) / 100 * faceHeight + hatOffsetY);
-    final rotatedOffset = GeometryService.rotateOffset(offset, totalRotation);
+    final offset =
+        GeometryService.scaleOffset(config.offset, faceWidth, faceHeight);
+    final totalOffset = Offset(offset.dx, offset.dy + hatOffsetY);
+    final rotatedOffset =
+        GeometryService.rotateOffset(totalOffset, totalRotation);
 
     // Stirnposition oberhalb des Gesichts
     final hatPosition = Offset(
@@ -120,7 +97,7 @@ class HatFilter extends ImageFilter {
 
     // Gesichtsrotation (Neigung) + ExtraRotation anwenden
     canvas.translate(hatRect.center.dx, hatRect.center.dy);
-    canvas.rotate(isFrontCamera ? -totalRotation : totalRotation);
+    canvas.rotate(totalRotation);
     canvas.translate(-hatRect.center.dx, -hatRect.center.dy);
 
     // Das Bild zeichnen

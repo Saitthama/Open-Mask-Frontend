@@ -48,24 +48,33 @@ class FaceDetectionService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> processImage(final InputImage image) async {
+  Future<void> processImage(
+      final InputImage image, final int rotationDegrees) async {
     if (_isDetecting) return;
-    _processImage(image);
+    _processImage(image, rotationDegrees);
   }
 
-  Future<void> _processImage(final InputImage image) async {
+  Future<void> _processImage(
+      final InputImage image, final int rotationDegrees) async {
     _isDetecting = true;
     if (faceDetector == null) {
       return;
     }
     try {
-      // Originalgröße zuweisen
-      Size newImageSize = image.metadata!.size;
+      // Größe zuweisen
+      image.metadata?.rotation;
+
+      Size imageSize = image.metadata!.size;
+
+      // Rotation vertauschen, falls 90° oder 270° Rotation
+      if (rotationDegrees.abs() == 90 || rotationDegrees.abs() == 270) {
+        imageSize = Size(imageSize.height, imageSize.width);
+      }
 
       // Bild mit dem FaceDetector verarbeiten:
       final List<Face> detectedFaces = await _faceDetector!.processImage(image);
 
-      _update(detectedFaces, newImageSize);
+      _update(detectedFaces, imageSize);
     } catch (e) {
       SnackBarService.showMessage('Fehler bei der Verarbeitung des Bildes: $e');
     } finally {

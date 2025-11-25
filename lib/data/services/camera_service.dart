@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/services.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:open_mask/data/services/image_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
@@ -28,7 +29,7 @@ class CameraService {
   ResolutionPreset resolutionPreset;
 
   /// Funktion, an die die Bilder der Kamera als InputImage gestreamt werden.
-  Function(InputImage inputImage)? onImage;
+  Function(InputImage inputImage, int rotationDegrees)? onImage;
 
   /// Gibt die initiale Ausrichtung an.
   final CameraLensDirection _initialCameraLensDirection;
@@ -140,6 +141,27 @@ class CameraService {
           'Fehler bei der Umwandlung des Bildformates (${InputImageFormatValue.fromRawValue(image.format.raw)})');
       return;
     }
-    onImage!(inputImage);
+
+    final int rotationDegrees =
+        cameraController!.value.deviceOrientation.degrees -
+            cameraController!.description.sensorOrientation;
+
+    onImage!(inputImage, rotationDegrees);
+  }
+}
+
+/// Liefert die Gerätsrotation in Grad zurück.
+extension DeviceOrientationX on DeviceOrientation {
+  int get degrees {
+    switch (this) {
+      case DeviceOrientation.portraitUp:
+        return 0;
+      case DeviceOrientation.landscapeLeft:
+        return 90;
+      case DeviceOrientation.portraitDown:
+        return 180;
+      case DeviceOrientation.landscapeRight:
+        return 270;
+    }
   }
 }

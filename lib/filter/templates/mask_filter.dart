@@ -1,11 +1,9 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:google_mlkit_face_detection/src/face_detector.dart';
-import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/geometry_service.dart';
 import 'package:open_mask/filter/configs/filter_config.dart';
 import 'package:open_mask/filter/configs/image_filter_config.dart';
+import 'package:open_mask/filter/face_geometry_calculator.dart';
 import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_type.dart';
@@ -51,25 +49,17 @@ class MaskFilter extends ImageFilter {
   static const Offset defaultOffset = Offset(0.0, 25);
 
   @override
-  void apply(final Face face, final Canvas canvas, final Size canvasSize,
-      final Scale scale, final bool isFrontCamera) {
+  void apply(
+      final Face face, final Canvas canvas, final FaceGeometryCalculator fgc) {
     if (filterImage.image == null) return;
-
     final landmarks = face.landmarks;
     if (landmarks.isEmpty) return;
 
-    final double canvasWidth = min(canvasSize.width, canvasSize.height);
-
     // Gesichtsdaten
-    final faceBox = face.boundingBox;
-    final faceCenter = Offset(
-      isFrontCamera
-          ? canvasWidth - faceBox.center.dx * scale.scaleX
-          : faceBox.center.dx * scale.scaleX,
-      faceBox.center.dy * scale.scaleY,
-    );
-    final faceWidth = faceBox.width * scale.scaleX;
-    final faceHeight = faceBox.height * scale.scaleY;
+    final faceBox = fgc.transformBoundingBox(face.boundingBox);
+    final faceCenter = faceBox.center;
+    final faceWidth = faceBox.width;
+    final faceHeight = faceBox.height;
 
     // Skalierung aus der Config
     final double width = faceWidth * config.scale.scaleX;
@@ -79,11 +69,11 @@ class MaskFilter extends ImageFilter {
     final Offset relativeOffset =
         GeometryService.scaleOffset(config.offset, faceWidth, faceHeight);
 
-    final totalRotation = GeometryService.calculateFaceZRotation(face,
-        extraRotation: config.rotation, inverseX: isFrontCamera);
+    final totalRotation =
+        fgc.calculateFaceZRotation(face, extraRotation: config.rotation);
 
-    // Rotiertes Offset anwenden
-    Offset rotatedOffset =
+    // Offset rotieren
+    final Offset rotatedOffset =
         GeometryService.rotateOffset(relativeOffset, totalRotation);
 
     // Zielrechteck für die Maske
@@ -98,7 +88,7 @@ class MaskFilter extends ImageFilter {
 
     // Um Mittelpunkt der Maske rotieren
     canvas.translate(maskRect.center.dx, maskRect.center.dy);
-    canvas.rotate(isFrontCamera ? -totalRotation : totalRotation);
+    canvas.rotate(totalRotation);
     canvas.translate(-maskRect.center.dx, -maskRect.center.dy);
 
     // Maske zeichnen

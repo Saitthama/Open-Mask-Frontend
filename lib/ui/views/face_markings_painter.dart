@@ -1,10 +1,9 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:open_mask/data/services/face_detection_service.dart';
-import 'package:open_mask/data/services/geometry_service.dart';
+import 'package:open_mask/filter/face_geometry_calculator.dart';
 
 /// Ein [CustomPainter], welcher die Gesichtserkennung des [FaceDetectionService] visualisiert.
 class FaceMarkingsPainter extends CustomPainter {
@@ -36,39 +35,26 @@ class FaceMarkingsPainter extends CustomPainter {
 
   @override
   void paint(final Canvas canvas, final Size size) {
-    // richtige Zuordnung von Breite und Höhe
-    final double canvasWidth = min(size.width, size.height);
-    final double canvasHeight = max(size.width, size.height);
-    final double originalWidth = min(_imageSize.width, _imageSize.height);
-    final double originalHeight = max(_imageSize.width, _imageSize.height);
-    // Scale ausrechnen
-    final double scaleX = canvasWidth / originalWidth;
-    final double scaleY = canvasHeight / originalHeight;
+    if (_faces.isEmpty) return;
+
+    final FaceGeometryCalculator ft = FaceGeometryCalculator(
+        imageSize: _imageSize, canvasSize: size, isFrontCamera: _isFrontCamera);
 
     // Debug-Ausgabe:
     print('FaceMarkingsPainter:');
     print('Canvas size: $size, Image size: $_imageSize');
-    print('ScaleX: $scaleX, ScaleY: $scaleY');
+    print('ScaleX: ${ft.scaleX}, ScaleY: ${ft.scaleY}');
     print(_faces.length);
 
     for (final Face face in _faces) {
-      double left = _isFrontCamera
-          ? size.width - face.boundingBox.left * scaleX // spiegeln
-          : face.boundingBox.left * scaleX;
-      double top = face.boundingBox.top * scaleY;
-      double right = _isFrontCamera
-          ? size.width - face.boundingBox.right * scaleX // spiegeln
-          : face.boundingBox.right * scaleX;
-      double bottom = face.boundingBox.bottom * scaleY;
-
-      final Rect faceRect = Rect.fromLTRB(left, top, right, bottom);
+      final faceRect = ft.transformBoundingBox(face.boundingBox);
 
       final double faceWidthPortion =
           ((faceRect.width < 0) ? -faceRect.width : faceRect.width) /
-              canvasWidth;
+              ft.canvasWidth;
       final double faceHeightPortion =
           ((faceRect.height < 0) ? -faceRect.height : faceRect.height) /
-              canvasHeight;
+              ft.canvasHeight;
       final double facePortion = (faceWidthPortion + faceHeightPortion) / 2;
 
       final double faceRectRadius = 70.0 * facePortion;
@@ -97,15 +83,14 @@ class FaceMarkingsPainter extends CustomPainter {
       //print('Anteil der Gesichtshöhe: $faceHeightPortion');
       //print('Anteil des Gesichts: $facePortion');
 
-      final totalRotation = GeometryService.calculateFaceZRotation(face,
-          inverseX: _isFrontCamera);
+      final totalRotation = ft.calculateFaceZRotation(face);
 
       // Canvas-Transformationen
       canvas.save();
 
       // Um Mittelpunkt des Gesichts rotieren
       canvas.translate(faceRect.center.dx, faceRect.center.dy);
-      canvas.rotate(_isFrontCamera ? -totalRotation : totalRotation);
+      canvas.rotate(totalRotation);
       canvas.translate(-faceRect.center.dx, -faceRect.center.dy);
 
       canvas.drawRRect(roundedFaceRect, faceRectPaint);
@@ -123,14 +108,9 @@ class FaceMarkingsPainter extends CustomPainter {
           if (face.landmarks[landmarkType] == null) {
             continue;
           }
-          Point<int> landmarkPosition = face.landmarks[landmarkType]!.position;
-          double x = _isFrontCamera
-              ? size.width - landmarkPosition.x.toDouble() * scaleX // spiegeln
-              : landmarkPosition.x.toDouble() * scaleX;
-          double y = landmarkPosition.y.toDouble() * scaleY;
-
-          Offset offset = Offset(x, y);
-          points.add(offset);
+          final landmarkOffset =
+              ft.transformPoint(face.landmarks[landmarkType]!.position);
+          points.add(landmarkOffset);
         }
 
         final strokeWidth = 3.0 * facePortion;

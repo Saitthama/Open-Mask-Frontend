@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:google_mlkit_face_detection/src/face_detector.dart';
-import 'package:open_mask/data/model/scale.dart';
+import 'package:open_mask/filter/face_geometry_calculator.dart';
 import 'package:open_mask/filter/filter_factory.dart';
 import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_type.dart';
@@ -36,10 +36,10 @@ class CompositeFilter extends Filter {
   List<IFilter> get filterList => _filterList;
 
   @override
-  void apply(final Face face, final Canvas canvas, final Size canvasSize,
-      final Scale scale, final bool isFrontCamera) {
+  void apply(
+      final Face face, final Canvas canvas, final FaceGeometryCalculator fgc) {
     for (final IFilter filter in _filterList) {
-      filter.apply(face, canvas, canvasSize, scale, isFrontCamera);
+      filter.apply(face, canvas, fgc);
     }
   }
 
