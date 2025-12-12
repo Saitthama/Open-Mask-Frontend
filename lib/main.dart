@@ -72,9 +72,12 @@ class OpenMask extends StatelessWidget {
       title: 'Open-Mask',
       theme: ThemeData(
         brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        progressIndicatorTheme: ProgressIndicatorThemeData(
+            color: Colors.blueAccent,
+            circularTrackColor: Colors.white.withAlpha(30)),
         useMaterial3: true,
-        scaffoldBackgroundColor: Colors.white,
+        dividerColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.black),
         buttonTheme: const ButtonThemeData(
             colorScheme: ColorScheme.highContrastLight(primary: Colors.black)),
@@ -96,7 +99,12 @@ class OpenMask extends StatelessWidget {
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         primaryColor: Colors.blue,
+        colorScheme: const ColorScheme.dark(),
+        progressIndicatorTheme: ProgressIndicatorThemeData(
+            color: Colors.blueAccent,
+            circularTrackColor: Colors.white.withAlpha(30)),
         scaffoldBackgroundColor: Colors.black,
+        dividerColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.white),
         appBarTheme: const AppBarTheme(
             backgroundColor: Colors.black,

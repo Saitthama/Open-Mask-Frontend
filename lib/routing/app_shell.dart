@@ -38,6 +38,8 @@ class _AppShellState extends State<AppShell> {
 
     if (index == current) {
       // erneut gedrückt --> zum Root des Tabs zurückkehren
+      ActiveBranchNotifier.instance.value = -1;
+      ActiveBranchNotifier.instance.value = 1;
       widget.navigationShell.goBranch(index, initialLocation: true);
       return;
     }

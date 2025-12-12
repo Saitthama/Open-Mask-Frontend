@@ -29,15 +29,15 @@ class CameraService {
   ResolutionPreset resolutionPreset;
 
   /// Funktion, an die die Bilder der Kamera als InputImage gestreamt werden.
-  Function(InputImage inputImage, int rotationDegrees)? onImage;
+  Function(InputImage inputImage, int rotationDegrees)? onImageToProcess;
 
   /// Gibt die initiale Ausrichtung an.
   final CameraLensDirection _initialCameraLensDirection;
 
-  /// Gibt an, ob die Kamera läuft und an [onImage] streamt.
+  /// Gibt an, ob die Kamera läuft und an [onImageToProcess] streamt.
   bool _cameraLive = false;
 
-  /// Gibt an, ob die Kamera läuft und an [onImage] streamt.
+  /// Gibt an, ob die Kamera läuft und an [onImageToProcess] streamt.
   bool get cameraLive => _cameraLive;
 
   /// Gibt die aktuelle Kameraausrichtung oder, falls keine Kamera gefunden wird, die initiale Ausrichtung an.
@@ -71,7 +71,7 @@ class CameraService {
     }
   }
 
-  /// Startet die Kamera und den Bild-Stream an [onImage].
+  /// Startet die Kamera und den Bild-Stream an [onImageToProcess].
   Future<void> startCamera() async {
     if (camera == null) {
       return;
@@ -103,7 +103,7 @@ class CameraService {
     _cameraLive = true;
   }
 
-  /// Stoppt die Kamera und den Bild-Stream an [onImage].
+  /// Stoppt die Kamera und den Bild-Stream an [onImageToProcess].
   Future<void> stopCamera() async {
     _cameraLive = false;
     await cameraController?.stopImageStream();
@@ -130,9 +130,9 @@ class CameraService {
     await startCamera();
   }
 
-  /// Bild umwandeln und [onImage] zur Verarbeitung aufrufen.
+  /// Bild umwandeln und [onImageToProcess] zur Verarbeitung aufrufen.
   void _processCameraImage(final CameraImage image) {
-    if (onImage == null) return;
+    if (onImageToProcess == null) return;
     // CameraImage in InputImage umwandeln:
     final inputImage = ImageService.inputImageFromCameraImage(
         image, camera!, cameraController);
@@ -146,7 +146,9 @@ class CameraService {
         cameraController!.value.deviceOrientation.degrees -
             cameraController!.description.sensorOrientation;
 
-    onImage!(inputImage, rotationDegrees);
+    if (onImageToProcess != null) {
+      onImageToProcess!(inputImage, rotationDegrees);
+    }
   }
 }
 

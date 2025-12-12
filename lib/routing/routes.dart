@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:open_mask/routing/app_shell.dart';
 import 'package:open_mask/ui/screens/camera_screen.dart';
+import 'package:open_mask/ui/screens/filter_image_processing_screen.dart';
 import 'package:open_mask/ui/screens/filter_workshop_screen.dart';
+import 'package:open_mask/ui/screens/gallery_screen.dart';
 import 'package:open_mask/ui/screens/login_screen.dart';
 import 'package:open_mask/ui/screens/register_screen.dart';
 import 'package:open_mask/ui/screens/settings_screen.dart';
@@ -72,8 +74,19 @@ final authRoutes = [
           GoRoute(
               path: CameraScreen.routePath,
               builder: (final context, final state) => const CameraScreen(),
-              routes: [] // Erweiterbar um Sub-Pages mit Sub-Routen
-              ),
+              // Sub-Pages
+              routes: [
+                GoRoute(
+                  path: GalleryScreen.routePath,
+                  builder: (final context, final state) =>
+                      const GalleryScreen(),
+                ),
+                GoRoute(
+                  path: FilterImageProcessingScreen.routePath,
+                  builder: (final context, final state) =>
+                      const FilterImageProcessingScreen(),
+                )
+              ]),
         ]),
 
         /// Einstellungen-Branch

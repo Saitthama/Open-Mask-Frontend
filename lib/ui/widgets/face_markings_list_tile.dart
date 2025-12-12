@@ -3,7 +3,7 @@ import 'package:open_mask/ui/view_models/camera_view_model.dart';
 
 /// Listenelement zum Ein- und Ausschalten verschiedener Tracking-Markierungen.
 class FaceMarkingsListTile extends StatefulWidget {
-  /// Standardkonstruktor. <br>
+  /// Standard-Konstruktor. <br>
   /// [viewModel] dient zum Aufruf von Funktionen zum Ein- und Ausschalten der Tracking-Markierung, sowie zum Abrufen ihres Zustands.
   const FaceMarkingsListTile({super.key, required this.viewModel});
 

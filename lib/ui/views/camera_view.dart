@@ -1,19 +1,22 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:open_mask/data/services/image_service.dart';
 import 'package:open_mask/ui/screens/camera_screen.dart';
+import 'package:open_mask/ui/screens/filter_image_processing_screen.dart';
+import 'package:open_mask/ui/screens/gallery_screen.dart';
 import 'package:open_mask/ui/view_models/camera_view_model.dart';
 import 'package:open_mask/ui/views/face_markings_view.dart';
 import 'package:open_mask/ui/views/filter_view.dart';
 import 'package:open_mask/ui/widgets/camera_shutter_button.dart';
 import 'package:open_mask/ui/widgets/face_markings_list_tile.dart';
-import 'package:open_mask/ui/widgets/gallery_popup.dart';
 import 'package:provider/provider.dart';
 
 /// View, welches die UI für die Kameraanzeige selbst enthält und für [CameraScreen] bereitstellt. Nutzt [CameraViewModel] für Logik.
 class CameraView extends StatelessWidget {
   /// Standard-Konstruktor.
-  const CameraView({super.key});
+  const CameraView({super.key, required this.navigateTo});
+
+  /// Funktion zum Pushen von neuen Seiten, welche vom [CameraScreen] verwaltet wird.
+  final Function(String route) navigateTo;
 
   @override
   Widget build(final BuildContext context) {
@@ -81,6 +84,7 @@ class CameraView extends StatelessWidget {
   /// Öffnet eine Auswahl für weitere Optionen wie zur Öffnung der Galerie von gemachten Fotos, zum Ein- und Ausschalten bestimmter Funktionen, etc.
   void _openOtherOptionsSelection(
       final BuildContext context, final CameraViewModel vm) {
+    ThemeData theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       builder: (final _) {
@@ -88,34 +92,36 @@ class CameraView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo),
+              leading: Icon(
+                Icons.photo,
+                color: theme.iconTheme.color,
+              ),
               title: const Text('App-Galerie anzeigen'),
-              onTap: () => _openGalleryPopup(context),
+              onTap: () => navigateTo(
+                  '${CameraScreen.routePath}${GalleryScreen.routePath}'),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_filter),
+              leading: Icon(
+                Icons.photo_filter,
+                color: theme.iconTheme.color,
+              ),
               title: const Text('Filter auswählen'),
               onTap: () {},
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.filter,
+                color: theme.iconTheme.color,
+              ),
+              title: const Text('Filter-Bildverarbeitung öffnen'),
+              enabled: vm.filter != null,
+              onTap: () => navigateTo(
+                  '${CameraScreen.routePath}${FilterImageProcessingScreen.routePath}'),
             ),
             FaceMarkingsListTile(viewModel: vm),
           ],
         );
       },
-    );
-  }
-
-  /// Lädt die Photos mit [ImageService.loadLocalPhotos] und öffnet das Galerie-Popup ([GalleryPopup]).
-  Future<void> _openGalleryPopup(final BuildContext context) async {
-    final photos = await ImageService.loadLocalPhotos();
-    if (!context.mounted) return;
-
-    showDialog(
-      context: context,
-      barrierColor: Theme.of(context).colorScheme.surface.withAlpha(138),
-      // Hintergrund abdunkeln, Kamera bleibt sichtbar
-      builder: (final _) => Center(
-        child: GalleryPopup(photos: photos),
-      ),
     );
   }
 }

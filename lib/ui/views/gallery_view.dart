@@ -1,19 +1,14 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:open_mask/ui/view_models/gallery_view_model.dart';
+import 'package:provider/provider.dart';
 
-/// Popup, welches Bilder in einer Galerie anzeigt.
-class GalleryPopup extends StatelessWidget {
-  /// Standard-Konstruktor. <br>
-  /// [photos] stellt die Liste der darzustellenden Fotos dar.
-  const GalleryPopup({super.key, required final List<File> photos})
-      : _photos = photos;
-
-  /// Die Liste der darzustellenden Fotos.
-  final List<File> _photos;
+/// View, welches Bilder in einer Galerie anzeigt.
+class GalleryView extends StatelessWidget {
+  /// Standard-Konstruktor.
+  const GalleryView({super.key});
 
   /// Öffnet eine Nahansicht eines Photos.
-  void _viewPhoto(final context, final index) {
+  void _viewPhoto(final context, final viewModel, final index) {
     showDialog(
       context: context,
       barrierColor: Theme.of(context).colorScheme.surface.withAlpha(138),
@@ -26,7 +21,7 @@ class GalleryPopup extends StatelessWidget {
             child: InteractiveViewer(
               maxScale: 10,
               minScale: 1,
-              child: Image.file(_photos[index]),
+              child: Image.file(viewModel.photos[index]),
             ),
           ),
         );
@@ -35,48 +30,39 @@ class GalleryPopup extends StatelessWidget {
   }
 
   /// Baut ein Photo-Element für die Galerie.
-  Widget _buildPhotoItem(final context, final index) {
+  Widget _buildPhotoItem(final context, final viewModel, final index) {
     return GestureDetector(
-      onTap: () => _viewPhoto(context, index),
+      onTap: () => _viewPhoto(context, viewModel, index),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: Image.file(_photos[index], fit: BoxFit.cover),
+        child: Image.file(viewModel.photos[index], fit: BoxFit.cover),
       ),
     );
   }
 
   @override
   Widget build(final BuildContext context) {
+    final viewModel = context.watch<GalleryViewModel>();
     final theme = Theme.of(context);
-    return Material(
-      color: Colors.transparent,
+    return SafeArea(
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.85,
-        height: MediaQuery.of(context).size.height * 0.65,
         decoration: BoxDecoration(
-          // Hintergrundfarbe aus Theme
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(22),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
         ),
         child: Column(
           children: [
-            const SizedBox(height: 16),
             // Titel
-            Text(
-              'App-Galerie',
-              style: theme.textTheme.titleLarge?.copyWith(
-                color: theme.colorScheme.onSurface,
-                fontWeight: FontWeight.bold,
+            AppBar(
+              centerTitle: true,
+              backgroundColor: theme.colorScheme.surface,
+              title: Text(
+                'App-Galerie',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            const SizedBox(height: 16),
             // Gitter mit Bildern
             Expanded(
               child: Padding(
@@ -87,8 +73,9 @@ class GalleryPopup extends StatelessWidget {
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 8,
                   ),
-                  itemCount: _photos.length,
-                  itemBuilder: _buildPhotoItem,
+                  itemCount: viewModel.photos.length,
+                  itemBuilder: (final context, final index) =>
+                      _buildPhotoItem(context, viewModel, index),
                 ),
               ),
             ),

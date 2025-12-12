@@ -3,9 +3,11 @@
 <plist version="1.0">
 <dict>
     <key>NSCameraUsageDescription</key>
-    <string>Diese App benötigt Zugriff auf die Kamera</string>
+    <string>Die App benötigt Zugriff auf die Kamera</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Diese App benötigt Zugriff auf das Mikrofon</string>
+    <string>Die App benötigt Zugriff auf das Mikrofon</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Die App benötigt Zugriff auf die Photo-Galerie für die Bildauswahl</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

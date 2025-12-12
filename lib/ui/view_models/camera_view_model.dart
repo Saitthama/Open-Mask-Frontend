@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/camera_service.dart';
 import 'package:open_mask/data/services/face_detection_service.dart';
@@ -12,13 +11,14 @@ import 'package:open_mask/filter/configs/filter_config.dart';
 import 'package:open_mask/filter/filter_factory.dart';
 import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_meta.dart';
+import 'package:open_mask/filter/filter_store.dart';
 import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/filter/templates/composite_filter.dart';
 import 'package:open_mask/filter/templates/hat_filter.dart';
 import 'package:open_mask/filter/templates/mustache_filter.dart';
-import 'package:open_mask/ui/painter/face_filter_painter.dart';
 import 'package:open_mask/ui/screens/camera_screen.dart';
+import 'package:open_mask/ui/views/camera_view.dart';
 import 'package:provider/provider.dart';
 
 /// View-Model, welches die Logik für den [CameraScreen] und das [CameraView] hält.
@@ -68,14 +68,23 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
   /// Gibt an, ob die Kamera gerade läuft.
   bool _cameraLive = false;
 
+  /// Gibt an, ob die Kamera gerade gestartet wird.
+  bool _startingCamera = false;
+
   /// Gibt an, ob das View-Model initialisiert wurde.
   bool _initialized = false;
 
   /// Gibt an, ob die Kamera gewechselt wird.
   bool _changingCamera = false;
 
+  /// Gibt an, ob der Filter angezeigt werden soll.
+  bool _filterActive = true;
+
   /// Gibt an, ob die Kamera gerade läuft.
   bool get cameraLive => _cameraLive;
+
+  /// Gibt an, ob die Kamera gerade gestartet wird.
+  bool get startingCamera => _startingCamera;
 
   /// Gibt an, ob das View-Model initialisiert wurde.
   bool get initialized => _initialized;
@@ -85,15 +94,12 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
   // TODO: Filter auswählen
   /// Aktuell ausgewählter Filter.
-  IFilter? filter;
-
-  /// Gibt an, ob der Filter angezeigt werden soll.
-  bool _filterActive = true;
+  IFilter? get filter => FilterStore.instance.selectedFilter;
 
   /// Gibt an, ob der Filter angezeigt werden soll.
   bool get filterActive => _filterActive;
 
-  /// Gibt an, ob die Seite sichtbar wird und wird in [CameraScreen] gesetzt.
+  /// Gibt an, ob die Seite sichtbar wird und wird im [CameraScreen] gesetzt.
   bool pageVisible = false;
 
   /// Lädt Filter. Initialisiert die Kamera und startet die Gesichtserkennung über [initializeCamera]. <br>
@@ -153,7 +159,7 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
     filterList.add(hatFilter);
     filterList
         .add(FilterFactory.create(FilterType.mask)..config?.opacity = 0.5);
-    filter = compositeFilter;
+    FilterStore.instance.selectedFilter = compositeFilter;
     // Laden der externen Resourcen asynchron starten, damit die Kamera nicht blockiert wird.
     filter?.load();
   }
@@ -162,7 +168,7 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> initializeCamera() async {
     _cameraLive = false;
     await faceDetectionService.initialize();
-    cameraService.onImage = faceDetectionService.processImage;
+    cameraService.onImageToProcess = faceDetectionService.processImage;
     await cameraService.initialize();
     if (cameraService.camera == null) {
       return;
@@ -174,9 +180,11 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
   /// Startet die Kamera und Gesichtserkennung.
   Future<void> startCamera() async {
     _cameraLive = false;
+    _startingCamera = true;
     notifyListeners();
     await faceDetectionService.initialize();
     await cameraService.startCamera();
+    _startingCamera = false;
     _cameraLive = true;
 
     notifyListeners();
@@ -192,11 +200,9 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
   /// Nimmt ein Foto auf und wendet, wenn nötig den aktiven Filter darauf an.
   Future<void> takePicture() async {
-    final List<Face> faces = faceDetectionService.faces;
     try {
       final takenPhoto = await cameraService.takePicture();
-      final String filename =
-          '${DateTime.now().millisecondsSinceEpoch.toString()}.png';
+      final String filename = ImageService.getImageFileName('.png');
       final File imageFile =
           await ImageService.savePhotoToAppGallery(takenPhoto, filename);
 
@@ -206,20 +212,8 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
         return;
       }
 
-      final inputImage = InputImage.fromFile(imageFile);
-      final List<Face> faces =
-          await faceDetectionService.faceDetector!.processImage(inputImage);
-
-      final ui.Image image = await ImageService.loadUiImageFromFile(imageFile);
-
-      final imageSize = Size(image.width.toDouble(), image.height.toDouble());
-      final painter = FaceFilterPainter(
-          faces: faces,
-          imageSize: imageSize,
-          isFrontCamera: false,
-          filter: filter!);
-
-      final ui.Image editedImage = await painter.paintOnImage(image);
+      final ui.Image editedImage = await ImageService.applyFilterToImage(
+          imageFile, faceDetectionService.faceDetector!, filter!);
 
       final File editedFile =
           await ImageService.saveUiImageToAppGallery(editedImage, filename);
@@ -228,7 +222,6 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  // TODO: Probleme durch fehlende Spiegelung bei Benutzung der Rückkamera lösen.
   /// Ändert die Kamera und startet sie neu. [changingCamera] gibt an, ob es noch geändert wird, oder der Wechsel abgeschlossen ist.
   Future<void> switchLiveCamera() async {
     _changingCamera = true;
@@ -282,6 +275,7 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    FilterStore.instance.selectedFilter = null;
     _cameraLive = false;
     pageVisible = false;
     WidgetsBinding.instance.removeObserver(this);

@@ -9,6 +9,8 @@ class FaceDetectionService extends ChangeNotifier {
   bool _isDetecting = false;
   List<Face> _faces = [];
   Size? _imageSize;
+
+  /// [FaceDetector] zur Erkennung der Gesichter.
   FaceDetector? _faceDetector;
 
   bool _initialized = false;
@@ -19,6 +21,7 @@ class FaceDetectionService extends ChangeNotifier {
 
   Size? get imageSize => _imageSize;
 
+  /// [FaceDetector] zur Erkennung der Gesichter.
   FaceDetector? get faceDetector => _faceDetector;
 
   // TODO: über Settings steuern

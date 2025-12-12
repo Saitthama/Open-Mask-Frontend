@@ -49,10 +49,8 @@ class CustomNavigationBar extends StatelessWidget {
       height: 60,
       child: MaterialButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-        onPressed: () => currentIndex ==
-                FilterWorkshopScreen.filterWorkshopBranchIndex
-            ? {}
-            : onBranchSelected(FilterWorkshopScreen.filterWorkshopBranchIndex),
+        onPressed: () =>
+            onBranchSelected(FilterWorkshopScreen.filterWorkshopBranchIndex),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children:
@@ -84,9 +82,7 @@ class CustomNavigationBar extends StatelessWidget {
           radius: 32,
         ),
         isSelected: currentIndex == CameraScreen.cameraBranchIndex,
-        onPressed: () => (currentIndex == CameraScreen.cameraBranchIndex)
-            ? {}
-            : onBranchSelected(CameraScreen.cameraBranchIndex));
+        onPressed: () => onBranchSelected(CameraScreen.cameraBranchIndex));
   }
 
   /// Liefert das Navigations-Widget für die Einstellungen zurück.
@@ -95,9 +91,7 @@ class CustomNavigationBar extends StatelessWidget {
       height: 60,
       child: MaterialButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-        onPressed: () => currentIndex == SettingsScreen.settingsBranchIndex
-            ? {}
-            : onBranchSelected(SettingsScreen.settingsBranchIndex),
+        onPressed: () => onBranchSelected(SettingsScreen.settingsBranchIndex),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: (currentIndex == SettingsScreen.settingsBranchIndex)
