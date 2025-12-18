@@ -3,7 +3,6 @@ import 'package:google_mlkit_face_detection/src/face_detector.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/geometry_service.dart';
 import 'package:open_mask/filter/configs/filter_config.dart';
-import 'package:open_mask/filter/configs/image_filter_config.dart';
 import 'package:open_mask/filter/face_geometry_calculator.dart';
 import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_meta.dart';
