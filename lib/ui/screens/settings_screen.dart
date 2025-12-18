@@ -65,8 +65,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         const SizedBox(height: 15),
                         _buildSettingButton(
-                          'Email zurücksetzen',
-                          () => AccountService.resetEmail(context),
+                          'Email ändern',
+                          () => AccountService.changeEmail(context),
                         ),
                         const SizedBox(height: 15),
                         _buildSettingButton(

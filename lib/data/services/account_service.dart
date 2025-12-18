@@ -7,9 +7,12 @@ import 'package:go_router/go_router.dart';
 import 'package:open_mask/data/model/user.dart' as om_user;
 import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/ui/widgets/form_header_text.dart';
+import 'package:http/http.dart' as http;
 
 class AccountService {
   static om_user.User? user;
+
+  static const String baseUrl = "https://openmask.fabianmild.dev/api/auth";
 
   static Future<void> editName(final BuildContext context) async {
     User? user = FirebaseAuth.instance.currentUser;
@@ -71,119 +74,119 @@ class AccountService {
       },
     );
   }
-
+///Methode zum ändern des Username.
   static Future<void> editUsername(BuildContext context) async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      SnackBarService.showMessage("Kein Benutzer eingeloggt!");
-      return;
-    }
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+    final usernameController = TextEditingController();
 
-    String userId = user.uid;
-
-    DocumentSnapshot userDoc =
-        await FirebaseFirestore.instance.collection("User").doc(userId).get();
-
-    if (!userDoc.exists) {
-      SnackBarService.showMessage("Benutzerdaten nicht gefunden!");
-      return;
-    }
-
-    String currentUsername = userDoc["username"] ?? "";
-    TextEditingController usernameController =
-        TextEditingController(text: currentUsername);
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Benutzer bearbeiten"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: usernameController,
-                decoration:
-                    InputDecoration(labelText: "Neuen Benutzernamen eingeben"),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: Text("Abbrechen"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                String newUsername = usernameController.text.trim();
-                await FirebaseFirestore.instance
-                    .collection("User")
-                    .doc(userId)
-                    .update({
-                  "username": newUsername,
-                });
-                SnackBarService.showMessage(
-                    "Benutzernamen erfolgreich aktualisiert!");
-                context.pop();
-              },
-              child: Text("Speichern"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  static Future<void> resetEmail(BuildContext context) async {
-    final TextEditingController emailController = TextEditingController();
-    User? user = FirebaseAuth.instance.currentUser; // Get current user
-    if (user == null) {
-      SnackBarService.showMessage("Kein Benutzer eingeloggt!");
-      return;
-    }
-
-    String userId = user.uid;
-
-    showDialog(
+    await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("E-Mail-Adresse ändern"),
+        title: const Text("Username ändern"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(labelText: "Neue E-Mail-Adresse"),
+              decoration: const InputDecoration(labelText: "Email"),
+            ),
+            TextField(
+              controller: passwordController,
+              decoration: const InputDecoration(labelText: "Passwort"),
+              obscureText: true,
+            ),
+            TextField(
+              controller: usernameController,
+              decoration: const InputDecoration(labelText: "Neuer Username"),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => context.pop(),
-            child: Text("Abbrechen"),
+            child: const Text("Abbrechen"),
           ),
           ElevatedButton(
+            child: const Text("Bestätigen"),
             onPressed: () async {
-              String newEmail = emailController.text.trim();
-              if (newEmail.isNotEmpty) {
-                try {
-                  await user.verifyBeforeUpdateEmail(newEmail);
-                  await FirebaseFirestore.instance
-                      .collection("User")
-                      .doc(userId)
-                      .update({
-                    "email": newEmail,
-                  });
+              final response = await http.put(
+                Uri.parse("$baseUrl/user/username").replace(
+                  queryParameters: {
+                    "email": emailController.text.trim(),
+                    "password": passwordController.text.trim(),
+                    "newUsername": usernameController.text.trim(),
+                  },
+                ),
+              );
 
-                  context.pop();
-                  SnackBarService.showMessage("Bestätigungs-E-Mail gesendet!");
-                } catch (e) {
-                  SnackBarService.showMessage("Fehler: ${e.toString()}");
-                }
+              if (response.statusCode == 200) {
+                SnackBarService.showMessage("Username geändert");
+                context.pop();
+              } else {
+                SnackBarService.showMessage(response.body);
               }
             },
-            child: Text("E-Mail ändern"),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+///Methode zum ändern der Email.
+  static Future<void> changeEmail(BuildContext context) async {
+    final oldEmailController = TextEditingController();
+    final passwordController = TextEditingController();
+    final newEmailController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Email ändern"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: oldEmailController,
+              decoration: const InputDecoration(labelText: "Aktuelle Email"),
+            ),
+            TextField(
+              controller: passwordController,
+              decoration: const InputDecoration(labelText: "Passwort"),
+              obscureText: true,
+            ),
+            TextField(
+              controller: newEmailController,
+              decoration: const InputDecoration(labelText: "Neue Email"),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: const Text("Abbrechen"),
+          ),
+          ElevatedButton(
+            child: const Text("Bestätigen"),
+            onPressed: () async {
+              final response = await http.put(
+                Uri.parse("$baseUrl/user/email").replace(
+                  queryParameters: {
+                    "oldEmail": oldEmailController.text.trim(),
+                    "password": passwordController.text.trim(),
+                    "newEmail": newEmailController.text.trim(),
+                  },
+                ),
+              );
+
+              if (response.statusCode == 200) {
+                SnackBarService.showMessage("Email geändert");
+                context.pop();
+              } else {
+                SnackBarService.showMessage(response.body);
+              }
+            },
           ),
         ],
       ),
@@ -380,24 +383,66 @@ class AccountService {
     */
   }
 
+  ///Methode zum ändern des Passwort.
   static Future<void> changePassword(BuildContext context) async {
-    // User und userID holen:
-    User? user = FirebaseAuth.instance.currentUser as User?; // Get current user
-    if (user == null) {
-      SnackBarService.showMessage("Kein Benutzer eingeloggt!");
-      return;
-    }
+    final emailController = TextEditingController();
+    final oldPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
 
-    String userId = user.uid;
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Passwort ändern"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(labelText: "Email"),
+            ),
+            TextField(
+              controller: oldPasswordController,
+              decoration: const InputDecoration(labelText: "Altes Passwort"),
+              obscureText: true,
+            ),
+            TextField(
+              controller: newPasswordController,
+              decoration: const InputDecoration(labelText: "Neues Passwort"),
+              obscureText: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: const Text("Abbrechen"),
+          ),
+          ElevatedButton(
+            child: const Text("Bestätigen"),
+            onPressed: () async {
+              final response = await http.put(
+                Uri.parse("$baseUrl/user/password").replace(
+                  queryParameters: {
+                    "email": emailController.text.trim(),
+                    "oldPassword": oldPasswordController.text.trim(),
+                    "newPassword": newPasswordController.text.trim(),
+                  },
+                ),
+              );
 
-    if (user.email == null) {
-      SnackBarService.showMessage("Keine E-Mail gefunden!");
-      return;
-    }
-    /*
-    await user.reauthenticateWithCredential(userCredential);
-    user.updatePassword(newPassword);*/
+              if (response.statusCode == 200) {
+                SnackBarService.showMessage("Passwort geändert");
+                context.pop();
+              } else {
+                SnackBarService.showMessage(response.body);
+              }
+            },
+          ),
+        ],
+      ),
+    );
   }
+
 
   static Future<File?> changeProfilepicture() async {
     File? _imageFile;
