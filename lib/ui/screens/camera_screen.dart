@@ -101,6 +101,10 @@ class _CameraScreenState extends State<CameraScreen> {
   void _onBranchOrSubPageChange(
       {final bool branchReset = false,
       final bool isCameraRootAfterBranchChange = false}) {
+    if (!mounted) {
+      _onPageHidden();
+    }
+
     //print('Branch or Sub-Page changed');
     final isActive =
         ActiveBranchNotifier.instance.value == CameraScreen.cameraBranchIndex;
@@ -138,18 +142,28 @@ class _CameraScreenState extends State<CameraScreen> {
     //print('isRoot: $isRoot');
 
     if (isActive && (isRoot || branchReset)) {
-      if (!viewModel.initialized) {
-        viewModel.initialize();
-      } else {
-        if (!viewModel.cameraLive && !viewModel.startingCamera) {
-          viewModel.startCamera();
-        }
-      }
-      viewModel.pageVisible = true;
+      _onPageVisible();
     } else {
-      if (viewModel.cameraLive) viewModel.stopCamera();
-      viewModel.pageVisible = false;
+      _onPageHidden();
     }
+  }
+
+  /// Wird aufgerufen, wenn die Seite sichtbar wird und startet die Kamera.
+  void _onPageVisible() {
+    if (!viewModel.initialized) {
+      viewModel.initialize();
+    } else {
+      if (!viewModel.cameraLive && !viewModel.startingCamera) {
+        viewModel.startCamera();
+      }
+    }
+    viewModel.pageVisible = true;
+  }
+
+  /// Wird aufgerufen, wenn die Seite nicht sichtbar ist und deaktiviert die Kamera.
+  void _onPageHidden() {
+    if (viewModel.cameraLive) viewModel.stopCamera();
+    viewModel.pageVisible = false;
   }
 
   @override

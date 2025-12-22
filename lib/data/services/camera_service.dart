@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:open_mask/data/services/image_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
+import 'package:synchronized/synchronized.dart';
 
 /// Service zur Verwaltung der Kamerafunktionen.
 class CameraService {
@@ -17,6 +18,10 @@ class CameraService {
 
   /// Controller, der auf die Kamera zugreift und über den diese gesteuert werden kann.
   CameraController? cameraController;
+
+  /// Lock-Objekt, mit dem Veränderungen am Controller synchronisiert werden können,
+  /// um Race Conditions zu vermeiden.
+  final controllerLock = Lock();
 
   /// Index der aktuell ausgewählten Kamera für die [_cameras]-Liste.
   int _cameraIndex = -1;
@@ -76,39 +81,44 @@ class CameraService {
     if (camera == null) {
       return;
     }
-    // Kamera Controller initialisieren:
-    cameraController = CameraController(
-      camera!, resolutionPreset,
-      imageFormatGroup: Platform.isAndroid
-          ? ImageFormatGroup
-              .nv21 // Format, das für Android verwendet werden soll
-          : ImageFormatGroup
-              .bgra8888, // Format, das für iOS verwendet werden soll
-    );
-    try {
-      await cameraController!.initialize();
-    } catch (e) {
-      SnackBarService.showMessage('Initialisierung der Kamera fehlgeschlagen!');
-      return;
-    }
-    try {
-      cameraController?.startImageStream(_processCameraImage);
-    } catch (e) {
-      SnackBarService.showMessage('Starten des Bild-Streams fehlgeschlagen!');
-    }
-    if (cameraController == null || !cameraController!.value.isInitialized) {
-      SnackBarService.showMessage('Starten der Kamera fehlgeschlagen!');
-      return;
-    }
-    _cameraLive = true;
+    await controllerLock.synchronized(() async {
+      // Kamera Controller initialisieren:
+      cameraController = CameraController(
+        camera!, resolutionPreset,
+        imageFormatGroup: Platform.isAndroid
+            ? ImageFormatGroup
+                .nv21 // Format, das für Android verwendet werden soll
+            : ImageFormatGroup
+                .bgra8888, // Format, das für iOS verwendet werden soll
+      );
+      try {
+        await cameraController!.initialize();
+      } catch (e) {
+        SnackBarService.showMessage(
+            'Initialisierung der Kamera fehlgeschlagen!');
+        return;
+      }
+      try {
+        cameraController?.startImageStream(_processCameraImage);
+      } catch (e) {
+        SnackBarService.showMessage('Starten des Bild-Streams fehlgeschlagen!');
+      }
+      if (cameraController == null || !cameraController!.value.isInitialized) {
+        SnackBarService.showMessage('Starten der Kamera fehlgeschlagen!');
+        return;
+      }
+      _cameraLive = true;
+    });
   }
 
   /// Stoppt die Kamera und den Bild-Stream an [onImageToProcess].
   Future<void> stopCamera() async {
-    _cameraLive = false;
-    await cameraController?.stopImageStream();
-    await cameraController?.dispose();
-    cameraController = null;
+    await controllerLock.synchronized(() async {
+      _cameraLive = false;
+      await cameraController?.stopImageStream();
+      await cameraController?.dispose();
+      cameraController = null;
+    });
   }
 
   /// Nimmt ein Bild auf.
