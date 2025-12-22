@@ -4,13 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:open_mask/data/model/user.dart' as om_user;
+import 'package:http/http.dart' as http;
+import 'package:open_mask/data/constants.dart';
+import 'package:open_mask/data/services/auth_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/ui/widgets/form_header_text.dart';
 
+/// Service zur Durchführung von Konto-Operationen
+/// wie dem Bearbeiten von Attributen oder dem Löschen des Accounts.
 class AccountService {
-  static om_user.User? user;
-
   static Future<void> editName(final BuildContext context) async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -413,40 +415,39 @@ class AccountService {
     return null;
   }
 
-  static Future<void> deleteAccount(BuildContext context) async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser as User?;
-      if (user != null) {
-        final shouldDelete = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text("Account Löschen bestätigen"),
-            content: Text(
-                "Sind sie sich sicher das sie ihr Konto löschen möchten? Diese Aktion kann nicht rünkgängig gemacht werden."),
-            actions: [
-              TextButton(
-                onPressed: () => ctx.pop(false),
-                child: Text("Abbrechen"),
-              ),
-              TextButton(
-                onPressed: () => ctx.pop(true),
-                child: Text("Löschen", style: TextStyle(color: Colors.red)),
-              ),
-            ],
-          ),
-        );
+  /// Löscht den gerade eingeloggten Benutzer [AuthService.user] und meldet ihn mit [AuthService.logout] ab.
+  /// Gibt zurück, ob der Benutzer erfolgreich gelöscht wurde, oder nicht.
+  static Future<bool> deleteAccount() async {
+    if (AuthService.instance.user == null) {
+      return false;
+    }
+    int id = AuthService.instance.user!.id;
 
-        if (shouldDelete == true) {
-          await user.delete();
-        }
+    if (AuthService.instance.user?.id == null) {
+      return false;
+    }
+
+    var url = Uri.https(
+      apiBaseUrl,
+      '$auth/delete/$id',
+    );
+    try {
+      http.Response response = await http.delete(url);
+      // print('deleteAccount (Benutzer: ${AuthService.instance.user!.id}): ${response.statusCode} ${response.reasonPhrase}');
+
+      if (response.statusCode == 404) {
+        SnackBarService.showMessage('Benutzer nicht gefunden!');
+        return false;
       }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'requires-recent-login') {
-        print(
-            'The user must reauthenticate before this operation can be executed.');
-      } else {
-        print('Error: ${e.message}');
+      if (response.statusCode != 200) {
+        SnackBarService.showMessage(
+            'Account-Löschung fehlgeschlagen! (Status-Code: ${response.statusCode} ${response.reasonPhrase})');
+        return false;
       }
+      return AuthService.instance.logout();
+    } catch (e) {
+      SnackBarService.showMessage('Fehler: $e');
+      return false;
     }
   }
 }

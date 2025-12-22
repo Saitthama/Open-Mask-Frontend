@@ -30,7 +30,7 @@ class AuthService extends ChangeNotifier {
   Future<bool> login(final String email, final String password) async {
     var url = Uri.https(
       apiBaseUrl,
-      '$notauth/login',
+      '$notAuth/login',
     );
     bool success = false;
     try {
@@ -66,11 +66,16 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  /// Meldet den Benutzer ab.
+  /// Dafür wird das Property [user] gecleared,
+  /// [loggedIn] auf false gesetzt,
+  /// [notifyListeners] zur Benachrichtigung der Änderungen aufgerufen
+  /// und das Logout im Backend gemeldet.
   Future<bool> logout() async {
     _loggedIn = false;
     _user = null;
     notifyListeners();
-    // TODO: implement
+    // TODO: implement backend communication
     return !_loggedIn;
   }
 
@@ -103,7 +108,7 @@ class AuthService extends ChangeNotifier {
   /// Registriert den Benutzer
   Future<bool> register(final String email, final String password,
       final String username, final String name) async {
-    var url = Uri.https(apiBaseUrl, '$notauth/register');
+    var url = Uri.https(apiBaseUrl, '$notAuth/register');
     try {
       var response = await http.post(
         url,

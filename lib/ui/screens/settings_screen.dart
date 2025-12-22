@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:open_mask/data/services/account_service.dart';
 import 'package:open_mask/ui/widgets/logout_button.dart';
 
+import '../widgets/delete_user_popup.dart';
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -79,7 +81,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         const SizedBox(height: 15),
                         _buildSettingButton(
                           'Account löschen',
-                          () => AccountService.deleteAccount(context),
+                          () => DeleteUserPopup.openPopup(context),
                         ),
                         const SizedBox(height: 25),
                         const LogoutButton(),
