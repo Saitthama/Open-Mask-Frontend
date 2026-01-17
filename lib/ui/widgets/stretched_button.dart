@@ -1,32 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:open_mask/ui/widgets/blue_text_button.dart';
 
 class StretchedButton extends StatelessWidget {
-  final String _text;
-  final void Function()? _onPressed;
-  final double _widthPercent;
+  const StretchedButton(this.text, this.onPressed, this.widthPercent,
+      {super.key});
 
-  const StretchedButton(this._text, this._onPressed, this._widthPercent, {super.key});
+  final String text;
+  final void Function()? onPressed;
+  final double widthPercent;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * _widthPercent,
-      child: ElevatedButton(
-        onPressed: _onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 15),
-        ),
-        child: Text(
-          _text,
-          style: TextStyle(
-              fontSize: 16,
-              color: Colors.white
-          ),
-        ),
+      width: MediaQuery.of(context).size.width * widthPercent,
+      child: BlueTextButton(
+        text,
+        onPressed: onPressed,
+        stretch: true,
       ),
     );
   }

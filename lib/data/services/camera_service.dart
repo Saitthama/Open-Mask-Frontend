@@ -126,7 +126,10 @@ class CameraService {
     if (cameraController == null || !cameraController!.value.isInitialized) {
       SnackBarService.showMessage('Kamera noch nicht initialisiert');
     }
-    return await cameraController!.takePicture();
+    XFile? image;
+    await controllerLock.synchronized(
+        () async => image = await cameraController!.takePicture());
+    return image!;
   }
 
   /// Wechselt die Kamera.

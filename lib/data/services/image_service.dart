@@ -86,6 +86,18 @@ class ImageService {
     }
   }
 
+  /// Löscht das angegebene [imageFile] aus der lokalen App-Galerie.
+  static Future<bool> deleteImageFileFromAppGallery(
+      final File imageFile) async {
+    try {
+      await imageFile.delete(recursive: true);
+      return true;
+    } on GalException catch (e) {
+      SnackBarService.showMessage(e.type.message);
+      return false;
+    }
+  }
+
   /// Lädt ein Bild als [Uint8List] aus einem Asset.
   static Future<Uint8List?> loadImageFromAsset(final String assetPath) async {
     try {
