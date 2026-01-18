@@ -19,6 +19,7 @@ import 'package:open_mask/filter/templates/hat_filter.dart';
 import 'package:open_mask/filter/templates/mustache_filter.dart';
 import 'package:open_mask/ui/screens/camera_screen.dart';
 import 'package:open_mask/ui/views/camera_view.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 
 /// View-Model, welches die Logik für den [CameraScreen] und das [CameraView] hält.
@@ -201,10 +202,11 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
   /// Nimmt ein Foto auf und wendet, wenn nötig den aktiven Filter darauf an.
   Future<void> takePicture() async {
     try {
-      final takenPhoto = await cameraService.takePicture();
-      final String filename = ImageService.getImageFileName('.png');
-      final File imageFile =
-          await ImageService.savePhotoToAppGallery(takenPhoto, filename);
+      final imageFile = await cameraService.takePicture();
+      if (imageFile == null) {
+        SnackBarService.showMessage('Kamera noch nicht initialisiert');
+        return;
+      }
 
       if (filter == null ||
           !filterActive ||
@@ -215,8 +217,8 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
       final ui.Image editedImage = await ImageService.applyFilterToImage(
           imageFile, faceDetectionService.faceDetector!, filter!);
 
-      final File editedFile =
-          await ImageService.saveUiImageToAppGallery(editedImage, filename);
+      final File editedFile = await ImageService.saveUiImageToAppGallery(
+          editedImage, basename(imageFile.path));
     } catch (e) {
       SnackBarService.showMessage('Error taking picture: $e');
     }

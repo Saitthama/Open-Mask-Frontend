@@ -43,23 +43,20 @@ class FaceMarkingsView extends StatelessWidget {
     final faceDetectionService = Provider.of<FaceDetectionService>(context);
     final cameraService = Provider.of<CameraService>(context);
 
-    if (!_showMarkings || faceDetectionService.imageSize == null) {
+    if (!_showMarkings || faceDetectionService.processedSize == null) {
       return Container();
     }
 
-    print('Face Detector View build');
     return CustomPaint(
       foregroundPainter: FaceMarkingsPainter(
-          faceDetectionService.faces, faceDetectionService.imageSize!,
+          faceDetectionService.faces, faceDetectionService.processedSize!,
           isFrontCamera:
               cameraService.cameraController?.description.lensDirection ==
                   CameraLensDirection.front,
           showFaceBox: _showFaceBox,
           showLandmarks: _showLandmarks,
           showContours: _showContours),
-      size: (cameraService.cameraController?.value.previewSize != null)
-          ? cameraService.cameraController!.value.previewSize!
-          : Size.zero,
+      size: Size.infinite,
     );
   }
 }

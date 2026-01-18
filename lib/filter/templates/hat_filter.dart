@@ -45,39 +45,20 @@ class HatFilter extends ImageFilter {
       final Face face, final Canvas canvas, final FaceGeometryCalculator fgc) {
     if (filterImage.image == null) return;
 
-    final landmarks = face.landmarks;
-
-    // Wichtige Landmarken prüfen
-    final leftEye = landmarks[FaceLandmarkType.leftEye];
-    final rightEye = landmarks[FaceLandmarkType.rightEye];
-    final noseBase = landmarks[FaceLandmarkType.noseBase];
-
-    if (leftEye == null || rightEye == null || noseBase == null) return;
-
-    // Gesichtsmitte aus Landmarken berechnen
-    final leftEyePosition = fgc.transformPoint(leftEye.position);
-    final rightEyePosition = fgc.transformPoint(rightEye.position);
-    final eyeCenter =
-        GeometryService.midpoint(leftEyePosition, rightEyePosition);
-
-    // Gesichtszentrum und Breite/Höhe bestimmen
-    final noseBasePosition = fgc.transformPoint(noseBase.position);
-    final faceCenter = GeometryService.midpoint(eyeCenter, noseBasePosition);
-
-    final faceWidth = fgc.transformBoundingBox(face.boundingBox).width;
-    final faceHeight = fgc.transformBoundingBox(face.boundingBox).height;
+    final Offset faceCenter = fgc.calculateDynamicFaceCenter(face);
+    final Size faceSize = fgc.calculateDynamicFaceSize(face);
 
     // Rotation berechnen
     final totalRotation =
         fgc.calculateFaceZRotation(face, extraRotation: config.rotation);
 
     // Skalierung & Offsets aus Config
-    final hatWidth = faceWidth * config.scale.scaleX;
-    final hatHeight = faceHeight * config.scale.scaleY;
+    final hatWidth = faceSize.width * config.scale.scaleX;
+    final hatHeight = faceSize.height * config.scale.scaleY;
 
     final hatOffsetY = -0.6 * hatHeight;
-    final offset =
-        GeometryService.scaleOffset(config.offset, faceWidth, faceHeight);
+    final offset = GeometryService.scaleOffset(
+        config.offset, faceSize.width, faceSize.height);
     final totalOffset = Offset(offset.dx, offset.dy + hatOffsetY);
     final rotatedOffset =
         GeometryService.rotateOffset(totalOffset, totalRotation);

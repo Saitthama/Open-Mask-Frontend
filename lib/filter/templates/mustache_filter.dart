@@ -72,15 +72,15 @@ class MustacheFilter extends ImageFilter {
         fgc.calculateFaceZRotation(face, extraRotation: config.rotation);
 
     // Gesichtsgröße und Offset berechnen
-    final faceBox = fgc.transformBoundingBox(face.boundingBox);
+    final Size faceSize = fgc.calculateDynamicFaceSize(face);
 
     final Offset relativeOffset = GeometryService.scaleOffset(
-        config.offset, faceBox.width, faceBox.height);
+        config.offset, faceSize.width, faceSize.height);
     final rotatedOffset =
         GeometryService.rotateOffset(relativeOffset, totalRotation);
 
-    final filterWidth = faceBox.width * config.scale.scaleX;
-    final filterHeight = faceBox.height * config.scale.scaleY;
+    final filterWidth = faceSize.width * config.scale.scaleX;
+    final filterHeight = faceSize.height * config.scale.scaleY;
 
     final mustacheRect = Rect.fromCenter(
       center: Offset(noseBaseOffset.dx + rotatedOffset.dx,

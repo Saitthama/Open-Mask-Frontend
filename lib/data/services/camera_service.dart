@@ -121,15 +121,31 @@ class CameraService {
     });
   }
 
-  /// Nimmt ein Bild auf.
-  Future<XFile> takePicture() async {
-    if (cameraController == null || !cameraController!.value.isInitialized) {
-      SnackBarService.showMessage('Kamera noch nicht initialisiert');
-    }
+  /// Nimmt ein Bild auf und speichert es in der App-Galerie über das [ImageService]. <br>
+  /// Liefert null zurück, falls die Kamera noch nicht initialisiert wurde.
+  Future<File?> takePicture() async {
     XFile? image;
-    await controllerLock.synchronized(
-        () async => image = await cameraController!.takePicture());
-    return image!;
+    bool? isFrontCamera;
+    await controllerLock.synchronized(() async {
+      if (cameraController == null || !cameraController!.value.isInitialized) {
+        return;
+      }
+      image = await cameraController!.takePicture();
+      isFrontCamera = cameraController!.description.lensDirection ==
+          CameraLensDirection.front;
+    });
+
+    final String filename = ImageService.getImageFileName('.png');
+    File? imageFile;
+    if (image != null) {
+      imageFile = await ImageService.savePhotoToAppGallery(image!, filename);
+    }
+
+    if (isFrontCamera == true && imageFile != null) {
+      imageFile = await ImageService.mirrorImageHorizontally(imageFile);
+    }
+
+    return imageFile;
   }
 
   /// Wechselt die Kamera.

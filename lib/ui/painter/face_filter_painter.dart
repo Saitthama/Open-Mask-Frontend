@@ -19,7 +19,7 @@ class FaceFilterPainter extends CustomPainter {
     required final Size imageSize,
     required final bool isFrontCamera,
     required final IFilter filter,
-  })  : _imageSize = imageSize,
+  })  : _processedSize = imageSize,
         _faces = faces,
         _isFrontCamera = isFrontCamera,
         _filter = filter;
@@ -27,8 +27,8 @@ class FaceFilterPainter extends CustomPainter {
   /// Gesichter, auf die der angegebene Filter [_filter] angewendet werden soll.
   final List<Face> _faces;
 
-  /// Größe des aufgenommenen und analysierten Bildes.
-  final Size _imageSize;
+  /// Größe des von ML Kit analysierten Bildes.
+  final Size _processedSize;
 
   /// Gibt an, ob die verwendete Kamera die Frontkamera ist und das Preview daher gespiegelt ist.
   final bool _isFrontCamera;
@@ -44,7 +44,7 @@ class FaceFilterPainter extends CustomPainter {
     final paint = Paint();
     canvas.drawImage(image, Offset.zero, paint);
 
-    this.paint(canvas, _imageSize);
+    this.paint(canvas, _processedSize);
 
     final picture = recorder.endRecording();
     final editedImage = await picture.toImage(image.width, image.height);
@@ -54,7 +54,9 @@ class FaceFilterPainter extends CustomPainter {
   @override
   void paint(final Canvas canvas, final Size size) {
     FaceGeometryCalculator faceGeometryCalculator = FaceGeometryCalculator(
-        imageSize: _imageSize, canvasSize: size, isFrontCamera: _isFrontCamera);
+        processedSize: _processedSize,
+        canvasSize: size,
+        isFrontCamera: _isFrontCamera);
 
     for (final Face face in _faces) {
       _filter.apply(face, canvas, faceGeometryCalculator);

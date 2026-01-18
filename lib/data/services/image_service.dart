@@ -224,6 +224,24 @@ class ImageService {
     return editedImage;
   }
 
+  /// Liest die angegebene Bild-Datei ein, spiegelt sie, speichert sie und liefert die Datei zurück.
+  static Future<File> mirrorImageHorizontally(final File file) async {
+    final ui.Image image = await loadUiImageFromFile(file);
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    canvas.translate(image.width.toDouble(), 0);
+    canvas.scale(-1, 1);
+    canvas.drawImage(image, Offset.zero, Paint());
+
+    final picture = recorder.endRecording();
+    final ui.Image mirroredImage =
+        await picture.toImage(image.width, image.height);
+
+    return await saveUiImageToFile(mirroredImage, file);
+  }
+
   /// Umwandlung eines [CameraImage] in ein [InputImage], damit es für das Google ML Kit lesbar ist (https://pub.dev/packages/google_mlkit_commons).
   static InputImage? inputImageFromCameraImage(
       final CameraImage image,

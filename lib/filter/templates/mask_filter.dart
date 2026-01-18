@@ -51,22 +51,18 @@ class MaskFilter extends ImageFilter {
   void apply(
       final Face face, final Canvas canvas, final FaceGeometryCalculator fgc) {
     if (filterImage.image == null) return;
-    final landmarks = face.landmarks;
-    if (landmarks.isEmpty) return;
 
     // Gesichtsdaten
-    final faceBox = fgc.transformBoundingBox(face.boundingBox);
-    final faceCenter = faceBox.center;
-    final faceWidth = faceBox.width;
-    final faceHeight = faceBox.height;
+    final faceCenter = fgc.calculateDynamicFaceCenter(face);
+    final Size faceSize = fgc.calculateDynamicFaceSize(face);
 
     // Skalierung aus der Config
-    final double width = faceWidth * config.scale.scaleX;
-    final double height = faceHeight * config.scale.scaleY;
+    final double width = faceSize.width * config.scale.scaleX;
+    final double height = faceSize.height * config.scale.scaleY;
 
     // Offset relativ zur Gesichtsgröße, rotiert mit Gesicht
-    final Offset relativeOffset =
-        GeometryService.scaleOffset(config.offset, faceWidth, faceHeight);
+    final Offset relativeOffset = GeometryService.scaleOffset(
+        config.offset, faceSize.width, faceSize.height);
 
     final totalRotation =
         fgc.calculateFaceZRotation(face, extraRotation: config.rotation);

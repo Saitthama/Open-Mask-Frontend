@@ -20,21 +20,19 @@ class FilterView extends StatelessWidget {
   Widget build(final BuildContext context) {
     final faceDetectionService = Provider.of<FaceDetectionService>(context);
     final cameraService = Provider.of<CameraService>(context);
-    if (faceDetectionService.imageSize == null) {
+    if (faceDetectionService.processedSize == null) {
       return Container();
     }
     return CustomPaint(
       foregroundPainter: FaceFilterPainter(
         faces: faceDetectionService.faces,
-        imageSize: faceDetectionService.imageSize!,
+        imageSize: faceDetectionService.processedSize!,
         isFrontCamera:
             cameraService.cameraController?.description.lensDirection ==
                 CameraLensDirection.front,
         filter: _filter,
       ),
-      size: (cameraService.cameraController?.value.previewSize != null)
-          ? cameraService.cameraController!.value.previewSize!
-          : Size.zero,
+      size: Size.infinite,
     );
   }
 }

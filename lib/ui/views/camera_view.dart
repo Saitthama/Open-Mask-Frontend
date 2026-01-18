@@ -22,30 +22,47 @@ class CameraView extends StatelessWidget {
   Widget build(final BuildContext context) {
     final CameraViewModel vm = context.watch<CameraViewModel>();
 
-    if (!vm.cameraLive) {
-      return const Center(child: CircularProgressIndicator());
+    final previewSize = vm.cameraService.cameraController?.value.previewSize;
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+    double?
+        aspectRatio; // dient zur Skalierung der Preview und Painter auf die gleiche Größe
+    if (previewSize != null) {
+      aspectRatio = isPortrait
+          ? previewSize.height / previewSize.width
+          : previewSize.width / previewSize.height;
     }
+
+    final preview = Center(
+      child: (aspectRatio == null ||
+              vm.changingCamera ||
+              !vm.cameraService.cameraLive)
+          ? const CircularProgressIndicator()
+          : AspectRatio(
+              aspectRatio: aspectRatio,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CameraPreview(vm.cameraService.cameraController!),
+                  FaceMarkingsView(
+                    showMarkings: vm.showMarkings,
+                    showFaceBox: vm.showFaceBox,
+                    showLandmarks: vm.showLandmarks,
+                    showContours: vm.showContours,
+                  ),
+                  if (vm.filter != null && vm.filterActive)
+                    FilterView(vm.filter!)
+                ],
+              ),
+            ),
+    );
 
     return ColoredBox(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          Center(
-            child: (vm.changingCamera || !vm.cameraService.cameraLive)
-                ? const CircularProgressIndicator()
-                : CameraPreview(vm.cameraService.cameraController!),
-          ),
-          Center(
-            child: FaceMarkingsView(
-              showMarkings: vm.showMarkings,
-              showFaceBox: vm.showFaceBox,
-              showLandmarks: vm.showLandmarks,
-              showContours: vm.showContours,
-            ),
-          ),
-          if (vm.filter != null && vm.filterActive)
-            Center(child: FilterView(vm.filter!)),
+          preview,
 
           // --- Buttons Overlay ---
           Positioned(

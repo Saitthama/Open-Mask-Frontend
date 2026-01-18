@@ -25,7 +25,7 @@ class FaceDetectionService extends ChangeNotifier {
   List<Face> _faces = [];
 
   /// Größe des letzten in [_processImage] verarbeiteten Bildes.
-  Size? _imageSize;
+  Size? _processedSize;
 
   /// Gibt an, ob der [_faceDetector] initialisiert wurde.
   bool _initialized = false;
@@ -37,7 +37,7 @@ class FaceDetectionService extends ChangeNotifier {
   List<Face> get faces => _faces;
 
   /// Größe des letzten in [processImage] verarbeiteten Bildes.
-  Size? get imageSize => _imageSize;
+  Size? get processedSize => _processedSize;
 
   /// Gibt an, ob der [faceDetector] initialisiert wurde.
   bool get initialized => _initialized;
@@ -49,10 +49,10 @@ class FaceDetectionService extends ChangeNotifier {
   /// um Race Conditions bei der Initialisierung und Schließung zu verhindern.
   final faceDetectorLock = Lock();
 
-  /// Aktualisiert Gesichter ([faces]) und Bildgröße ([imageSize]) und benachrichtigt Beobachter mit [notifyListeners].
+  /// Aktualisiert Gesichter ([faces]) und Bildgröße ([processedSize]) und benachrichtigt Beobachter mit [notifyListeners].
   void _update(final List<Face> newFaces, final Size newImageSize) {
     _faces = newFaces;
-    _imageSize = newImageSize;
+    _processedSize = newImageSize;
     notifyListeners();
   }
 

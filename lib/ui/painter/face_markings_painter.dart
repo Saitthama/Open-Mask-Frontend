@@ -80,12 +80,14 @@ class FaceMarkingsPainter extends CustomPainter {
     if (_faces.isEmpty) return;
 
     final FaceGeometryCalculator ft = FaceGeometryCalculator(
-        imageSize: _imageSize, canvasSize: size, isFrontCamera: _isFrontCamera);
+        processedSize: _imageSize,
+        canvasSize: size,
+        isFrontCamera: _isFrontCamera);
 
     // Debug-Ausgabe:
     //print('FaceMarkingsPainter:');
     //print('Canvas size: $size, Image size: $_imageSize');
-    //print('ScaleX: ${ft.scaleX}, ScaleY: ${ft.scaleY}');
+    //print('Scale: ${ft.scale}');
     //print(_faces.length);
 
     for (final Face face in _faces) {
@@ -97,7 +99,8 @@ class FaceMarkingsPainter extends CustomPainter {
       final double faceHeightPortion =
           ((faceRect.height < 0) ? -faceRect.height : faceRect.height) /
               ft.canvasHeight;
-      final double facePortion = (faceWidthPortion + faceHeightPortion) / 2;
+      // Maximum statt Durchschnitt verwenden, um asymmetrische Schrumpfung an Seitenrand zu verhindern.
+      final double facePortion = max(faceHeightPortion, faceWidthPortion);
 
       if (_showFaceBox) {
         final double faceRectRadius = 70.0 * facePortion;
@@ -119,8 +122,6 @@ class FaceMarkingsPainter extends CustomPainter {
         // Debug-Ausgabe
         //print('Gesichtsbreite: ${faceRect.width}');
         //print('Gesichtshöhe: ${faceRect.height}');
-        //print('Canvas-Breite: $canvasWidth');
-        //print('Canvas-Höhe: $canvasHeight');
         //print('Gesichtshöhe: ${faceRect.height}');
         //print('Anteil der Gesichtsbreite: $faceWidthPortion');
         //print('Anteil der Gesichtshöhe: $faceHeightPortion');
