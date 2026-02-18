@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -109,6 +110,23 @@ class ImageService {
     }
   }
 
+  /// Lädt die Größe eines Bildes aus dem angegebenen [imageFile].
+  static Future<Size> getImageSize(final File imageFile) async {
+    final Completer<Size> completer = Completer<Size>();
+    final Image image = Image.file(imageFile);
+
+    image.image.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener((final ImageInfo info, final bool _) {
+        completer.complete(Size(
+          info.image.width.toDouble(),
+          info.image.height.toDouble(),
+        ));
+      }),
+    );
+
+    return await completer.future;
+  }
+
   /// Lädt ein Bild als [Uint8List] von einer URL.
   static Future<Uint8List?> loadImageFromURL(final String imageUrl) async {
     final http.Response response = await http.get(Uri.parse(imageUrl));
@@ -216,7 +234,7 @@ class ImageService {
     final imageSize = Size(image.width.toDouble(), image.height.toDouble());
     final painter = FaceFilterPainter(
         faces: faces,
-        imageSize: imageSize,
+        processedSize: imageSize,
         isFrontCamera: false,
         filter: filter);
 

@@ -1,8 +1,5 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:open_mask/data/services/camera_service.dart';
-import 'package:open_mask/data/services/face_detection_service.dart';
-import 'package:provider/provider.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 import '../painter/face_markings_painter.dart';
 
@@ -10,6 +7,10 @@ import '../painter/face_markings_painter.dart';
 class FaceMarkingsView extends StatelessWidget {
   /// Standard-Konstruktor.
   /// <ul>
+  ///
+  ///   <li>[faces] enthält die Gesichter, auf die der Filter angewandt werden soll.</li>
+  ///   <li>[processedSize] ist die Originalgröße des verarbeiteten Bildes.</li>
+  ///   <li>[isFrontCamera] gibt an, ob die verwendete Kamera die Frontkamera ist und der Filter daher gespiegelt werden muss.</li>
   ///   <li>[showMarkings] Gibt an, ob Markierungen angezeigt werden sollen. </li>
   ///   <li>[showFaceBox] gibt an, ob Markierungen angezeigt werden sollen. </li>
   ///   <li>[showLandmarks] Gibt an, ob erkannte Punkte wie Nasen, Augen, Ohren, etc. ebenfalls visualisiert werden sollen. </li>
@@ -17,45 +18,48 @@ class FaceMarkingsView extends StatelessWidget {
   /// </ul>
   const FaceMarkingsView({
     super.key,
-    final bool showMarkings = true,
-    final bool showFaceBox = true,
-    final bool showLandmarks = true,
-    final bool showContours = false,
-  })  : _showMarkings = showMarkings,
-        _showFaceBox = showFaceBox,
-        _showLandmarks = showLandmarks,
-        _showContours = showContours;
+    required this.faces,
+    this.processedSize,
+    required this.isFrontCamera,
+    this.showMarkings = true,
+    this.showFaceBox = true,
+    this.showLandmarks = true,
+    this.showContours = false,
+  });
 
   /// Gibt an, ob Markierungen angezeigt werden sollen.
-  final bool _showMarkings;
+  final bool showMarkings;
 
   /// Gibt an, ob die Gesichtsbox angezeigt werden soll.
-  final bool _showFaceBox;
+  final bool showFaceBox;
 
   /// Gibt an, ob erkannte Punkte wie Nasen, Augen, Ohren, etc. ebenfalls visualisiert werden sollen.
-  final bool _showLandmarks;
+  final bool showLandmarks;
 
   /// Gibt an, ob Gesichtskonturen ebenfalls visualisiert werden sollen.
-  final bool _showContours;
+  final bool showContours;
+
+  /// Gesichter, auf die der angegebene Filter [filter] angewendet werden soll.
+  final List<Face> faces;
+
+  /// Größe des von ML Kit analysierten Bildes.
+  final Size? processedSize;
+
+  /// Gibt an, ob die verwendete Kamera die Frontkamera ist und das Preview daher gespiegelt ist.
+  final bool isFrontCamera;
 
   @override
   Widget build(final BuildContext context) {
-    final faceDetectionService = Provider.of<FaceDetectionService>(context);
-    final cameraService = Provider.of<CameraService>(context);
-
-    if (!_showMarkings || faceDetectionService.processedSize == null) {
+    if (!showMarkings || processedSize == null) {
       return Container();
     }
 
     return CustomPaint(
-      foregroundPainter: FaceMarkingsPainter(
-          faceDetectionService.faces, faceDetectionService.processedSize!,
-          isFrontCamera:
-              cameraService.cameraController?.description.lensDirection ==
-                  CameraLensDirection.front,
-          showFaceBox: _showFaceBox,
-          showLandmarks: _showLandmarks,
-          showContours: _showContours),
+      foregroundPainter: FaceMarkingsPainter(faces, processedSize!,
+          isFrontCamera: isFrontCamera,
+          showFaceBox: showFaceBox,
+          showLandmarks: showLandmarks,
+          showContours: showContours),
       size: Size.infinite,
     );
   }

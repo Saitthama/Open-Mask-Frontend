@@ -10,16 +10,16 @@ class FaceFilterPainter extends CustomPainter {
   /// Standard-Konstruktor.
   /// <ul>
   ///   <li>[faces] Liste der Gesichter, auf die der Filter angewandt werden soll.</li>
-  ///   <li>[imageSize] Originalgröße des Bildes.</li>
+  ///   <li>[processedSize] Originalgröße des analysierten Bildes.</li>
   ///   <li>[isFrontCamera] Gibt an, ob die verwendete Kamera die Frontkamera ist und der Filter daher gespiegelt werden muss.</li>
   ///   <li>[filter] Der Filter, der angewandt werden soll.</li>
   /// </ul>
   FaceFilterPainter({
     required final List<Face> faces,
-    required final Size imageSize,
+    required final Size processedSize,
     required final bool isFrontCamera,
     required final IFilter filter,
-  })  : _processedSize = imageSize,
+  })  : _processedSize = processedSize,
         _faces = faces,
         _isFrontCamera = isFrontCamera,
         _filter = filter;

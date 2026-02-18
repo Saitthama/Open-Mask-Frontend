@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:open_mask/routing/app_shell.dart';
 import 'package:open_mask/ui/screens/camera_screen.dart';
+import 'package:open_mask/ui/screens/filter_editor_screen.dart';
 import 'package:open_mask/ui/screens/filter_image_processing_screen.dart';
 import 'package:open_mask/ui/screens/filter_workshop_screen.dart';
 import 'package:open_mask/ui/screens/gallery_screen.dart';
@@ -65,7 +66,12 @@ final authRoutes = [
                   path: FilterWorkshopScreen.routePath,
                   builder: (final context, final state) =>
                       const FilterWorkshopScreen(),
-                  routes: [] // Erweiterbar um Sub-Pages mit Sub-Routen
+                  routes: [
+                    GoRoute(
+                        path: FilterEditorScreen.routePath,
+                        builder: (final context, final state) =>
+                            const FilterEditorScreen()),
+                  ] // Erweiterbar um Sub-Pages mit Sub-Routen
                   ),
             ]),
 

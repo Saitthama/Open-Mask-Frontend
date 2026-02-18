@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:open_mask/ui/screens/filter_editor_screen.dart';
 
 class FilterWorkshopScreen extends StatelessWidget {
   const FilterWorkshopScreen({super.key});
@@ -64,6 +66,8 @@ class FilterWorkshopScreen extends StatelessWidget {
                 TextButton(
                   onPressed: () {
                     // Erstellen Aktion
+                    context.push(
+                        '${FilterWorkshopScreen.routePath}${FilterEditorScreen.routePath}');
                   },
                   child: const Text('Erstellen'),
                 ),
@@ -90,6 +94,9 @@ class FilterWorkshopScreen extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {
                       // Filter erstellen Aktion
+
+                      context.push(
+                          '${FilterWorkshopScreen.routePath}${FilterEditorScreen.routePath}');
                     },
                     child: const Text('Erstelle einen Filter'),
                   ),
