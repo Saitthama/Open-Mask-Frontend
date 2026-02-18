@@ -25,11 +25,8 @@ class _FilterImageProcessingViewState extends State<FilterImageProcessingView> {
         ? Container()
         : Image.file(viewModel.imageFile!);
     return SafeArea(
-      child: Container(
+      child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 2.5),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-        ),
         child: Column(
           spacing: 10.0,
           children: [

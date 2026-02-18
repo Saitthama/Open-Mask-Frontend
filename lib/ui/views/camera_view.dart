@@ -1,5 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:open_mask/data/services/camera_service.dart';
+import 'package:open_mask/data/services/face_detection_service.dart';
 import 'package:open_mask/filter/filter_store.dart';
 import 'package:open_mask/filter/templates/filter.dart';
 import 'package:open_mask/ui/screens/camera_screen.dart';
@@ -26,6 +28,12 @@ class CameraView extends StatelessWidget {
   Widget build(final BuildContext context) {
     final CameraViewModel vm = context.watch<CameraViewModel>();
 
+    final faceDetectionService = Provider.of<FaceDetectionService>(context);
+    final cameraService = Provider.of<CameraService>(context);
+    final bool isFrontCamera =
+        cameraService.cameraController?.description.lensDirection ==
+            CameraLensDirection.front;
+
     final previewSize = vm.cameraService.cameraController?.value.previewSize;
     final isPortrait =
         MediaQuery.of(context).orientation == Orientation.portrait;
@@ -49,13 +57,21 @@ class CameraView extends StatelessWidget {
                 children: [
                   CameraPreview(vm.cameraService.cameraController!),
                   FaceMarkingsView(
+                    faces: faceDetectionService.faces,
+                    processedSize: faceDetectionService.processedSize,
+                    isFrontCamera: isFrontCamera,
                     showMarkings: vm.showMarkings,
                     showFaceBox: vm.showFaceBox,
                     showLandmarks: vm.showLandmarks,
                     showContours: vm.showContours,
                   ),
                   if (vm.filter != null && vm.filterActive)
-                    FilterView(vm.filter!)
+                    FilterView(
+                      vm.filter!,
+                      faces: faceDetectionService.faces,
+                      processedSize: faceDetectionService.processedSize,
+                      isFrontCamera: isFrontCamera,
+                    )
                 ],
               ),
             ),

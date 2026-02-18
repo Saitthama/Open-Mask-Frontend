@@ -207,6 +207,9 @@ class FaceMarkingsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant final FaceMarkingsPainter oldDelegate) {
-    return oldDelegate._faces != _faces;
+    return oldDelegate._faces != _faces ||
+        oldDelegate._showFaceBox != _showFaceBox ||
+        oldDelegate._showContours != _showContours ||
+        oldDelegate._showLandmarks != _showLandmarks;
   }
 }

@@ -4,6 +4,7 @@ import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/ui/view_models/gallery_view_model.dart';
 import 'package:open_mask/ui/widgets/blue_text_button.dart';
 import 'package:open_mask/ui/widgets/close_save_header.dart';
+import 'package:open_mask/ui/widgets/delete_button.dart';
 import 'package:open_mask/ui/widgets/text_close_button.dart';
 import 'package:provider/provider.dart';
 
@@ -129,49 +130,22 @@ class GalleryView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     spacing: 10,
                     children: [
-                      ElevatedButton(
-                        onPressed: viewModel.elements.isEmpty
-                            ? null
-                            : () async {
-                                final bool success =
-                                    await viewModel.deleteAll();
-                                if (success) {
-                                  SnackBarService.showMessage(
-                                      'Alle Elemente erfolgreich gelöscht',
-                                      duration: const Duration(seconds: 2));
-                                  if (context.mounted) context.pop();
-                                } else {
-                                  SnackBarService.showMessage(
-                                      'Fehler beim Löschen der Elemente!');
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                        ),
-                        child: Row(
-                          // Stretch
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          spacing: 5.0,
-                          children: [
-                            Icon(Icons.delete_rounded,
-                                color: viewModel.elements.isEmpty
-                                    ? Colors.grey
-                                    : Colors.white),
-                            Text('Löschen',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: viewModel.elements.isEmpty
-                                        ? Colors.grey
-                                        : Colors.white)),
-                          ],
-                        ),
-                      ),
+                      DeleteTextButton('Löschen',
+                          onPressed: viewModel.elements.isEmpty
+                              ? null
+                              : () async {
+                                  final bool success =
+                                      await viewModel.deleteAll();
+                                  if (success) {
+                                    SnackBarService.showMessage(
+                                        'Alle Elemente erfolgreich gelöscht',
+                                        duration: const Duration(seconds: 2));
+                                    if (context.mounted) context.pop();
+                                  } else {
+                                    SnackBarService.showMessage(
+                                        'Fehler beim Löschen der Elemente!');
+                                  }
+                                }),
                       BlueTextButton(
                         'Abbrechen',
                         onPressed: () => context.pop(),
@@ -192,11 +166,8 @@ class GalleryView extends StatelessWidget {
     final viewModel = context.watch<GalleryViewModel>();
     final theme = Theme.of(context);
     return SafeArea(
-      child: Container(
+      child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 10),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-        ),
         child: Column(
           children: [
             CloseSaveHeader(
@@ -239,39 +210,12 @@ class GalleryView extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: ElevatedButton(
-                onPressed: viewModel.elements.isEmpty
-                    ? null
-                    : () => _showDeleteAllDialog(context, viewModel),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                ),
-                child: Row(
-                  // Stretch
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  spacing: 5.0,
-                  children: [
-                    Icon(Icons.delete_rounded,
-                        color: viewModel.elements.isEmpty
-                            ? Colors.grey
-                            : Colors.white),
-                    Text('Alle Bilder löschen',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: viewModel.elements.isEmpty
-                                ? Colors.grey
-                                : Colors.white)),
-                  ],
-                ),
-              ),
-            ),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: DeleteTextButton('Alle Bilder löschen',
+                    onPressed: viewModel.elements.isEmpty
+                        ? null
+                        : () => _showDeleteAllDialog(context, viewModel),
+                    stretch: true)),
             const SizedBox(height: 8),
             // Close Button (als 2. Möglichkeit zum Schließen der Galerie)
             const Padding(

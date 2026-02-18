@@ -12,6 +12,9 @@ class FilterStore extends ChangeNotifier {
   /// Der aktuell ausgewählte Filter.
   IFilter? _selectedFilter;
 
+  /// Der Filter, der aktuell im Filter-Editor bearbeitet wird.
+  IFilter? _selectedEditorFilter;
+
   /// Alle lokalen Filter.
   final List<IFilter> _localFilters = [];
 
@@ -20,6 +23,9 @@ class FilterStore extends ChangeNotifier {
 
   /// Der aktuell ausgewählte Filter.
   IFilter? get selectedFilter => _selectedFilter;
+
+  /// Der Filter, der aktuell im Filter-Editor bearbeitet wird.
+  IFilter? get selectedEditorFilter => _selectedEditorFilter;
 
   /// Alle lokalen Filter.
   List<IFilter> get localFilters => List.unmodifiable(_localFilters);
@@ -32,6 +38,15 @@ class FilterStore extends ChangeNotifier {
       newSelectedFilter?.load(); // neuen Filter asynchron laden
     }
     _selectedFilter = newSelectedFilter;
+    notifyListeners();
+  }
+
+  set selectedEditorFilter(final IFilter? newSelectedEditorFilter) {
+    if (newSelectedEditorFilter != _selectedEditorFilter) {
+      newSelectedEditorFilter
+          ?.load(); // Filter für die Bearbeitung asynchron laden
+    }
+    _selectedEditorFilter = newSelectedEditorFilter;
     notifyListeners();
   }
 
@@ -52,6 +67,7 @@ class FilterStore extends ChangeNotifier {
   /// Setzt den lokalen Filter-Speicher vollständig zurück und löscht alle enthaltenen Filter.
   void clear() {
     _selectedFilter = null;
+    _selectedEditorFilter = null;
     _localFilters.clear();
     _communityFilters.clear();
     notifyListeners();

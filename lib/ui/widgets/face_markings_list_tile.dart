@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:open_mask/ui/view_models/camera_view_model.dart';
 
 /// Listenelement zum Ein- und Ausschalten verschiedener Tracking-Markierungen.
 class FaceMarkingsListTile extends StatefulWidget {
@@ -8,7 +7,7 @@ class FaceMarkingsListTile extends StatefulWidget {
   const FaceMarkingsListTile({super.key, required this.viewModel});
 
   /// Dient zum Aufrufen von Funktionen zum Ein- und Ausschalten der Tracking-Markierung, sowie zum Abrufen ihres Zustands.
-  final CameraViewModel viewModel;
+  final dynamic viewModel;
 
   @override
   State<FaceMarkingsListTile> createState() => _FaceMarkingsListTileState();

@@ -105,6 +105,9 @@ flutter:
     - assets/images/filter/mustache.png
     - assets/images/filter/hat.png
     - assets/images/filter/mask.png
+    - assets/images/dummys/editor-dummy.png
+    - assets/images/dummys/editor-dummy-v2.png
+    - assets/images/dummys/editor-dummy-female.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
