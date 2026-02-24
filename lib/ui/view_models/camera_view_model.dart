@@ -170,11 +170,10 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
     FilterMeta metaComposite = FilterMeta(
         name: 'Hut-Schnurrbart-Filter', description: 'Schnurrbart und Hut');
     CompositeFilter compositeFilter = CompositeFilter(meta: metaComposite);
-    final filterList = compositeFilter.filterList;
-    filterList.add(mustacheFilter);
-    filterList.add(mustacheFilter2);
-    filterList.add(hatFilter);
-    filterList.add(maskFilter);
+    compositeFilter.addFilter(mustacheFilter);
+    compositeFilter.addFilter(mustacheFilter2);
+    compositeFilter.addFilter(hatFilter);
+    compositeFilter.addFilter(maskFilter);
 
     FilterStore.instance.addLocalFilter(compositeFilter);
 
@@ -193,8 +192,8 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
     ownCompositeFilter.meta.name = 'Hut & Maske';
     ownCompositeFilter.meta.description =
         'Beispiel für einen eigenen Composite-Filter mit Hut & Maske';
-    ownCompositeFilter.filterList.add(ownMaskFilter);
-    ownCompositeFilter.filterList.add(hatFilter);
+    ownCompositeFilter.addFilter(ownMaskFilter);
+    ownCompositeFilter.addFilter(hatFilter);
     FilterStore.instance.addLocalFilter(ownMaskFilter);
     FilterStore.instance.addLocalFilter(ownCompositeFilter);
 

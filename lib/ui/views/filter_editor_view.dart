@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/templates/filter.dart';
 import 'package:open_mask/ui/screens/filter_editor_screen.dart';
 import 'package:open_mask/ui/view_models/filter_editor_view_model.dart';
 import 'package:open_mask/ui/views/face_markings_view.dart';
 import 'package:open_mask/ui/views/filter_view.dart';
+import 'package:open_mask/ui/widgets/add_filter_popup.dart';
 import 'package:open_mask/ui/widgets/blue_text_button.dart';
 import 'package:open_mask/ui/widgets/delete_button.dart';
 import 'package:open_mask/ui/widgets/face_markings_list_tile.dart';
@@ -32,6 +32,35 @@ class FilterEditorView extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // Dummy-Gesicht
+          Center(
+            child: AspectRatio(
+              aspectRatio: 1, // Alle Dummy-Bilder im 1:1 Format
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(vm.dummyAssetPath),
+                  FaceMarkingsView(
+                    faces: vm.dummyFaces,
+                    processedSize: vm.processedDummySize,
+                    isFrontCamera: false,
+                    showFaceBox: vm.showFaceBox,
+                    showLandmarks: vm.showLandmarks,
+                    showContours: vm.showContours,
+                    showMarkings: vm.showMarkings,
+                  ),
+                  if (vm.currentFilter != null)
+                    FilterView(
+                      vm.currentFilter!,
+                      faces: vm.dummyFaces,
+                      processedSize: vm.processedDummySize,
+                      isFrontCamera: false,
+                    )
+                ],
+              ),
+            ),
+          ),
+
           // Obere Buttons
           Positioned(
             top: 10,
@@ -61,68 +90,41 @@ class FilterEditorView extends StatelessWidget {
             ),
           ),
 
-          // Gesicht
-          Center(
-            child: AspectRatio(
-              aspectRatio: 1, // Alle Dummy-Bilder im 1:1 Format
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.asset(vm.dummyAssetPath),
-                  FaceMarkingsView(
-                    faces: vm.dummyFaces,
-                    processedSize: vm.processedDummySize,
-                    isFrontCamera: false,
-                    showFaceBox: vm.showFaceBox,
-                    showLandmarks: vm.showLandmarks,
-                    showContours: vm.showContours,
-                    showMarkings: vm.showMarkings,
-                  ),
-                  if (vm.currentFilter != null)
-                    FilterView(
-                      vm.currentFilter!,
-                      faces: vm.dummyFaces,
-                      processedSize: vm.processedDummySize,
-                      isFrontCamera: false,
-                    )
-                ],
-              ),
-            ),
-          ),
-
           // Untere Buttons
           Positioned(
-              bottom: 10,
-              left: 10,
-              right: 10,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 10,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: DeleteTextButton(
-                      'Entfernen',
-                      onPressed: (vm.selectedFilter == null) ? null : vm.delete,
-                      stretch: true,
-                    ),
+            bottom: 10,
+            left: 10,
+            right: 10,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 10,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: DeleteTextButton(
+                    'Entfernen',
+                    onPressed:
+                        (vm.selectedEditedFilter == null) ? null : vm.delete,
+                    stretch: true,
                   ),
-                  Expanded(
-                    child: IconButton(
-                        onPressed: () => _showOptions(context, vm),
-                        icon: Icon(Icons.settings_rounded,
-                            color: theme.iconTheme.color)),
+                ),
+                Expanded(
+                  child: IconButton(
+                      onPressed: () => _showOptions(context, vm),
+                      icon: Icon(Icons.settings_rounded,
+                          color: theme.iconTheme.color)),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: BlueTextButton(
+                    (vm.saved) ? 'Clear' : 'Speichern',
+                    onPressed: vm.currentFilter == null ? null : vm.save,
+                    stretch: true,
                   ),
-                  Expanded(
-                    flex: 3,
-                    child: BlueTextButton(
-                      'Speichern',
-                      onPressed: (vm.currentFilter == null) ? null : vm.save,
-                      stretch: true,
-                    ),
-                  ),
-                ],
-              )),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     ));
@@ -130,8 +132,12 @@ class FilterEditorView extends StatelessWidget {
 
   /// Öffnet ein Popup, um einen Filter hinzuzufügen.
   void _addFilter(final BuildContext context, final FilterEditorViewModel vm) {
-    // TODO: dynamsiche Auswahl
-    vm.createFilter(FilterType.mask);
+    showDialog(
+        context: context,
+        barrierColor: Theme.of(context).colorScheme.surface.withAlpha(180),
+        builder: (final context) {
+          return const AddFilterPopup();
+        });
   }
 
   /// Zeigt erweiterte Optionen wie zum Wechseln des Dummys oder

@@ -9,7 +9,7 @@ enum FilterTab { general, own, community }
 
 /// Widget, welches die Filter des angegebenen Tabs als [GridView] darstellt.
 class FilterGrid extends StatelessWidget {
-  /// Standard-Konstruktor.
+  /// Standard-Konstruktor. [type] gibt den ausgewählten Tab an.
   const FilterGrid({super.key, required this.type});
 
   /// Der Typ des aktuell ausgewählten Tabs.
@@ -45,6 +45,12 @@ class FilterGrid extends StatelessWidget {
       );
     }
 
+    /// Speichert den angegebenen Filter als ausgewählten Filter für die Verwendung.
+    void onTap(final Filter element) {
+      FilterStore.instance.selectedFilter = element;
+      Navigator.pop(context);
+    }
+
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -55,7 +61,12 @@ class FilterGrid extends StatelessWidget {
       itemCount: filters.length,
       itemBuilder: (final _, final index) {
         final filter = filters[index];
-        return FilterTile(filter: filter as Filter);
+        final isSelected = store.selectedFilter == filter;
+        return FilterTile(
+          filter: filter as Filter,
+          isSelected: isSelected,
+          onTap: onTap,
+        );
       },
     );
   }

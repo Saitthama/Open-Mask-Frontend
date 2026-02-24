@@ -54,7 +54,7 @@ class FilterMeta {
   Widget get icon =>
       _icon ?? Image.asset('assets/images/icons/app-icon_round.png');
 
-  set icon(final Widget newIcon) {
+  set icon(final Widget? newIcon) {
     _icon = newIcon;
   }
 

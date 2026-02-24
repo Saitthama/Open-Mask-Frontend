@@ -34,7 +34,7 @@ class FilterFactory {
       case FilterType.hat:
         return HatFilter(
             meta: meta,
-            config: FilterConfig(),
+            config: FilterConfig(scale: HatFilter.defaultScale),
             filterImage: FilterImage(
                 filename: HatFilter.defaultImageFilename,
                 assetPath: HatFilter.defaultAssetPath));
