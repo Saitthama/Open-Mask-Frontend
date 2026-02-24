@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
+import 'package:open_mask/filter/filter_factory.dart';
+import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/i_filter.dart';
+import 'package:open_mask/filter/templates/composite_filter.dart';
 
 /// Datenhalter-Klasse, welche globale Filterdaten speichert.
 class FilterStore extends ChangeNotifier {
@@ -13,7 +16,14 @@ class FilterStore extends ChangeNotifier {
   IFilter? _selectedFilter;
 
   /// Der Filter, der aktuell im Filter-Editor bearbeitet wird.
-  IFilter? _selectedEditorFilter;
+  IFilter? _currentlyEditedFilter;
+
+  /// Der Filter, welcher aktuell im Editor ausgewählt ist.
+  /// Kann sowohl [currentlyEditedFilter] als auch ein Teil eines [CompositeFilter] sein.
+  IFilter? _selectedEditedFilter;
+
+  /// Originale Referenz des [currentlyEditedFilter], welche zum Speichern dessen benutzt wird.
+  IFilter? _savedEditedFilter;
 
   /// Alle lokalen Filter.
   final List<IFilter> _localFilters = [];
@@ -25,7 +35,11 @@ class FilterStore extends ChangeNotifier {
   IFilter? get selectedFilter => _selectedFilter;
 
   /// Der Filter, der aktuell im Filter-Editor bearbeitet wird.
-  IFilter? get selectedEditorFilter => _selectedEditorFilter;
+  IFilter? get currentlyEditedFilter => _currentlyEditedFilter;
+
+  /// Der Filter, welcher aktuell im Editor ausgewählt ist.
+  /// Kann sowohl [currentlyEditedFilter] als auch ein Teile eines [CompositeFilter] sein.
+  IFilter? get selectedEditedFilter => _selectedEditedFilter;
 
   /// Alle lokalen Filter.
   List<IFilter> get localFilters => List.unmodifiable(_localFilters);
@@ -41,12 +55,46 @@ class FilterStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  set selectedEditorFilter(final IFilter? newSelectedEditorFilter) {
-    if (newSelectedEditorFilter != _selectedEditorFilter) {
-      newSelectedEditorFilter
-          ?.load(); // Filter für die Bearbeitung asynchron laden
+  set currentlyEditedFilter(final IFilter? newSelectedEditorFilter) {
+    if (newSelectedEditorFilter != _currentlyEditedFilter) {
+      newSelectedEditorFilter?.load().then((final value) =>
+          notifyListeners()); // Filter für die Bearbeitung asynchron laden
     }
-    _selectedEditorFilter = newSelectedEditorFilter;
+    _currentlyEditedFilter = newSelectedEditorFilter;
+    if (newSelectedEditorFilter == null) {
+      _selectedEditedFilter = null;
+    }
+    notifyListeners();
+  }
+
+  set communityFilters(final List<IFilter> filters) {
+    _communityFilters
+      ..clear()
+      ..addAll(filters);
+    notifyListeners();
+  }
+
+  set selectedEditedFilter(final IFilter? selectedEditedFilter) {
+    _selectedEditedFilter = selectedEditedFilter;
+    notifyListeners();
+  }
+
+  /// Evaluiert, welcher Filter im Editor ausgewählt sein soll.
+  void _evaluateSelectedEditedFilter() {
+    if (currentlyEditedFilter != null) {
+      if (currentlyEditedFilter is CompositeFilter &&
+          (currentlyEditedFilter as CompositeFilter).filterList.isNotEmpty) {
+        _selectedEditedFilter =
+            (currentlyEditedFilter as CompositeFilter).filterList.last;
+      } else {
+        _selectedEditedFilter = currentlyEditedFilter;
+      }
+    }
+  }
+
+  /// Evaluiert, welcher Filter im Editor ausgewählt sein soll und ruft [notifyListeners] auf.
+  void evaluateSelectedEditedFilter() {
+    _evaluateSelectedEditedFilter();
     notifyListeners();
   }
 
@@ -56,18 +104,39 @@ class FilterStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Setzt die [communityFilters].
-  set communityFilters(final List<IFilter> filters) {
-    _communityFilters
-      ..clear()
-      ..addAll(filters);
+  /// Fügt den angegebenen Filter zu [currentlyEditedFilter] hinzu.
+  /// Falls bereits ein Filter existiert, welcher nicht zusammengesetzt ist,
+  /// wird der [currentlyEditedFilter] in einen [CompositeFilter] umgewandelt und der [filter] hinzugefügt.
+  void addFilterToEdit(final IFilter filter) {
+    if (_currentlyEditedFilter == null && filter is! CompositeFilter) {
+      currentlyEditedFilter = filter;
+    } else if (_currentlyEditedFilter is! CompositeFilter) {
+      CompositeFilter composite =
+          FilterFactory.create(FilterType.composite, isCreatedByUser: true)
+              as CompositeFilter;
+      if (_currentlyEditedFilter != null) {
+        composite.addFilter(_currentlyEditedFilter!);
+      }
+      composite.addFilter(filter);
+      currentlyEditedFilter = composite;
+    } else {
+      (_currentlyEditedFilter as CompositeFilter).addFilter(filter);
+      filter.load().then((final value) => notifyListeners());
+    }
+    _evaluateSelectedEditedFilter();
     notifyListeners();
+  }
+
+  /// Erstellt einen neuen Filter zur Bearbeitung und fügt ihn zu [currentlyEditedFilter] hinzu.
+  void createFilterToEdit(final FilterType type) {
+    IFilter filter = FilterFactory.create(type, isCreatedByUser: true);
+    FilterStore.instance.addFilterToEdit(filter);
   }
 
   /// Setzt den lokalen Filter-Speicher vollständig zurück und löscht alle enthaltenen Filter.
   void clear() {
     _selectedFilter = null;
-    _selectedEditorFilter = null;
+    _currentlyEditedFilter = null;
     _localFilters.clear();
     _communityFilters.clear();
     notifyListeners();

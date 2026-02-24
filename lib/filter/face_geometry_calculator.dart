@@ -130,8 +130,8 @@ class FaceGeometryCalculator {
       final eyeDistance = (leftEyePosition - rightEyePosition).distance;
       faceWidth = eyeDistance * 3;
       faceHeight = eyeDistance * 3;
-      print('Eye Distance: $eyeDistance');
-      print('Face-Box: $faceBox');
+      //print('Eye Distance: $eyeDistance');
+      //print('Face-Box: $faceBox');
     }
 
     return Size(faceWidth, faceHeight);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/src/face_detector.dart';
+import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/geometry_service.dart';
 import 'package:open_mask/filter/configs/filter_config.dart';
 import 'package:open_mask/filter/face_geometry_calculator.dart';
@@ -20,12 +21,16 @@ class HatFilter extends ImageFilter {
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory HatFilter.fromJSON(final Map<String, dynamic> json) {
+    Map<String, dynamic> configJson = json['config'] ?? {};
+    configJson.putIfAbsent('scaleX', () => defaultScale.scaleX);
+    configJson.putIfAbsent('scaleY', () => defaultScale.scaleY);
+
     Map<String, dynamic> filterImageJson = json['filterImage'] ?? {};
     filterImageJson.putIfAbsent('assetPath', () => defaultAssetPath);
     filterImageJson.putIfAbsent('filename', () => defaultImageFilename);
     FilterImage filterImage = FilterImage.fromJSON(filterImageJson);
 
-    FilterConfig filterConfig = FilterConfig.fromJSON(json['config'] ?? {});
+    FilterConfig filterConfig = FilterConfig.fromJSON(configJson);
 
     return HatFilter(
         id: int.tryParse(json['id']),
@@ -39,6 +44,9 @@ class HatFilter extends ImageFilter {
 
   /// Standardmäßiger Dateiname des Filter-Bildes ([FilterImage.filename]).
   static const String defaultImageFilename = 'hat';
+
+  /// Standardmäßiger Scale.
+  static const Scale defaultScale = Scale(1.3, 1.2);
 
   @override
   void apply(

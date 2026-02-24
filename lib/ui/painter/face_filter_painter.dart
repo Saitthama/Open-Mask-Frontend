@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:open_mask/filter/face_geometry_calculator.dart';
 import 'package:open_mask/filter/i_filter.dart';
+import 'package:open_mask/filter/templates/composite_filter.dart';
 
 /// Ein [CustomPainter], welcher dazu dient einen Filter auf mehrere Gesichter anzuwenden.
 class FaceFilterPainter extends CustomPainter {
@@ -15,26 +16,23 @@ class FaceFilterPainter extends CustomPainter {
   ///   <li>[filter] Der Filter, der angewandt werden soll.</li>
   /// </ul>
   FaceFilterPainter({
-    required final List<Face> faces,
-    required final Size processedSize,
-    required final bool isFrontCamera,
-    required final IFilter filter,
-  })  : _processedSize = processedSize,
-        _faces = faces,
-        _isFrontCamera = isFrontCamera,
-        _filter = filter;
+    required this.faces,
+    required this.processedSize,
+    required this.isFrontCamera,
+    required this.filter,
+  });
 
-  /// Gesichter, auf die der angegebene Filter [_filter] angewendet werden soll.
-  final List<Face> _faces;
+  /// Gesichter, auf die der angegebene Filter [filter] angewendet werden soll.
+  final List<Face> faces;
 
   /// Größe des von ML Kit analysierten Bildes.
-  final Size _processedSize;
+  final Size processedSize;
 
   /// Gibt an, ob die verwendete Kamera die Frontkamera ist und das Preview daher gespiegelt ist.
-  final bool _isFrontCamera;
+  final bool isFrontCamera;
 
-  /// Der Filter, der auf die Gesichter [_faces] angewendet werden soll.
-  final IFilter _filter;
+  /// Der Filter, der auf die Gesichter [faces] angewendet werden soll.
+  final IFilter filter;
 
   /// Malt den Filter auf das angegebene [image] und liefert ein neues Bild mit angewandtem Filter als [ui.Image] zurück.
   Future<ui.Image> paintOnImage(final ui.Image image) async {
@@ -44,7 +42,7 @@ class FaceFilterPainter extends CustomPainter {
     final paint = Paint();
     canvas.drawImage(image, Offset.zero, paint);
 
-    this.paint(canvas, _processedSize);
+    this.paint(canvas, processedSize);
 
     final picture = recorder.endRecording();
     final editedImage = await picture.toImage(image.width, image.height);
@@ -54,17 +52,21 @@ class FaceFilterPainter extends CustomPainter {
   @override
   void paint(final Canvas canvas, final Size size) {
     FaceGeometryCalculator faceGeometryCalculator = FaceGeometryCalculator(
-        processedSize: _processedSize,
+        processedSize: processedSize,
         canvasSize: size,
-        isFrontCamera: _isFrontCamera);
+        isFrontCamera: isFrontCamera);
 
-    for (final Face face in _faces) {
-      _filter.apply(face, canvas, faceGeometryCalculator);
+    for (final Face face in faces) {
+      filter.apply(face, canvas, faceGeometryCalculator);
     }
   }
 
   @override
   bool shouldRepaint(covariant final FaceFilterPainter oldDelegate) {
-    return oldDelegate._faces != _faces || oldDelegate._filter != _filter;
+    if (oldDelegate.filter is CompositeFilter && filter is CompositeFilter) {
+      return true; // Damit Filter direkt hinzugefügt werden
+    }
+
+    return oldDelegate.faces != faces || oldDelegate.filter != filter;
   }
 }

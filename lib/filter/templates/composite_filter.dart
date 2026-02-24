@@ -32,8 +32,27 @@ class CompositeFilter extends Filter {
   /// Liste von Filtern, welche auf das Gesicht angewandt werden.
   final List<IFilter> _filterList = <IFilter>[];
 
-  /// Liefert eine Liste von Filtern, welche auf das Gesicht angewandt werden.
-  List<IFilter> get filterList => _filterList;
+  /// Von außen unveränderliche Liste von Filtern, welche auf das Gesicht angewandt werden.
+  List<IFilter> get filterList => List.unmodifiable(_filterList);
+
+  /// Fügt den [filter] zur [filterList] hinzu.
+  /// Liefert true zurück, falls die Operation erfolgreich war.
+  /// Der [filter] darf nicht der [CompositeFilter] selbst sein.
+  bool addFilter(final IFilter filter) {
+    if (filter == this) {
+      return false;
+    }
+
+    _filterList.add(filter);
+
+    return true;
+  }
+
+  /// Entfernt den angegebenen [filter] aus der [filterList].
+  /// Liefert true zurück, falls der [filter] vorhanden war, andernfalls false.
+  bool removeFilter(final IFilter? filter) {
+    return _filterList.remove(filter);
+  }
 
   @override
   void apply(

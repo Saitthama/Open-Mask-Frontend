@@ -5,9 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:open_mask/data/services/face_detection_service.dart';
 import 'package:open_mask/data/services/image_service.dart';
-import 'package:open_mask/filter/filter_factory.dart';
 import 'package:open_mask/filter/filter_store.dart';
-import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/filter/templates/composite_filter.dart';
 import 'package:open_mask/ui/screens/filter_editor_screen.dart';
@@ -23,14 +21,12 @@ class FilterEditorViewModel extends ChangeNotifier {
   /// </ul>
   FilterEditorViewModel(final BuildContext context)
       : faceDetectionService =
-            Provider.of<FaceDetectionService>(context, listen: false);
+            Provider.of<FaceDetectionService>(context, listen: false) {
+    FilterStore.instance.addListener(() => notifyListeners());
+  }
 
   /// Service für die Erkennung der Dummy-Gesichter.
   final FaceDetectionService faceDetectionService;
-
-  /// Der Filter, welcher aktuell im Editor ausgewählt ist.
-  /// Kann sowohl [currentFilter] als auch ein Teile eines [CompositeFilter] sein.
-  IFilter? _selectedFilter = FilterStore.instance.selectedEditorFilter;
 
   /// Liste von Asset-Pfaden für verschiedene Dummy-Modelle.
   final List<String> _dummyAssetPaths = [
@@ -64,11 +60,12 @@ class FilterEditorViewModel extends ChangeNotifier {
   String get dummyAssetPath => _dummyAssetPaths[_selectedDummyIndex];
 
   /// Der Filter, welcher aktuell bearbeitet wird.
-  IFilter? get currentFilter => FilterStore.instance.selectedEditorFilter;
+  IFilter? get currentFilter => FilterStore.instance.currentlyEditedFilter;
 
   /// Der Filter, welcher aktuell im Editor ausgewählt ist.
   /// Kann sowohl [currentFilter] als auch ein Teile eines [CompositeFilter] sein.
-  IFilter? get selectedFilter => _selectedFilter;
+  IFilter? get selectedEditedFilter =>
+      FilterStore.instance.selectedEditedFilter;
 
   /// Enthält das aktuelle Dummy-Gesicht bzw. aktuelle Dummy-Gesichter.
   List<Face> get dummyFaces => _selectedDummyIndex >= _dummyFacesList.length
@@ -93,10 +90,8 @@ class FilterEditorViewModel extends ChangeNotifier {
   /// Gibt an, ob Markierungen angezeigt werden sollen.
   bool get showMarkings => _showMarkings;
 
-  set selectedFilter(final IFilter? newSelection) {
-    _selectedFilter = newSelection;
-    notifyListeners();
-  }
+  /// Gibt an, ob der Filter bereits gespeichert wurde.
+  bool get saved => FilterStore.instance.localFilters.contains(currentFilter);
 
   /// Initialisiert wichtige Properties, z.B. durch das Laden der Gesichter der Dummys.
   Future<void> initialize() async {
@@ -106,14 +101,9 @@ class FilterEditorViewModel extends ChangeNotifier {
       _dummyFacesList.add([]);
       _processedDummySizes.add(null);
       await _detectDummyFaces(i);
-      print('Dummy $i: ');
-      print(_dummyFacesList[i]);
-      print(_processedDummySizes[i]);
     }
-    print('ausgewählter Dummy: ');
-    print(dummyFaces);
-    print(processedDummySize);
-    notifyListeners();
+    FilterStore.instance.evaluateSelectedEditedFilter();
+    //notifyListeners();
   }
 
   /// Erkennt die Dummy-Gesichter auf dem Bild aus dem Asset aus [_dummyAssetPaths] an der Stelle des [index].
@@ -149,57 +139,34 @@ class FilterEditorViewModel extends ChangeNotifier {
     faceDetector.close();
   }
 
-  /// Erstellt einen neuen Filter zur Bearbeitung.
-  void createFilter(final FilterType type) {
-    IFilter filter = FilterFactory.create(type, isCreatedByUser: true);
-    addFilter(filter);
-  }
-
-  /// Fügt den angegebenen Filter hinzu.
-  /// Falls bereits ein Filter existiert, welcher nicht zusammengesetzt ist,
-  /// wird der [currentFilter] in einen [CompositeFilter] umgewandelt und der [filter] hinzugefügt.
-  void addFilter(final IFilter filter) {
-    if (currentFilter == null) {
-      FilterStore.instance.selectedEditorFilter = filter;
-    } else if (currentFilter is CompositeFilter) {
-      (currentFilter as CompositeFilter).filterList.add(filter);
-    } else {
-      CompositeFilter composite =
-          FilterFactory.create(FilterType.composite, isCreatedByUser: true)
-              as CompositeFilter;
-      composite.filterList.add(currentFilter!);
-      composite.filterList.add(filter);
-      FilterStore.instance.selectedEditorFilter = composite;
-    }
-    _selectedFilter = filter;
-    notifyListeners();
-  }
-
-  /// Löscht den [selectedFilter]. Falls der [selectedFilter] der [currentFilter] ist, werden beide gelöscht.
-  /// Falls er Teil des [currentFilter] ist, wird nur der [selectedFilter] aus dem [CompositeFilter] gelöscht.
+  /// Löscht den [selectedEditedFilter]. Falls der [selectedEditedFilter] der [currentFilter] ist, werden beide gelöscht.
+  /// Falls er Teil des [currentFilter] ist, wird nur der [selectedEditedFilter] aus dem [CompositeFilter] gelöscht.
   void delete() {
-    if (currentFilter is! CompositeFilter || currentFilter == selectedFilter) {
-      FilterStore.instance.selectedEditorFilter = null;
-      selectedFilter = null;
-      notifyListeners();
+    if (currentFilter is! CompositeFilter ||
+        currentFilter == selectedEditedFilter) {
+      FilterStore.instance.selectedEditedFilter = null;
+      FilterStore.instance.currentlyEditedFilter = null;
     } else {
       CompositeFilter composite = currentFilter as CompositeFilter;
 
-      composite.filterList.remove(selectedFilter);
-      if (composite.filterList.isEmpty) {
-        FilterStore.instance.selectedEditorFilter = null;
-        _selectedFilter = null;
-      } else {
-        _selectedFilter = composite.filterList.last;
-      }
+      composite.removeFilter(selectedEditedFilter);
+      FilterStore.instance.evaluateSelectedEditedFilter();
 
-      notifyListeners();
+      //notifyListeners(); // wird bereits durch den FilterStore indirekt aufgerufen
     }
   }
 
-  /// Speichert den [currentFilter].
+  /// Überprüft, ob der [currentFilter] bereits existiert und speichert ihn gegebenenfalls.
+  /// Entfernt [currentFilter] aus der Bearbeitung, falls dieser zuvor schon gespeichert wurde.
   void save() {
-    // TODO
+    if (currentFilter == null) {
+      return;
+    }
+    if (saved) {
+      FilterStore.instance.currentlyEditedFilter = null;
+    } else {
+      FilterStore.instance.addLocalFilter(currentFilter!);
+    }
   }
 
   /// Wechselt den [dummyAssetPath] zum nächsten Dummy.

@@ -126,10 +126,12 @@ class CameraView extends StatelessWidget {
                             child: SizedBox(
                               width: 45,
                               height: 45,
-                              child: (FilterStore.instance.selectedFilter
-                                      as Filter)
-                                  .meta
-                                  .icon,
+                              child: FittedBox(
+                                child: (FilterStore.instance.selectedFilter
+                                        as Filter)
+                                    .meta
+                                    .icon,
+                              ),
                             ),
                           ),
                         ),
