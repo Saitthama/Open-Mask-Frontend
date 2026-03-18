@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/src/face_detector.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/geometry_service.dart';
-import 'package:open_mask/filter/configs/filter_config.dart';
 import 'package:open_mask/filter/face_geometry_calculator.dart';
-import 'package:open_mask/filter/filter_image.dart';
-import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/templates/image_filter.dart';
 
@@ -25,18 +22,7 @@ class HatFilter extends ImageFilter {
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory HatFilter.fromJSON(final Map<String, dynamic> json) {
-    Map<String, dynamic> configJson = json['config'] ?? {};
-
-    Map<String, dynamic> filterImageJson = json['filterImage'] ?? {};
-    FilterImage filterImage = FilterImage.fromJSON(filterImageJson);
-
-    FilterConfig filterConfig = FilterConfig.fromJSON(configJson);
-
-    return HatFilter(
-        id: int.tryParse(json['id']),
-        meta: FilterMeta.fromJson(json['meta']),
-        config: filterConfig,
-        filterImage: filterImage);
+    return ImageFilter.fromJSON(json, HatFilter.new) as HatFilter;
   }
 
   @override

@@ -5,6 +5,7 @@ import 'package:open_mask/data/services/geometry_service.dart';
 import 'package:open_mask/filter/configs/filter_config.dart';
 import 'package:open_mask/filter/face_geometry_calculator.dart';
 import 'package:open_mask/filter/filter_image.dart';
+import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/templates/filter.dart';
 
 /// Abstrakte Basisklasse für Filter, die ein Bild verwenden (z.B. Bart, Hut, Maske).
@@ -35,6 +36,29 @@ abstract class ImageFilter extends Filter {
     }
   }
 
+  /// Factory-Methode zur JSON‑Deserialisierung.
+  factory ImageFilter.fromJSON(
+      final Map<String, dynamic> json,
+      final ImageFilter Function(
+              {required FilterConfig config,
+              required FilterImage? filterImage,
+              int? id,
+              required FilterMeta meta})
+          filterCreator) {
+    Map<String, dynamic> configJson = json['config'] ?? {};
+
+    Map<String, dynamic> filterImageJson = json['filterImage'] ?? {};
+    FilterImage filterImage = FilterImage.fromJSON(filterImageJson);
+
+    FilterConfig filterConfig = FilterConfig.fromJSON(configJson);
+
+    return filterCreator(
+        id: int.tryParse(json['id']),
+        meta: FilterMeta.fromJson(json['meta']),
+        config: filterConfig,
+        filterImage: filterImage);
+  }
+
   /// Bild mit Metadaten.
   late FilterImage filterImage =
       FilterImage(filename: defaultImageFilename, assetPath: defaultAssetPath);
@@ -57,6 +81,11 @@ abstract class ImageFilter extends Filter {
   /// Gibt die Position der Landmarke an, auf dessen Basis der Filter gerendert werden soll.
   @protected
   Offset? position;
+
+  /// Gibt optional die Basisgröße des Filters (ohne Skalierung aus der [config]) an,
+  /// falls diese nicht anhand der Gesichtsgröße berechnet werden soll.
+  @protected
+  Size? filterSize;
 
   @override
   FilterConfig get config => _config;
@@ -90,8 +119,10 @@ abstract class ImageFilter extends Filter {
     final rotatedOffset =
         GeometryService.rotateOffset(relativeOffset, totalRotation);
 
-    final filterWidth = faceSize.width * config.scale.scaleX;
-    final filterHeight = faceSize.height * config.scale.scaleY;
+    final filterWidth =
+        (filterSize?.width ?? faceSize.width) * config.scale.scaleX;
+    final filterHeight =
+        (filterSize?.height ?? faceSize.height) * config.scale.scaleY;
 
     final imageRect = Rect.fromCenter(
       center: Offset(

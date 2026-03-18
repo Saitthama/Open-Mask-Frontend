@@ -23,11 +23,9 @@ class AddFilterGrid extends StatelessWidget {
     final List<IFilter> filters =
         List.from(store.localFilters.where(searchFunction));
 
-    final Widget newIcon = Icon(
+    final Widget newIcon = const Icon(
       Icons.add_rounded,
-      color: (ButtonTheme.of(context).colorScheme == null)
-          ? Colors.black
-          : ButtonTheme.of(context).colorScheme!.onPrimary,
+      color: Colors.black,
     );
 
     Widget? defaultIcon;

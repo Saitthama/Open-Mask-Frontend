@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_mask/filter/filter_store.dart';
+import 'package:open_mask/filter/templates/color_filter.dart'
+    as om_color_filter;
 import 'package:open_mask/filter/templates/composite_filter.dart';
 import 'package:open_mask/filter/templates/filter.dart';
 import 'package:open_mask/filter/templates/image_filter.dart';
@@ -9,6 +11,7 @@ import 'package:open_mask/ui/views/face_markings_view.dart';
 import 'package:open_mask/ui/views/filter_view.dart';
 import 'package:open_mask/ui/widgets/add_filter_popup.dart';
 import 'package:open_mask/ui/widgets/blue_text_button.dart';
+import 'package:open_mask/ui/widgets/color_picker_popup.dart';
 import 'package:open_mask/ui/widgets/delete_button.dart';
 import 'package:open_mask/ui/widgets/editable_text_tile.dart';
 import 'package:open_mask/ui/widgets/face_markings_list_tile.dart';
@@ -267,30 +270,31 @@ class FilterEditorView extends StatelessWidget {
                     child: Column(
                       children: [
                         // y-Offset-Bearbeitung
-                        if (vm.selectedEditedFilter != null &&
-                            vm.selectedEditedFilter?.config != null)
-                          Expanded(
-                            child: SfSliderTheme(
-                              data: SfSliderThemeData(
-                                  tooltipBackgroundColor: Colors.green,
-                                  overlayRadius: buttonSize.width / 2),
-                              child: SfSlider.vertical(
-                                  activeColor: Colors.green,
-                                  inactiveColor: Colors.green,
-                                  min: -125,
-                                  max: 125,
-                                  stepSize: 1.0,
-                                  enableTooltip: true,
-                                  tooltipTextFormatterCallback: (final dynamic
-                                              actualValue,
-                                          final String formattedText) =>
-                                      'x=${(actualValue as double).round()}',
-                                  value: vm
-                                      .selectedEditedFilter!.config!.offset.dy,
-                                  onChanged: (final newDy) =>
-                                      vm.setOffsetDy(newDy)),
-                            ),
-                          ),
+                        Expanded(
+                          child: (vm.selectedEditedFilter != null &&
+                                  vm.selectedEditedFilter?.config != null)
+                              ? SfSliderTheme(
+                                  data: SfSliderThemeData(
+                                      tooltipBackgroundColor: Colors.green,
+                                      overlayRadius: buttonSize.width / 2),
+                                  child: SfSlider.vertical(
+                                      activeColor: Colors.green,
+                                      inactiveColor: Colors.green,
+                                      min: -125,
+                                      max: 125,
+                                      stepSize: 1.0,
+                                      enableTooltip: true,
+                                      tooltipTextFormatterCallback: (final dynamic
+                                                  actualValue,
+                                              final String formattedText) =>
+                                          'x=${(actualValue as double).round()}',
+                                      value: vm.selectedEditedFilter!.config!
+                                          .offset.dy,
+                                      onChanged: (final newDy) =>
+                                          vm.setOffsetDy(newDy)),
+                                )
+                              : Container(),
+                        ),
 
                         // Bildauswahl
                         if (vm.selectedEditedFilter is ImageFilter)
@@ -299,6 +303,14 @@ class FilterEditorView extends StatelessWidget {
                             onTap: () => _openSelectionPopup(context),
                             icon: Icons.image_rounded,
                           ),
+
+                        // Farbauswahl
+                        if (vm.selectedEditedFilter
+                            is om_color_filter.ColorFilter)
+                          RoundIconButton(
+                              size: buttonSize,
+                              icon: Icons.color_lens_rounded,
+                              onTap: () => _pickColor(context, vm)),
                       ],
                     ),
                   ),
@@ -420,13 +432,27 @@ class FilterEditorView extends StatelessWidget {
     );
   }
 
-  /// Öffnet ein Popup zum Anzeigen und Verändern der Filter-Metadaten des aktuellen Filters im gegebenen [context].
+  /// Öffnet das [FilterMetaPopup] zum Anzeigen und Verändern der Filter-Metadaten des aktuellen Filters im gegebenen [context].
   void _openFilterMetaPopup(final BuildContext context, final Filter filter) {
     final theme = Theme.of(context);
     showDialog(
       context: context,
       barrierColor: theme.colorScheme.surface.withAlpha(180),
       builder: (final context) => FilterMetaPopup(filter),
+    );
+  }
+
+  /// Öffnet das [ColorPickerPopup], um eine Farbe für den Filter auszuwählen.
+  void _pickColor(final BuildContext context, final FilterEditorViewModel vm) {
+    final om_color_filter.ColorFilter filter =
+        (vm.selectedEditedFilter as om_color_filter.ColorFilter);
+    showDialog(
+      context: context,
+      barrierColor: Theme.of(context).colorScheme.surface.withAlpha(180),
+      builder: (final context) => ColorPickerPopup(
+        getColor: () => filter.color,
+        setColor: vm.setColor,
+      ),
     );
   }
 }

@@ -8,6 +8,8 @@ import 'package:open_mask/data/services/face_detection_service.dart';
 import 'package:open_mask/data/services/image_service.dart';
 import 'package:open_mask/filter/filter_store.dart';
 import 'package:open_mask/filter/i_filter.dart';
+import 'package:open_mask/filter/templates/color_filter.dart'
+    as om_color_filter;
 import 'package:open_mask/filter/templates/composite_filter.dart';
 import 'package:open_mask/ui/screens/filter_editor_screen.dart';
 import 'package:open_mask/ui/views/filter_editor_view.dart';
@@ -256,6 +258,15 @@ class FilterEditorViewModel extends ChangeNotifier {
     }
     selectedEditedFilter!.config!.scale = Scale(scale, scale);
     notifyListeners();
+  }
+
+  /// Setzt die Farbe des Filters, falls dieser ein Farbfilter ist.
+  void setColor(final Color color) {
+    if (selectedEditedFilter is! om_color_filter.ColorFilter) {
+      return;
+    }
+    (selectedEditedFilter as om_color_filter.ColorFilter).color = color;
+    FilterStore.instance.selectedEditedFilter = selectedEditedFilter;
   }
 
   /// Überprüft, ob der [currentFilter] bereits existiert und speichert ihn gegebenenfalls.

@@ -32,6 +32,9 @@ class FilterTile extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode =
+        MediaQuery.of(context).platformBrightness == Brightness.dark;
     return GestureDetector(
       onTap: () => onTap(filter),
       child: Column(
@@ -39,10 +42,17 @@ class FilterTile extends StatelessWidget {
           Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurface.withAlpha(220),
+              color: (isDarkMode
+                      ? theme.colorScheme.onSurface
+                      : theme.colorScheme.surface)
+                  .withAlpha(220),
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? Colors.blue : Colors.transparent,
+                color: isSelected
+                    ? Colors.blue
+                    : isDarkMode
+                        ? Colors.transparent
+                        : theme.colorScheme.onSurface,
                 width: 3,
               ),
             ),

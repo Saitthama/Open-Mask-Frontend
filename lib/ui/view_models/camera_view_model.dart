@@ -7,18 +7,19 @@ import 'package:open_mask/data/services/camera_service.dart';
 import 'package:open_mask/data/services/face_detection_service.dart';
 import 'package:open_mask/data/services/image_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
-import 'package:open_mask/filter/configs/filter_config.dart';
 import 'package:open_mask/filter/filter_factory.dart';
-import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_store.dart';
 import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/filter/templates/composite_filter.dart';
 import 'package:open_mask/filter/templates/hat_filter.dart';
+import 'package:open_mask/filter/templates/left_eye_color_filter.dart';
 import 'package:open_mask/filter/templates/left_eye_filter.dart';
 import 'package:open_mask/filter/templates/mask_filter.dart' as om_mf;
+import 'package:open_mask/filter/templates/mouth_filter.dart';
 import 'package:open_mask/filter/templates/mustache_filter.dart';
+import 'package:open_mask/filter/templates/right_eye_color_filter.dart';
 import 'package:open_mask/filter/templates/right_eye_filter.dart';
 import 'package:open_mask/ui/screens/camera_screen.dart';
 import 'package:open_mask/ui/views/camera_view.dart';
@@ -127,73 +128,75 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
   /// Lädt den Filter in die lokale Variable [filter] und startet das asynchrone Laden der externen Ressourcen mit [IFilter.load].
   Future<void> loadFilter() async {
     // TODO: Vordefinierte Filter als Assets speichern
-    FilterMeta meta = FilterMeta(
-        name: 'Mustache Filter 1', description: 'Oberer Schnurrbart');
-    MustacheFilter mustacheFilter =
-        MustacheFilter(config: FilterConfig(), meta: meta, filterImage: null);
-    meta.icon = Image.asset(mustacheFilter.defaultAssetPath);
-
-    FilterMeta meta2 = FilterMeta(
-        name: 'Mustache Filter 2', description: 'Unterer Schnurrbart');
-    FilterConfig config2 = FilterConfig(
-        offset: const Offset(0, -11.5),
-        scale: const Scale(0.5, 0.5),
-        opacity: 0.5);
-    FilterImage onlineMustacheImage = FilterImage(
-        filename: 'online_mustache.png',
-        imageUrl: 'https://pngimg.com/uploads/moustache/moustache_PNG43.png');
-    MustacheFilter mustacheFilter2 = MustacheFilter(
-        config: config2, meta: meta2, filterImage: onlineMustacheImage);
-
-    HatFilter hatFilter = FilterFactory.create(FilterType.hat) as HatFilter;
-    hatFilter.meta.name = 'Hat Filter';
-    hatFilter.meta.description = 'Hut-Filter';
-    hatFilter.meta.icon = Image.asset(hatFilter.defaultAssetPath);
-    hatFilter.config.scale = const Scale(1.3, 1.2);
-
+    // Aktuellen Composite-Filter setzen
+    MustacheFilter mustache1 = (FilterFactory.create(FilterType.mustache)
+        as MustacheFilter)
+      ..meta.description = 'Standardschnurrbart';
+    MustacheFilter mustache2 =
+        (FilterFactory.create(FilterType.mustache) as MustacheFilter)
+          ..config.offset = const Offset(0, -11.5)
+          ..config.scale = const Scale(0.5, 0.5)
+          ..config.opacity = 0.5
+          ..filterImage.assetPath = null
+          ..filterImage.imageUrl =
+              'https://pngimg.com/uploads/moustache/moustache_PNG43.png'
+          ..filterImage.filename = 'online_mustache.png';
+    HatFilter hatFilter = (FilterFactory.create(FilterType.hat) as HatFilter)
+      ..meta.name = 'Hut-Filter'
+      ..meta.description = 'Filter mit dem Standardhut';
     om_mf.MaskFilter maskFilter = ((FilterFactory.create(FilterType.mask)
       ..config?.opacity = 0.5) as om_mf.MaskFilter);
     maskFilter.meta.name = 'Transparente Maske';
     maskFilter.meta.icon =
         Opacity(opacity: 0.5, child: Image.asset(maskFilter.defaultAssetPath));
-
-    FilterStore.instance.addLocalFilter(mustacheFilter);
-    FilterStore.instance.addLocalFilter(mustacheFilter2);
-    FilterStore.instance.addLocalFilter(hatFilter);
-    FilterStore.instance.addLocalFilter(maskFilter);
-
     FilterMeta metaComposite = FilterMeta(
         name: 'Hut-Schnurrbart-Filter', description: 'Schnurrbart und Hut');
     CompositeFilter compositeFilter = CompositeFilter(meta: metaComposite);
-    compositeFilter.addFilter(mustacheFilter);
-    compositeFilter.addFilter(mustacheFilter2);
+    compositeFilter.addFilter(mustache1);
+    compositeFilter.addFilter(mustache2);
     compositeFilter.addFilter(hatFilter);
     compositeFilter.addFilter(maskFilter);
 
     FilterStore.instance.addLocalFilter(compositeFilter);
-
     FilterStore.instance.selectedFilter = compositeFilter;
-
-    // Beispiele für eigene Filter für die Filterauswahl
-    // TODO: ersetzen durch Filterwerkstatt
-    om_mf.MaskFilter ownMaskFilter =
-        ((FilterFactory.create(FilterType.mask, isCreatedByUser: true))
-            as om_mf.MaskFilter);
-    ownMaskFilter.meta.name = 'Eigene Maske';
-    ownMaskFilter.meta.icon = Image.asset(ownMaskFilter.defaultAssetPath);
-    CompositeFilter ownCompositeFilter =
-        FilterFactory.create(FilterType.composite, isCreatedByUser: true)
-            as CompositeFilter;
-    ownCompositeFilter.meta.name = 'Hut & Maske';
-    ownCompositeFilter.meta.description =
-        'Beispiel für einen eigenen Composite-Filter mit Hut & Maske';
-    ownCompositeFilter.addFilter(ownMaskFilter);
-    ownCompositeFilter.addFilter(hatFilter);
-    FilterStore.instance.addLocalFilter(ownMaskFilter);
-    FilterStore.instance.addLocalFilter(ownCompositeFilter);
 
     // Laden der externen Resourcen asynchron starten, damit die Kamera nicht blockiert wird.
     filter?.load();
+
+    om_mf.MaskFilter mask = (FilterFactory.create(FilterType.mask)
+        as om_mf.MaskFilter)
+      ..meta.name = 'Standardmaske';
+    CompositeFilter hatAndMask =
+        (FilterFactory.create(FilterType.composite) as CompositeFilter)
+          ..meta.name = 'Hut & Maske'
+          ..meta.description = 'Zusammengesetzter Filter mit Hut & Maske';
+    hatAndMask.addFilter(mask);
+    hatAndMask.addFilter(hatFilter);
+    FilterStore.instance.addLocalFilter(hatAndMask);
+
+    // Hüte:
+    FilterStore.instance.addLocalFilter(FilterFactory.create(FilterType.hat));
+    HatFilter cowboyHat = (FilterFactory.create(FilterType.hat) as HatFilter)
+      ..filterImage.filename = 'detective_hat.png'
+      ..filterImage.assetPath = 'assets/images/filter/detective_hat.png'
+      ..meta.name = 'Detektivhut'
+      ..meta.description = 'Brauner Detektivhut'
+      ..meta.icon = Image.asset('assets/images/filter/detective_hat.png')
+      ..config.scale = const Scale(1.65, 1.65)
+      ..config.offset = const Offset(0, -14);
+    FilterStore.instance.addLocalFilter(cowboyHat);
+    HatFilter brownHat = (FilterFactory.create(FilterType.hat) as HatFilter)
+      ..filterImage.filename = 'brown_hat.png'
+      ..filterImage.assetPath = 'assets/images/filter/brown_hat.png'
+      ..meta.name = 'Brauner Hut'
+      ..meta.description = 'Brauner Standardhut'
+      ..meta.icon = Image.asset('assets/images/filter/brown_hat.png')
+      ..config.scale = const Scale(1.65, 1.65)
+      ..config.offset = const Offset(0, -14);
+    FilterStore.instance.addLocalFilter(brownHat);
+
+    // Masken:
+    FilterStore.instance.addLocalFilter(FilterFactory.create(FilterType.mask));
 
     LeftEyeFilter leftEye =
         FilterFactory.create(FilterType.leftEye) as LeftEyeFilter;
@@ -214,6 +217,35 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
       Image.asset(rightEye.defaultAssetPath)
     ]);
     FilterStore.instance.addLocalFilter(eyes);
+
+    // Farbaugen
+    IFilter leftColorEye = (FilterFactory.create(FilterType.leftColorEye)
+        as LeftEyeColorFilter)
+      ..color = Colors.red;
+    IFilter rightColorEye = (FilterFactory.create(FilterType.rightColorEye)
+        as RightEyeColorFilter)
+      ..color = Colors.red;
+    CompositeFilter colorEyes =
+        FilterFactory.create(FilterType.composite) as CompositeFilter;
+    colorEyes.meta.name = 'Farbaugen';
+    Widget eyeIcon = const Icon(
+      Icons.remove_red_eye_rounded,
+      color: Colors.black,
+    );
+    colorEyes.meta.icon = Row(spacing: 5, children: [eyeIcon, eyeIcon]);
+    colorEyes.addFilter(leftColorEye);
+    colorEyes.addFilter(rightColorEye);
+    FilterStore.instance.addLocalFilter(colorEyes);
+
+    FilterStore.instance.addLocalFilter(FilterFactory.create(FilterType.mouth));
+    MouthFilter creepyMouth =
+        (FilterFactory.create(FilterType.mouth) as MouthFilter)
+          ..filterImage.assetPath = 'assets/images/filter/creepy_mouth.png'
+          ..meta.icon = Image.asset('assets/images/filter/creepy_mouth.png')
+          ..meta.name = 'Unheimliches Lächeln'
+          ..config.offset = const Offset(0.0, 4.0)
+          ..config.scale = const Scale(2.0, 2.0);
+    FilterStore.instance.addLocalFilter(creepyMouth);
   }
 
   /// Initialisiert die Kamera und Gesichtserkennung.
