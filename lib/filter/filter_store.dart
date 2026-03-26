@@ -166,7 +166,7 @@ class FilterStore extends ChangeNotifier {
   /// Erstellt einen neuen Filter zur Bearbeitung und fügt ihn zu [currentlyEditedFilter] hinzu.
   void createFilterToEdit(final FilterType type) {
     IFilter filter = FilterFactory.create(type, isCreatedByUser: true);
-    FilterStore.instance.addFilterToEdit(filter);
+    addFilterToEdit(filter);
   }
 
   /// Lädt das Filterbild des aktuell im Editor ausgewählten Filters vom angegebenen [assetPath]. <br>
@@ -231,6 +231,7 @@ class FilterStore extends ChangeNotifier {
         (FilterStore.instance.selectedEditedFilter as ImageFilter);
     File imageFile = File(xFileImage.path);
     ui.Image image = await ImageService.loadUiImageFromFile(imageFile);
+    imageFilter.filterImage.image?.dispose();
     FilterImage filterImage = FilterImage(
         image: image,
         filename: '${imageFilter.type}',
@@ -243,9 +244,21 @@ class FilterStore extends ChangeNotifier {
   }
 
   /// Setzt den lokalen Filter-Speicher vollständig zurück und löscht alle enthaltenen Filter.
+  /// Löscht auch alle geladenen Filterbilder.
   void clear() {
+    if (_selectedFilter is ImageFilter) {
+      (_selectedEditedFilter as ImageFilter).dispose();
+    }
     _selectedFilter = null;
+    if (_currentlyEditedFilter is ImageFilter) {
+      (_currentlyEditedFilter as ImageFilter).dispose();
+    }
     _currentlyEditedFilter = null;
+    for (final IFilter filter in [..._localFilters, ..._communityFilters]) {
+      if (filter is ImageFilter) {
+        filter.dispose();
+      }
+    }
     _localFilters.clear();
     _communityFilters.clear();
     notifyListeners();

@@ -54,4 +54,10 @@ class FilterConfig {
         'rotation': rotation,
         'opacity': opacity
       };
+
+  /// Erstellt eine Kopie der Filterkonfiguration.
+  FilterConfig fork() {
+    return FilterConfig(
+        offset: offset, scale: scale, rotation: rotation, opacity: opacity);
+  }
 }

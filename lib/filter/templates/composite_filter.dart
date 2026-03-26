@@ -12,7 +12,7 @@ import 'package:open_mask/filter/templates/filter.dart';
 /// Wendet alle enthaltenen Filter auf dasselbe Gesicht an.
 class CompositeFilter extends Filter {
   /// Standard-Konstruktor.
-  CompositeFilter({required super.meta})
+  CompositeFilter({super.id, required super.meta, super.parentId})
       : super(config: null, type: FilterType.composite);
 
   /// Factory-Methode zur JSON‑Deserialisierung.
@@ -80,6 +80,20 @@ class CompositeFilter extends Filter {
       loadedAll = await filter.load();
     }
     return loadedAll;
+  }
+
+  @override
+  void dispose() {
+    for (final IFilter filter in _filterList) {
+      filter.dispose();
+    }
+  }
+
+  @override
+  CompositeFilter fork() {
+    CompositeFilter fork = super.fork() as CompositeFilter;
+    fork._filterList.addAll(_filterList.map((final filter) => filter.fork()));
+    return fork;
   }
 
   @override

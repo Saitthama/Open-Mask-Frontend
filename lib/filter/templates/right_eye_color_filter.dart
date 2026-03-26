@@ -8,7 +8,8 @@ import 'package:open_mask/filter/templates/color_filter.dart'
 /// Farbfilter, der das rechte Auge ausfüllt. Wird nicht angezeigt, wenn das Auge geschlossen ist.
 class RightEyeColorFilter extends om_color_filter.ColorFilter {
   /// Standard-Konstruktor.
-  RightEyeColorFilter({super.id, required super.meta, super.color})
+  RightEyeColorFilter(
+      {super.id, required super.meta, super.parentId, super.color})
       : super(type: FilterType.rightColorEye) {
     if (meta.iconIsDefault) {
       meta.icon = const Icon(

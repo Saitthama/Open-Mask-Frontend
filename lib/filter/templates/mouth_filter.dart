@@ -14,6 +14,7 @@ class MouthFilter extends ImageFilter {
       {super.id,
       required super.meta,
       required super.config,
+      super.parentId,
       required super.filterImage})
       : super(
             type: FilterType.mouth,

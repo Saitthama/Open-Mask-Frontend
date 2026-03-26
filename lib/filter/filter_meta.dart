@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:open_mask/data/model/user.dart';
+import 'package:open_mask/data/services/auth_service.dart';
 
 /// Enthält alle Metadaten eines Filters.
 class FilterMeta {
@@ -14,7 +15,7 @@ class FilterMeta {
       final Widget? icon})
       : _name = name,
         _description = description,
-        _updatedAt = updatedAt,
+        _updatedAt = updatedAt ?? createdAt,
         _isPublic = isPublic,
         _icon = icon;
 
@@ -23,7 +24,8 @@ class FilterMeta {
       name: json['name'],
       description: json['description'],
       isPublic: json['published'],
-      createdBy: json['createdBy'] ?? User.fromJson(json['createdBy']),
+      createdBy:
+          json['createdBy'] == null ? null : User.fromJson(json['createdBy']),
       createdAt: DateTime.tryParse(json['createdAt']),
       updatedAt: DateTime.tryParse(json['updatedAt']));
 
@@ -101,13 +103,13 @@ class FilterMeta {
   Map<String, dynamic> toJSON() => {
         'name': name,
         'description': description,
+        'published': isPublic,
         if (createdBy != null) 'createdById': createdBy?.id,
         if (createdAt != null) 'createdAt': createdAt?.toIso8601String(),
         if (updatedAt != null) 'updatedAt': updatedAt?.toIso8601String(),
-        'published': isPublic
       };
 
-  /// Methode zur JSON-Serialisierung für die lokale Speicherung oder den Export
+  /// Methode zur JSON-Serialisierung für die lokale Speicherung oder den Export.
   Map<String, dynamic> toExportAsJSON() => {
         'name': name,
         'description': description,
@@ -116,4 +118,16 @@ class FilterMeta {
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),
       };
+
+  /// Erstellt eine Kopie der Metadaten.
+  FilterMeta fork() {
+    return FilterMeta(
+      name: _name,
+      description: _description,
+      createdBy: AuthService.instance.user,
+      createdAt: DateTime.now(),
+      isPublic: _isPublic,
+      icon: _icon,
+    );
+  }
 }

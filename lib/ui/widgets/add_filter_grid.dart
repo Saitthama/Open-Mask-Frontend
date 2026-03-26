@@ -33,8 +33,10 @@ class AddFilterGrid extends StatelessWidget {
     void onTap(final Filter element) {
       if (element.meta.icon == newIcon) {
         element.meta.icon = defaultIcon;
+        FilterStore.instance.addFilterToEdit(element);
+      } else {
+        FilterStore.instance.addFilterToEdit(element.fork());
       }
-      FilterStore.instance.addFilterToEdit(element);
       Navigator.pop(context);
     }
 

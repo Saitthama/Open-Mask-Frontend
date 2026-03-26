@@ -12,10 +12,11 @@ import 'package:open_mask/filter/templates/filter.dart';
 abstract class ImageFilter extends Filter {
   /// Standard-Konstruktor.
   ImageFilter(
-      {super.id,
+      {required super.id,
       required super.meta,
       required super.type,
       required FilterConfig super.config,
+      required super.parentId,
       required final FilterImage? filterImage,
       required this.defaultImageFilename,
       required this.defaultAssetPath,
@@ -43,6 +44,7 @@ abstract class ImageFilter extends Filter {
               {required FilterConfig config,
               required FilterImage? filterImage,
               int? id,
+              int? parentId,
               required FilterMeta meta})
           filterCreator) {
     Map<String, dynamic> configJson = json['config'] ?? {};
@@ -53,9 +55,10 @@ abstract class ImageFilter extends Filter {
     FilterConfig filterConfig = FilterConfig.fromJSON(configJson);
 
     return filterCreator(
-        id: int.tryParse(json['id']),
+        id: json['id'] as int,
         meta: FilterMeta.fromJson(json['meta']),
         config: filterConfig,
+        parentId: json['parentId'] as int,
         filterImage: filterImage);
   }
 
@@ -97,8 +100,22 @@ abstract class ImageFilter extends Filter {
   }
 
   @override
+  void dispose() {
+    filterImage.dispose();
+  }
+
+  @override
   Map<String, dynamic> toJSON() =>
       {...super.toJSON(), 'filterImage': filterImage.toJSON()};
+
+  @override
+  ImageFilter fork() {
+    ImageFilter fork = super.fork() as ImageFilter;
+    fork.filterImage = filterImage.fork();
+    fork.position = position;
+    fork.filterSize = filterSize;
+    return fork;
+  }
 
   @override
   void apply(

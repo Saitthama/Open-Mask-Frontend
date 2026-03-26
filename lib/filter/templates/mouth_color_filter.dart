@@ -11,7 +11,7 @@ import 'package:open_mask/filter/templates/color_filter.dart'
 /// Farbfilter, der das innere des Mundes ausfüllt.
 class MouthColorFilter extends om_color_filter.ColorFilter {
   /// Standard-Konstruktor.
-  MouthColorFilter({super.id, required super.meta, super.color})
+  MouthColorFilter({super.id, required super.meta, super.parentId, super.color})
       : super(type: FilterType.innerMouth);
 
   /// Factory-Methode zur JSON‑Deserialisierung.

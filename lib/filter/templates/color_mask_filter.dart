@@ -7,7 +7,7 @@ import 'package:open_mask/filter/templates/color_filter.dart';
 /// Farbfilter, welcher die Konturen des Gesichts ausfüllt, aber die Augen ausschließt.
 class ColorMaskFilter extends ColorFilter {
   /// Standard-Konstruktor.
-  ColorMaskFilter({super.id, required super.meta, super.color})
+  ColorMaskFilter({super.id, required super.meta, super.parentId, super.color})
       : super(type: FilterType.colorMask) {
     if (meta.iconIsDefault) {
       meta.icon = Image.asset('assets/images/filter/app_mask.png');

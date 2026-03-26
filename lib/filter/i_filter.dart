@@ -19,6 +19,15 @@ abstract class IFilter {
   /// Der zurückgelieferte Boolean gibt an, ob das Laden erfolgreich war.
   Future<bool> load();
 
+  /// Gibt die verwendete Ressourcen frei.
+  void dispose();
+
   /// Methode zur JSON‑Serialisierung, welche den Filter in ein JSON-Objekt umwandelt.
   Map<String, dynamic> toJSON();
+
+  /// Methode zur JSON-Serialisierung für den Export von Filtern.
+  Map<String, dynamic> toExportAsJSON();
+
+  /// Erstellt eine Fork eines Filters.
+  IFilter fork();
 }

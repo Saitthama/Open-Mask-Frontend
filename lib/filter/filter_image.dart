@@ -13,6 +13,7 @@ class FilterImage {
       this.assetPath,
       this.imageUrl,
       this.image,
+      this.mimeType,
       final int? width,
       final int? height})
       : _width = width,
@@ -20,12 +21,12 @@ class FilterImage {
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory FilterImage.fromJSON(final Map<String, dynamic> json) => FilterImage(
-      id: int.tryParse(json['id']),
+      id: json['id'] as int,
       filename: json['filename'] ?? 'filter_image',
       assetPath: json['assetPath'],
       imageUrl: json['imageUrl'],
-      width: int.tryParse(json['width']),
-      height: int.tryParse(json['height']));
+      width: json['width'] as int,
+      height: json['height'] as int);
 
   /// Eindeutige Datenbank-ID des Filters.
   final int? id;
@@ -138,6 +139,12 @@ class FilterImage {
     return loaded;
   }
 
+  /// Gibt die verwendete Ressourcen für das Bild frei.
+  void dispose() {
+    image?.dispose();
+    image = null;
+  }
+
   /// Methode zur JSON‑Serialisierung, welche den Filter in ein JSON-Objekt umwandelt.
   Map<String, dynamic> toJSON() => {
         if (id != null) 'id': id,
@@ -147,4 +154,14 @@ class FilterImage {
         'width': width,
         'height': height,
       };
+
+  /// Erstellt eine unabhängige Kopie des der [FilterImage]-Instanz.
+  FilterImage fork() {
+    return FilterImage(
+        id: id,
+        filename: filename,
+        assetPath: assetPath,
+        imageUrl: imageUrl,
+        image: image?.clone());
+  }
 }

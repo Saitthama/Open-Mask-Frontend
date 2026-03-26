@@ -11,7 +11,7 @@ import 'package:open_mask/filter/templates/color_filter.dart'
 /// Farbfilter, der die Lippen ausfüllt.
 class LipColorFilter extends om_color_filter.ColorFilter {
   /// Standard-Konstruktor.
-  LipColorFilter({super.id, required super.meta, super.color})
+  LipColorFilter({super.id, required super.meta, super.parentId, super.color})
       : super(type: FilterType.lips);
 
   /// Factory-Methode zur JSON‑Deserialisierung.

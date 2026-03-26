@@ -6,9 +6,10 @@ import 'package:open_mask/filter/templates/filter.dart';
 abstract class ColorFilter extends Filter {
   /// Standard-Konstruktor.
   ColorFilter(
-      {super.id,
+      {required super.id,
       required super.meta,
       required super.type,
+      required super.parentId,
       this.color =
           const Color.from(alpha: 255, red: 255, green: 255, blue: 255)})
       : super(config: null);
@@ -50,5 +51,15 @@ abstract class ColorFilter extends Filter {
   @override
   Future<bool> load() async {
     return true;
+  }
+
+  @override
+  void dispose() {}
+
+  @override
+  ColorFilter fork() {
+    ColorFilter fork = super.fork() as ColorFilter;
+    fork.color = color;
+    return fork;
   }
 }

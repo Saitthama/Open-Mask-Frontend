@@ -24,51 +24,66 @@ class FilterFactory {
       {final bool isCreatedByUser = false}) {
     FilterMeta meta = isCreatedByUser
         ? FilterMeta(
-        createdBy: AuthService.instance.user, createdAt: DateTime.now())
+            createdBy: AuthService.instance.user, createdAt: DateTime.now())
         : FilterMeta();
+    meta.name = type.displayName;
+    FilterConfig config = FilterConfig();
+    return createType(type, meta, config: config);
+  }
+
+  /// Erzeugt einen neuen Filter mit dem passenden Typ und der angegebenen Konfiguration und den Metadaten.
+  static IFilter createType(final FilterType type, final FilterMeta meta,
+      {final FilterConfig? config, final int? parentId}) {
     switch (type) {
       case FilterType.composite:
-        meta.name = filterTypeNames[type] ?? 'Composite-Filter';
-        return CompositeFilter(meta: meta);
+        return CompositeFilter(meta: meta, parentId: parentId);
       case FilterType.mustache:
-        meta.name = filterTypeNames[type] ?? 'Schnurrbart';
         return MustacheFilter(
-            meta: meta, config: FilterConfig(), filterImage: null);
+            meta: meta,
+            config: config ?? FilterConfig(),
+            parentId: parentId,
+            filterImage: null);
       case FilterType.hat:
-        meta.name = filterTypeNames[type] ?? 'Hut';
-        return HatFilter(meta: meta, config: FilterConfig(), filterImage: null);
+        return HatFilter(
+            meta: meta,
+            config: config ?? FilterConfig(),
+            parentId: parentId,
+            filterImage: null);
       case FilterType.mask:
-        meta.name = filterTypeNames[type] ?? 'Maske';
         return MaskFilter(
-            meta: meta, config: FilterConfig(), filterImage: null);
+            meta: meta,
+            config: config ?? FilterConfig(),
+            parentId: parentId,
+            filterImage: null);
       case FilterType.leftEye:
-        meta.name = filterTypeNames[type] ?? 'Linkes Auge';
         return LeftEyeFilter(
-            meta: meta, config: FilterConfig(), filterImage: null);
+            meta: meta,
+            config: config ?? FilterConfig(),
+            parentId: parentId,
+            filterImage: null);
       case FilterType.rightEye:
-        meta.name = filterTypeNames[type] ?? 'Rechtes Auge';
         return RightEyeFilter(
-            meta: meta, config: FilterConfig(), filterImage: null);
+            meta: meta,
+            config: config ?? FilterConfig(),
+            parentId: parentId,
+            filterImage: null);
       case FilterType.rightColorEye:
-        meta.name = filterTypeNames[type] ?? 'Rechtes Farbauge';
-        return RightEyeColorFilter(meta: meta);
+        return RightEyeColorFilter(meta: meta, parentId: parentId);
       case FilterType.leftColorEye:
-        meta.name = filterTypeNames[type] ?? 'Linkes Farbauge';
-        return LeftEyeColorFilter(meta: meta);
+        return LeftEyeColorFilter(meta: meta, parentId: parentId);
       case FilterType.colorMask:
-        meta.name = filterTypeNames[type] ?? 'Farbmaske';
-        return ColorMaskFilter(meta: meta);
+        return ColorMaskFilter(meta: meta, parentId: parentId);
       case FilterType.lips:
-        meta.name = filterTypeNames[type] ?? 'Lippen';
-        return LipColorFilter(meta: meta);
+        return LipColorFilter(meta: meta, parentId: parentId);
       case FilterType.innerMouth:
-        meta.name = filterTypeNames[type] ?? 'Mundinneres';
-        return MouthColorFilter(meta: meta);
+        return MouthColorFilter(meta: meta, parentId: parentId);
       case FilterType.mouth:
-        meta.name = filterTypeNames[type] ?? 'Mund';
         return MouthFilter(
-            meta: meta, config: FilterConfig(), filterImage: null);
-    // TODO: weitere Filterarten
+            meta: meta,
+            config: config ?? FilterConfig(),
+            parentId: parentId,
+            filterImage: null);
+      // TODO: weitere Filterarten
     }
   }
 
@@ -100,7 +115,7 @@ class FilterFactory {
         return MouthColorFilter.fromJSON(json);
       case FilterType.mouth:
         return MouthFilter.fromJSON(json);
-    // TODO: weitere Filterarten
+      // TODO: weitere Filterarten
     }
   }
 }

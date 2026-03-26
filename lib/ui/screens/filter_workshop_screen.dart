@@ -68,7 +68,9 @@ class _FilterWorkshopScreenState extends State<FilterWorkshopScreen> {
                     getFilterList: FilterStore.instance.getPredefinedFilters,
                     onEdit: null,
                     onDelete: null,
-                    onFork: (final filter) {},
+                    onFork: (final filter) {
+                      FilterStore.instance.addLocalFilter(filter.fork());
+                    },
                     changeNotifier: null,
                   ),
                   FilterList(
@@ -78,13 +80,17 @@ class _FilterWorkshopScreenState extends State<FilterWorkshopScreen> {
                       _openEditor(context);
                     },
                     onDelete: FilterStore.instance.removeLocalFilter,
-                    onFork: (final filter) {},
+                    onFork: (final filter) {
+                      FilterStore.instance.addLocalFilter(filter.fork());
+                    },
                     changeNotifier: FilterStore.instance,
                   ),
                   FilterList(
                     getFilterList: () => FilterStore.instance.communityFilters,
                     onDelete: null,
-                    onFork: (final filter) {},
+                    onFork: (final filter) {
+                      FilterStore.instance.addLocalFilter(filter.fork());
+                    },
                     changeNotifier: FilterStore.instance,
                   ),
                 ],

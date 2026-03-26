@@ -15,8 +15,7 @@ class AddFilterPopup extends StatelessWidget {
     for (final FilterType type in FilterType.values) {
       grids.add(AddFilterGrid(filterType: type));
       tabs.add(Tab(
-        text: filterTypeNames[type] ??
-            '${type.name[0].toUpperCase()}${type.name.substring(1)}',
+        text: type.displayName,
       ));
     }
 

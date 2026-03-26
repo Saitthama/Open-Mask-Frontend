@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:open_mask/filter/templates/filter.dart';
 import 'package:open_mask/ui/widgets/filter_icon.dart';
 
+import 'filter_meta_popup.dart';
+
 /// Listenelement, welches einen Filter aus einer Liste für die Bearbeitung repräsentiert.
 class FilterListTile extends StatelessWidget {
   /// Konstruktor, welcher den darzustellenden [filter] bekommt.
@@ -47,6 +49,17 @@ class FilterListTile extends StatelessWidget {
             if (onEdit != null)
               IconButton(
                   onPressed: onEdit, icon: const Icon(Icons.edit_rounded)),
+            if (onEdit == null)
+              IconButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      barrierColor:
+                          Theme.of(context).colorScheme.surface.withAlpha(180),
+                      builder: (final context) => FilterMetaPopup(filter),
+                    );
+                  },
+                  icon: const Icon(Icons.info_outline_rounded))
           ],
         ),
       ),

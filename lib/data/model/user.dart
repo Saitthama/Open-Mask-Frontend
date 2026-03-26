@@ -41,13 +41,4 @@ class User {
         'email': email,
         'name': name
       };
-
-  /// Methode zum Exportieren eines JSONs
-  Map<String, dynamic> toExportAsJSON() => {
-        'id': id,
-        'username': username,
-        'displayName': displayName,
-        'email': email,
-        'name': name
-      };
 }

@@ -1,4 +1,5 @@
 import 'package:open_mask/filter/configs/filter_config.dart';
+import 'package:open_mask/filter/filter_factory.dart';
 import 'package:open_mask/filter/filter_meta.dart';
 import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/i_filter.dart';
@@ -8,11 +9,11 @@ import 'package:open_mask/filter/i_filter.dart';
 abstract class Filter implements IFilter {
   /// Standard-Konstruktor.
   Filter(
-      {this.id,
+      {required this.id,
       required this.meta,
       required final config,
       required this.type,
-      this.parentId})
+      required this.parentId})
       : _config = config;
 
   /// Eindeutige Datenbank-ID des Filters.
@@ -30,8 +31,14 @@ abstract class Filter implements IFilter {
   /// Typ des Filters (z.B. mustache, hat, mask).
   final FilterType type;
 
-  /// Id des Partent-Filters, falls der Filter ein Fork ist.
+  /// Id des Parent-Filters, falls der Filter ein Fork ist.
   final int? parentId;
+
+  @override
+  Filter fork() {
+    return FilterFactory.createType(type, meta.fork(),
+        config: config?.fork(), parentId: id) as Filter;
+  }
 
   @override
   Map<String, dynamic> toJSON() => {
@@ -42,4 +49,11 @@ abstract class Filter implements IFilter {
         if (parentId != null) 'parentId': parentId,
         // TODO: evtl. wichtige Eigenschaften wie Ersteller und Name aus der Datenbank laden, statt der Id
       };
+
+  @override
+  Map<String, dynamic> toExportAsJSON() {
+    Map<String, dynamic> json = toJSON();
+    json['meta'] = meta.toExportAsJSON();
+    return json;
+  }
 }
