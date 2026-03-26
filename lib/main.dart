@@ -59,61 +59,66 @@ class OpenMask extends StatelessWidget {
   }
 
   MaterialApp _materialApp(final GoRouter router) {
+    final tabBarTheme = const TabBarThemeData(
+      labelColor: Colors.indigo,
+      indicatorColor: Colors.indigo,
+    );
     return MaterialApp.router(
       title: 'Open-Mask',
       theme: ThemeData(
-        brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        progressIndicatorTheme: ProgressIndicatorThemeData(
-            color: Colors.blueAccent,
-            circularTrackColor: Colors.white.withAlpha(30)),
-        useMaterial3: true,
-        dividerColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.black),
-        buttonTheme: const ButtonThemeData(
-            colorScheme: ColorScheme.highContrastLight(primary: Colors.black)),
-        appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-            titleTextStyle: TextStyle(color: Colors.black, fontSize: 23)),
-        inputDecorationTheme: InputDecorationTheme(
-          errorStyle: const TextStyle(color: Colors.red),
-          hintStyle: const TextStyle(color: Colors.grey),
-          filled: true,
-          fillColor: Colors.grey[5],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none,
+          brightness: Brightness.light,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          progressIndicatorTheme: ProgressIndicatorThemeData(
+              color: Colors.indigo,
+              circularTrackColor: Colors.white.withAlpha(30)),
+          useMaterial3: true,
+          dividerColor: Colors.black,
+          iconTheme: const IconThemeData(color: Colors.black),
+          buttonTheme: const ButtonThemeData(
+              colorScheme:
+                  ColorScheme.highContrastLight(primary: Colors.black)),
+          appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              titleTextStyle: TextStyle(color: Colors.black, fontSize: 23)),
+          inputDecorationTheme: InputDecorationTheme(
+            errorStyle: const TextStyle(color: Colors.red),
+            hintStyle: const TextStyle(color: Colors.grey),
+            filled: true,
+            fillColor: Colors.grey[5],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
           ),
-        ),
-      ),
+          tabBarTheme: tabBarTheme),
       darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: Colors.blue,
-        colorScheme: const ColorScheme.dark(),
-        progressIndicatorTheme: ProgressIndicatorThemeData(
-            color: Colors.blueAccent,
-            circularTrackColor: Colors.white.withAlpha(30)),
-        scaffoldBackgroundColor: Colors.black,
-        dividerColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.white),
-        appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            titleTextStyle: TextStyle(color: Colors.white, fontSize: 23)),
-        buttonTheme: const ButtonThemeData(
-            colorScheme: ColorScheme.highContrastDark(primary: Colors.white)),
-        inputDecorationTheme: InputDecorationTheme(
-          errorStyle: const TextStyle(color: Colors.red),
-          hintStyle: const TextStyle(color: Colors.grey),
-          filled: true,
-          fillColor: Colors.grey[900],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none,
+          brightness: Brightness.dark,
+          primaryColor: Colors.blue,
+          colorScheme: const ColorScheme.dark(),
+          progressIndicatorTheme: ProgressIndicatorThemeData(
+              color: Colors.indigo,
+              circularTrackColor: Colors.white.withAlpha(30)),
+          scaffoldBackgroundColor: Colors.black,
+          dividerColor: Colors.white,
+          iconTheme: const IconThemeData(color: Colors.white),
+          appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              titleTextStyle: TextStyle(color: Colors.white, fontSize: 23)),
+          buttonTheme: const ButtonThemeData(
+              colorScheme: ColorScheme.highContrastDark(primary: Colors.white)),
+          inputDecorationTheme: InputDecorationTheme(
+            errorStyle: const TextStyle(color: Colors.red),
+            hintStyle: const TextStyle(color: Colors.grey),
+            filled: true,
+            fillColor: Colors.grey[900],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
           ),
-        ),
-      ),
+          tabBarTheme: tabBarTheme),
       themeMode: ThemeMode.system,
       scaffoldMessengerKey: scaffoldMessengerKey,
       routerConfig: router,

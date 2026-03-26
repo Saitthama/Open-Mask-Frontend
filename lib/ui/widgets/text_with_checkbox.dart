@@ -20,7 +20,7 @@ class TextWithCheckbox extends StatefulWidget {
   final bool Function() getValue;
 
   /// Dient dazu, den originalen Wert auf den veränderten Wert zu setzen.
-  final void Function(bool value) setValue;
+  final void Function(bool value)? setValue;
 
   @override
   State<TextWithCheckbox> createState() => _TextWithCheckboxState();
@@ -33,13 +33,14 @@ class _TextWithCheckboxState extends State<TextWithCheckbox> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(widget.getValue() ? widget.checkedText : widget.uncheckedText),
-        Checkbox.adaptive(
-            value: widget.getValue(),
-            onChanged: (final value) {
-              if (value == null) return;
-              widget.setValue(value);
-              setState(() {});
-            }),
+        if (widget.setValue != null)
+          Checkbox.adaptive(
+              value: widget.getValue(),
+              onChanged: (final value) {
+                if (value == null) return;
+                widget.setValue?.call(value);
+                setState(() {});
+              }),
       ],
     );
   }

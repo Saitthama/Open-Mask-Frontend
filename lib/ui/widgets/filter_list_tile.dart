@@ -1,76 +1,55 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:open_mask/filter/filter_store.dart';
-import 'package:open_mask/filter/i_filter.dart';
-import 'package:open_mask/routing/active_branch_notifier.dart';
-import 'package:open_mask/ui/screens/camera_screen.dart';
-import 'package:open_mask/ui/view_models/camera_view_model.dart';
-import 'package:open_mask/ui/widgets/filter_selection_popup.dart';
+import 'package:open_mask/filter/templates/filter.dart';
+import 'package:open_mask/ui/widgets/filter_icon.dart';
 
-/// Listenelement zum Ein- und Aussschalten des Filters, sowie zum Aufrufen der Filterauswahl.
-/// Setzt den Kamera-Branch zurück, wenn erfolgreich ein neuer Filter ausgewählt wurde.
-class FilterListTile extends StatefulWidget {
-  /// Standard-Konstruktor.
-  const FilterListTile({super.key, required this.viewModel});
+/// Listenelement, welches einen Filter aus einer Liste für die Bearbeitung repräsentiert.
+class FilterListTile extends StatelessWidget {
+  /// Konstruktor, welcher den darzustellenden [filter] bekommt.
+  const FilterListTile(
+      {super.key,
+      required this.filter,
+      required this.onEdit,
+      required this.onDelete,
+      required this.onFork});
 
-  /// Dient zum Ein- und Ausschalten des Filters, zum Abrufen des Zustands sowie zum Aufrufen der Filterauswahl.
-  final CameraViewModel viewModel;
+  /// Der darzustellende Filter.
+  final Filter filter;
 
-  @override
-  State<FilterListTile> createState() => _FilterListTileState();
-}
+  /// Wird beim Drücken des Bearbeitungs-Buttons aufgerufen.
+  final VoidCallback? onEdit;
 
-/// [State] des [FilterListTile].
-class _FilterListTileState extends State<FilterListTile> {
-  /// Dient dazu, [setState] bei Änderungen des Zustands aufzurufen.
-  late void Function() listener;
+  /// Wird beim Drücken des Delete-Buttons aufgerufen.
+  final VoidCallback? onDelete;
 
-  @override
-  void initState() {
-    super.initState();
-    listener = () {
-      setState(() {});
-    };
-    widget.viewModel.addListener(listener);
-  }
-
-  @override
-  void dispose() {
-    widget.viewModel.removeListener(listener);
-    super.dispose();
-  }
+  /// Wird beim Drücken des Fork-Buttons aufgerufen.
+  final VoidCallback? onFork;
 
   @override
   Widget build(final BuildContext context) {
     return ListTile(
-      selected: widget.viewModel.filterActive,
-      leading: const Icon(
-        Icons.photo_filter,
+      leading: FilterIcon(
+          filter: filter, isSelected: false, size: const Size(30, 30)),
+      title: Text(filter.meta.name),
+      trailing: FittedBox(
+        child: Row(
+          children: [
+            if (onDelete != null)
+              IconButton(
+                  onPressed: onDelete,
+                  icon: const Icon(
+                    Icons.delete_rounded,
+                    color: Colors.red,
+                  )),
+            if (onFork != null)
+              IconButton(
+                  onPressed: onFork,
+                  icon: const Icon(Icons.fork_right_rounded)),
+            if (onEdit != null)
+              IconButton(
+                  onPressed: onEdit, icon: const Icon(Icons.edit_rounded)),
+          ],
+        ),
       ),
-      title: widget.viewModel.filterActive
-          ? const Text('Filter auswählen')
-          : const Text('Filter aktivieren'),
-      onTap: () async {
-        if (!widget.viewModel.filterActive) {
-          widget.viewModel.switchFilterActive();
-          return;
-        }
-        IFilter? lastFilter = FilterStore.instance.selectedFilter;
-        await showDialog(
-            context: context,
-            barrierColor: Theme.of(context).colorScheme.surface.withAlpha(180),
-            builder: (final context) {
-              return const FilterSelectionPopup();
-            });
-        // Branch zurücksetzen, um wieder auf die Hauptkameraseite zu gelangen, wenn erfolgreich ein anderer Filter ausgewählt wird.
-        if (context.mounted &&
-            FilterStore.instance.selectedFilter != lastFilter) {
-          ActiveBranchNotifier.instance.value = -1;
-          ActiveBranchNotifier.instance.value = CameraScreen.cameraBranchIndex;
-          context.go(CameraScreen.routePath);
-        }
-      },
-      onLongPress: () => widget.viewModel.switchFilterActive(),
     );
   }
 }

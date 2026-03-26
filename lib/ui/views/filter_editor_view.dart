@@ -50,11 +50,15 @@ class FilterEditorView extends StatelessWidget {
                       onPressed: () => _openFilterMetaPopup(
                           context, vm.currentFilter as Filter)),
                   Flexible(
-                    child: EditableTextTile(
-                        getText: () => (vm.currentFilter as Filter).meta.name,
-                        setText: (final text) =>
-                            (vm.currentFilter as Filter).meta.name = text),
-                  ),
+                      child: EditableTextTile(
+                    getText: () => (vm.currentFilter as Filter).meta.name,
+                    setText: !FilterStore.instance
+                            .getPredefinedFilters()
+                            .contains(vm.currentFilter)
+                        ? (final text) => FilterStore.instance
+                            .setCurrentlyEditedFilterName(text)
+                        : null,
+                  )),
                   const SizedBox(width: 30),
                 ],
               ),
@@ -93,8 +97,7 @@ class FilterEditorView extends StatelessWidget {
           ),
 
           // Linke Bearbeitungstools
-          if (vm.selectedEditedFilter != null &&
-              vm.selectedEditedFilter?.config != null)
+          if (vm.isEditable && vm.selectedEditedFilter?.config != null)
             Positioned(
                 left: 10,
                 bottom: 90,
@@ -197,8 +200,7 @@ class FilterEditorView extends StatelessWidget {
                 )),
 
           // x-Offset-Bearbeitung
-          if (vm.selectedEditedFilter != null &&
-              vm.selectedEditedFilter?.config != null)
+          if (vm.isEditable && vm.selectedEditedFilter?.config != null)
             Positioned(
                 bottom: 55,
                 left: 40,
@@ -271,7 +273,7 @@ class FilterEditorView extends StatelessWidget {
                       children: [
                         // y-Offset-Bearbeitung
                         Expanded(
-                          child: (vm.selectedEditedFilter != null &&
+                          child: (vm.isEditable &&
                                   vm.selectedEditedFilter?.config != null)
                               ? SfSliderTheme(
                                   data: SfSliderThemeData(
@@ -297,7 +299,8 @@ class FilterEditorView extends StatelessWidget {
                         ),
 
                         // Bildauswahl
-                        if (vm.selectedEditedFilter is ImageFilter)
+                        if (vm.isEditable &&
+                            vm.selectedEditedFilter is ImageFilter)
                           RoundIconButton(
                             size: buttonSize,
                             onTap: () => _openSelectionPopup(context),
@@ -305,8 +308,9 @@ class FilterEditorView extends StatelessWidget {
                           ),
 
                         // Farbauswahl
-                        if (vm.selectedEditedFilter
-                            is om_color_filter.ColorFilter)
+                        if (vm.isEditable &&
+                            vm.selectedEditedFilter
+                                is om_color_filter.ColorFilter)
                           RoundIconButton(
                               size: buttonSize,
                               icon: Icons.color_lens_rounded,

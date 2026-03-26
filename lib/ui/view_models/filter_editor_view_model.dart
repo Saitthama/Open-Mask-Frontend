@@ -116,7 +116,10 @@ class FilterEditorViewModel extends ChangeNotifier {
 
   /// Gibt an, ob der [selectedEditedFilter] bearbeitet werden kann.
   bool get isEditable =>
-      selectedEditedFilter != null && selectedEditedFilter?.config != null;
+      selectedEditedFilter != null &&
+      !FilterStore.instance
+          .getPredefinedFilters()
+          .contains(selectedEditedFilter);
 
   /// Initialisiert wichtige Properties, z.B. durch das Laden der Gesichter der Dummys.
   Future<void> initialize() async {
@@ -191,7 +194,7 @@ class FilterEditorViewModel extends ChangeNotifier {
 
   /// Setzt den x-Wert des Offsets des [selectedEditedFilter] auf den gerundeten Wert von [newDx].
   void setOffsetDx(final double newDx) {
-    if (!isEditable) {
+    if (!isEditable || selectedEditedFilter?.config == null) {
       return;
     }
     selectedEditedFilter!.config!.offset =
@@ -201,7 +204,7 @@ class FilterEditorViewModel extends ChangeNotifier {
 
   /// Setzt den y-Wert des Offsets des [selectedEditedFilter] auf den gerundeten Wert von [newDy].
   void setOffsetDy(final double newDy) {
-    if (!isEditable) {
+    if (!isEditable || selectedEditedFilter?.config == null) {
       return;
     }
     selectedEditedFilter!.config!.offset =
@@ -235,7 +238,7 @@ class FilterEditorViewModel extends ChangeNotifier {
 
   /// Setzt die Transparenz des [selectedEditedFilter] auf [opacity].
   void setOpacity(final double opacity) {
-    if (!isEditable) {
+    if (!isEditable || selectedEditedFilter?.config == null) {
       return;
     }
     selectedEditedFilter!.config!.opacity = opacity;
@@ -244,7 +247,7 @@ class FilterEditorViewModel extends ChangeNotifier {
 
   /// Setzt die Rotation des [selectedEditedFilter] auf [rotation].
   void setRotation(final double rotation) {
-    if (!isEditable) {
+    if (!isEditable || selectedEditedFilter?.config == null) {
       return;
     }
     selectedEditedFilter!.config!.rotation = rotation;
@@ -253,7 +256,7 @@ class FilterEditorViewModel extends ChangeNotifier {
 
   /// Setzt die Skalierung des [selectedEditedFilter] auf [scale].
   void setScale(final double scale) {
-    if (!isEditable) {
+    if (!isEditable || selectedEditedFilter?.config == null) {
       return;
     }
     selectedEditedFilter!.config!.scale = Scale(scale, scale);

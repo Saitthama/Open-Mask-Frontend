@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_mask/filter/templates/filter.dart';
 import 'package:open_mask/ui/widgets/filter_grid.dart';
+import 'package:open_mask/ui/widgets/filter_icon.dart';
 
 /// Einzelnes Filterelement, welches im [FilterGrid] benutzt wird
 /// und beim Auswählen [onTap] mit dem [filter] aufruft.
@@ -32,39 +33,11 @@ class FilterTile extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final isDarkMode =
-        MediaQuery.of(context).platformBrightness == Brightness.dark;
     return GestureDetector(
       onTap: () => onTap(filter),
       child: Column(
         children: [
-          Container(
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: (isDarkMode
-                      ? theme.colorScheme.onSurface
-                      : theme.colorScheme.surface)
-                  .withAlpha(220),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected
-                    ? Colors.blue
-                    : isDarkMode
-                        ? Colors.transparent
-                        : theme.colorScheme.onSurface,
-                width: 3,
-              ),
-            ),
-            padding: const EdgeInsets.all(4),
-            child: SizedBox(
-              width: size.width,
-              height: size.height,
-              child: FittedBox(
-                child: filter.meta.icon,
-              ),
-            ),
-          ),
+          FilterIcon(filter: filter, isSelected: isSelected, size: size),
           const SizedBox(height: 3),
           Text(
             filter.meta.name,

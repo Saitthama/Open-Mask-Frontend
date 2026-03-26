@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Ein Text mit einem Icon für die Bearbeitung des Textes.
 class EditableTextTile extends StatefulWidget {
-  /// Standard-Konstruktor.
+  /// Konstruktor.
   const EditableTextTile(
       {super.key, required this.getText, required this.setText});
 
@@ -10,7 +10,7 @@ class EditableTextTile extends StatefulWidget {
   final String Function() getText;
 
   /// Dient dazu, den originalen Text auf den veränderten Wert zu setzen.
-  final void Function(String text) setText;
+  final void Function(String text)? setText;
 
   @override
   State<EditableTextTile> createState() => _EditableTextTileState();
@@ -44,7 +44,7 @@ class _EditableTextTileState extends State<EditableTextTile> {
 
   /// Beendet die Bearbeitung und speichert den Text.
   void finishEditing() {
-    widget.setText(controller.text);
+    widget.setText?.call(controller.text);
 
     setState(() {
       isEditing = false;
@@ -74,10 +74,14 @@ class _EditableTextTileState extends State<EditableTextTile> {
                   textAlign: TextAlign.center,
                 ),
               ),
-        IconButton(
-          icon: Icon(isEditing ? Icons.check : Icons.edit),
-          onPressed: isEditing ? finishEditing : startEditing,
-        ),
+        widget.setText != null
+            ? IconButton(
+                icon: Icon(isEditing ? Icons.check : Icons.edit),
+                onPressed: isEditing ? finishEditing : startEditing,
+              )
+            : const SizedBox(
+                width: 40,
+              ), // für bessere Zentrierung
       ],
     );
   }
