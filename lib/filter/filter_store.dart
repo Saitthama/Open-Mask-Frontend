@@ -9,6 +9,7 @@ import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/filter/templates/composite_filter.dart';
+import 'package:open_mask/filter/templates/filter.dart';
 import 'package:open_mask/filter/templates/image_filter.dart';
 import 'package:path/path.dart';
 
@@ -72,10 +73,9 @@ class FilterStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  set communityFilters(final List<IFilter> filters) {
-    _communityFilters
-      ..clear()
-      ..addAll(filters);
+  /// Setzt den Namen des [currentlyEditedFilter] und benachrichtigt Listener.
+  void setCurrentlyEditedFilterName(final String name) {
+    (_currentlyEditedFilter as Filter).meta.name = name;
     notifyListeners();
   }
 
@@ -106,6 +106,36 @@ class FilterStore extends ChangeNotifier {
   /// Fügt den angegebenen [filter] zu den lokalen Filtern hinzu.
   void addLocalFilter(final IFilter filter) {
     _localFilters.add(filter);
+    notifyListeners();
+  }
+
+  /// Entfernt den angegebenen [filter] aus den [localFilters], falls dieser vorhanden ist.
+  bool removeLocalFilter(final IFilter filter) {
+    final bool success = _localFilters.remove(filter);
+    notifyListeners();
+    return success;
+  }
+
+  /// Liefert alle eigenen [localFilters] zurück.
+  List<IFilter> getOwnFilters() {
+    return _localFilters
+        .where(
+            (final IFilter filter) => (filter as Filter).meta.createdBy != null)
+        .toList();
+  }
+
+  /// Liefert alle vordefinierten Filter aus den [localFilters] zurück.
+  List<IFilter> getPredefinedFilters() {
+    return _localFilters
+        .where(
+            (final IFilter filter) => (filter as Filter).meta.createdBy == null)
+        .toList();
+  }
+
+  set communityFilters(final List<IFilter> filters) {
+    _communityFilters
+      ..clear()
+      ..addAll(filters);
     notifyListeners();
   }
 

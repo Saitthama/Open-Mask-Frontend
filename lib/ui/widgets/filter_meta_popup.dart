@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:open_mask/filter/filter_store.dart';
 import 'package:open_mask/filter/templates/filter.dart';
 import 'package:open_mask/ui/widgets/editable_text_tile.dart';
+import 'package:open_mask/ui/widgets/filter_icon.dart';
 import 'package:open_mask/ui/widgets/form_header_text.dart';
 import 'package:open_mask/ui/widgets/text_with_checkbox.dart';
 
@@ -22,6 +24,8 @@ class _FilterMetaPopupState extends State<FilterMetaPopup> {
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
+    final bool isEditable =
+        !FilterStore.instance.getPredefinedFilters().contains(widget.filter);
     return Dialog(
       backgroundColor: theme.colorScheme.surface.withAlpha(220),
       insetPadding: const EdgeInsets.all(20),
@@ -39,8 +43,10 @@ class _FilterMetaPopupState extends State<FilterMetaPopup> {
             children: [
               Row(
                 children: [
-                  SizedBox(
-                      height: 40, width: 40, child: widget.filter.meta.icon),
+                  FilterIcon(
+                      filter: widget.filter,
+                      isSelected: false,
+                      size: const Size(40, 40)),
                   Expanded(
                       child: Text(
                     'Filter-Metadaten',
@@ -65,17 +71,22 @@ class _FilterMetaPopupState extends State<FilterMetaPopup> {
                       const FormHeaderText('Name'),
                       EditableTextTile(
                           getText: () => widget.filter.meta.name,
-                          setText: (final newName) => {
-                                widget.filter.meta.name = newName,
-                                setState(() {})
-                              }),
+                          setText: isEditable
+                              ? (final newName) => {
+                                    widget.filter.meta.name = newName,
+                                    setState(() {})
+                                  }
+                              : null),
                       const FormHeaderText('Beschreibung'),
                       EditableTextTile(
                           getText: () => widget.filter.meta.description,
-                          setText: (final newDescription) => {
-                                widget.filter.meta.description = newDescription,
-                                setState(() {})
-                              }),
+                          setText: isEditable
+                              ? (final newDescription) => {
+                                    widget.filter.meta.description =
+                                        newDescription,
+                                    setState(() {})
+                                  }
+                              : null),
                       const FormHeaderText('Ersteller'),
                       Padding(
                         padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
@@ -99,10 +110,12 @@ class _FilterMetaPopupState extends State<FilterMetaPopup> {
                           checkedText: 'Öffentlich',
                           uncheckedText: 'Nicht öffentlich',
                           getValue: () => widget.filter.meta.isPublic,
-                          setValue: (final value) => {
-                                widget.filter.meta.isPublic = value,
-                                setState(() {})
-                              }),
+                          setValue: isEditable
+                              ? (final value) => {
+                                    widget.filter.meta.isPublic = value,
+                                    setState(() {})
+                                  }
+                              : null),
                     ],
                   ),
                 ),

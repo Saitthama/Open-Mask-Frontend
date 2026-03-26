@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:open_mask/filter/filter_store.dart';
+import 'package:open_mask/filter/filter_tab.dart';
 import 'package:open_mask/ui/widgets/filter_grid.dart';
 
 /// Popup für die Auswahl eines Filters, um diesen zu verwenden. Der akutelle Filter wird im [FilterStore] gespeichert.

@@ -12,7 +12,7 @@ import 'package:open_mask/ui/views/face_markings_view.dart';
 import 'package:open_mask/ui/views/filter_view.dart';
 import 'package:open_mask/ui/widgets/camera_shutter_button.dart';
 import 'package:open_mask/ui/widgets/face_markings_list_tile.dart';
-import 'package:open_mask/ui/widgets/filter_list_tile.dart';
+import 'package:open_mask/ui/widgets/filter_option_list_tile.dart';
 import 'package:open_mask/ui/widgets/filter_selection_popup.dart';
 import 'package:provider/provider.dart';
 
@@ -170,7 +170,7 @@ class CameraView extends StatelessWidget {
               onTap: () => navigateTo(
                   '${CameraScreen.routePath}${GalleryScreen.routePath}'),
             ),
-            FilterListTile(viewModel: vm),
+            FilterOptionListTile(viewModel: vm),
             ListTile(
               leading: Icon(
                 Icons.filter,
