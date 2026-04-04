@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:open_mask/data/model/image_mime_type.dart';
 import 'package:open_mask/data/services/image_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
 
@@ -13,11 +14,13 @@ class FilterImage {
       this.assetPath,
       this.imageUrl,
       this.image,
-      this.mimeType,
+      final Uint8List? rawData,
       final int? width,
       final int? height})
       : _width = width,
-        _height = height;
+        _height = height {
+    this.rawData = rawData;
+  }
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory FilterImage.fromJSON(final Map<String, dynamic> json) => FilterImage(
@@ -34,20 +37,32 @@ class FilterImage {
   /// Der Name des Bildes, welcher beim Speichern als Dateiname (ohne Erweiterung) dient.
   String filename;
 
-  /// MIME-Typ des Bildes, z.B. "image/png".
-  String? mimeType;
+  /// MIME-Typ des Bildes.
+  ImageMimeType? _mimeType;
+
+  /// MIME-Typ des Bildes.
+  ImageMimeType? get mimeType => _mimeType;
 
   /// Wenn das Bild ein lokales Asset ist.
-  String? assetPath;
+  final String? assetPath;
 
   /// Falls das Bild aus dem Internet kommt.
-  String? imageUrl;
+  final String? imageUrl;
 
   /// Geladenes Bild (aus Asset, DB, URL oder lokaler Bildauswahl).
   ui.Image? image;
 
   /// Geladene Rohdaten des Bildes ([image]) (aus Asset, DB, URL oder lokaler Bildauswahl).
-  Uint8List? rawData;
+  Uint8List? _rawData;
+
+  /// Geladene Rohdaten des Bildes ([image]) (aus Asset, DB, URL oder lokaler Bildauswahl).
+  Uint8List? get rawData => _rawData;
+
+  /// Geladene Rohdaten des Bildes ([image]) (aus Asset, DB, URL oder lokaler Bildauswahl).
+  set rawData(final Uint8List? value) {
+    _rawData = value;
+    _mimeType = value == null ? null : detectMimeType(value);
+  }
 
   /// Breite des Bildes in Pixel.
   final int? _width;
@@ -149,6 +164,7 @@ class FilterImage {
   Map<String, dynamic> toJSON() => {
         if (id != null) 'id': id,
         'filename': filename,
+        if (mimeType != null) 'mimeType': mimeType?.mimeString,
         if (assetPath != null) 'assetPath': assetPath,
         if (imageUrl != null) 'imageUrl': imageUrl,
         'width': width,

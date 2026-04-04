@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
@@ -177,16 +178,12 @@ class FilterStore extends ChangeNotifier {
       return false;
     }
     final imageFilter = selectedEditedFilter as ImageFilter;
-    final previousAssetPath = imageFilter.filterImage.assetPath;
-    imageFilter.filterImage.assetPath = assetPath;
-    final filename = basename(assetPath);
-    bool success = await imageFilter.filterImage.loadFromAsset();
+    final filename = basenameWithoutExtension(assetPath);
+    final filterImage = FilterImage(filename: filename, assetPath: assetPath);
+    bool success = await filterImage.loadFromAsset();
     if (success) {
-      imageFilter.filterImage.imageUrl = null;
-      imageFilter.filterImage.filename = filename;
-    } else {
-      imageFilter.filterImage.assetPath = previousAssetPath;
-      await imageFilter.load();
+      imageFilter.filterImage.dispose();
+      imageFilter.filterImage = filterImage;
     }
     notifyListeners();
     return success;
@@ -199,16 +196,15 @@ class FilterStore extends ChangeNotifier {
       return false;
     }
     final imageFilter = selectedEditedFilter as ImageFilter;
-    final previousUrl = imageFilter.filterImage.imageUrl;
-    imageFilter.filterImage.imageUrl = url;
     final filename = url.split('/').last;
-    bool success = await imageFilter.filterImage.loadFromURL();
+    final filterImage = FilterImage(
+      filename: filename.split('.').first,
+      imageUrl: url,
+    );
+    bool success = await filterImage.loadFromURL();
     if (success) {
-      imageFilter.filterImage.assetPath = null;
-      imageFilter.filterImage.filename = filename;
-    } else {
-      imageFilter.filterImage.imageUrl = previousUrl;
-      await imageFilter.load();
+      imageFilter.filterImage.dispose();
+      imageFilter.filterImage = filterImage;
     }
     notifyListeners();
     return success;
@@ -230,15 +226,16 @@ class FilterStore extends ChangeNotifier {
     ImageFilter imageFilter =
         (FilterStore.instance.selectedEditedFilter as ImageFilter);
     File imageFile = File(xFileImage.path);
-    ui.Image image = await ImageService.loadUiImageFromFile(imageFile);
-    imageFilter.filterImage.image?.dispose();
+    Uint8List rawData = await ImageService.loadImageFromFile(imageFile);
+    ui.Image image = await ImageService.uint8ListToUiImage(rawData);
+    imageFilter.filterImage.dispose();
     FilterImage filterImage = FilterImage(
         image: image,
-        filename: '${imageFilter.type}',
+        rawData: rawData,
+        filename: basenameWithoutExtension(imageFile.path),
         width: image.width,
         height: image.height);
     imageFilter.filterImage = filterImage;
-    imageFilter.filterImage.filename = basename(imageFile.path);
     notifyListeners();
     return true;
   }

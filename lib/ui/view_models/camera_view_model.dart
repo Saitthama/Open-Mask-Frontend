@@ -156,7 +156,6 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
         (FilterFactory.create(FilterType.mouth) as MouthFilter)
           ..filterImage = FilterImage(
               filename: 'creepy_mouth',
-              mimeType: 'image/png',
               assetPath: 'assets/images/filter/creepy_mouth.png')
           ..meta.icon = Image.asset('assets/images/filter/creepy_mouth.png')
           ..meta.name = 'Unheimliches Lächeln'
@@ -194,7 +193,6 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
       ..config.opacity = 0.5
       ..filterImage = FilterImage(
           filename: 'online_mustache',
-          mimeType: 'image/png',
           imageUrl: 'https://pngimg.com/uploads/moustache/moustache_PNG43.png');
     HatFilter hatFilter = (FilterFactory.create(FilterType.hat) as HatFilter)
       ..meta.name = 'Hut-Filter'
@@ -230,7 +228,6 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
     HatFilter cowboyHat = (FilterFactory.create(FilterType.hat) as HatFilter)
       ..filterImage = FilterImage(
           filename: 'detective_hat',
-          mimeType: 'image/png',
           assetPath: 'assets/images/filter/detective_hat.png')
       ..meta.name = 'Detektivhut'
       ..meta.description = 'Brauner Detektivhut'
@@ -241,7 +238,6 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
     HatFilter brownHat = (FilterFactory.create(FilterType.hat) as HatFilter)
       ..filterImage = FilterImage(
           filename: 'brown_hat',
-          mimeType: 'image/png',
           assetPath: 'assets/images/filter/brown_hat.png')
       ..meta.name = 'Brauner Hut'
       ..meta.description = 'Brauner Standardhut'
