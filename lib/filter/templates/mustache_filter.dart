@@ -19,7 +19,7 @@ class MustacheFilter extends ImageFilter {
       : super(
             type: FilterType.mustache,
             defaultAssetPath: 'assets/images/filter/mustache.png',
-            defaultImageFilename: 'mustache.png',
+            defaultImageFilename: 'mustache',
             defaultOffset: const Offset(0.0, -10),
             defaultScale: const Scale(0.4, 0.4));
 

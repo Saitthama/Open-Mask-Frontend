@@ -29,7 +29,7 @@ abstract class ColorFilter extends Filter {
 
     return filterCreator(
         id: json['id'] as int?,
-        uuid: json['uui'],
+        uuid: json['uuid'],
         meta: FilterMeta.fromJson(json['meta']),
         color: Color.from(
             alpha: colorJson['alpha'],

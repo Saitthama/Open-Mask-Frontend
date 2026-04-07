@@ -17,7 +17,7 @@ class LeftEyeFilter extends ImageFilter {
       : super(
             type: FilterType.leftEye,
             defaultAssetPath: 'assets/images/filter/red_glowing_eye.png',
-            defaultImageFilename: 'eye.png');
+            defaultImageFilename: 'eye');
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory LeftEyeFilter.fromJSON(final Map<String, dynamic> json) {

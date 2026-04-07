@@ -48,7 +48,7 @@ class FilterEditorView extends StatelessWidget {
                   IconButton(
                       icon: const Icon(Icons.info_outline_rounded),
                       onPressed: () => _openFilterMetaPopup(
-                          context, vm.currentFilter as Filter)),
+                          context, vm, vm.currentFilter as Filter)),
                   Flexible(
                       child: EditableTextTile(
                     getText: () => (vm.currentFilter as Filter).meta.name,
@@ -303,7 +303,7 @@ class FilterEditorView extends StatelessWidget {
                             vm.selectedEditedFilter is ImageFilter)
                           RoundIconButton(
                             size: buttonSize,
-                            onTap: () => _openSelectionPopup(context),
+                            onTap: () => _openSelectionPopup(context, vm),
                             icon: Icons.image_rounded,
                           ),
 
@@ -364,7 +364,7 @@ class FilterEditorView extends StatelessWidget {
                   child: DeleteTextButton(
                     'Entfernen',
                     onPressed:
-                        (vm.selectedEditedFilter == null) ? null : vm.delete,
+                        (vm.selectedEditedFilter == null) ? null : vm.remove,
                     stretch: true,
                   ),
                 ),
@@ -427,22 +427,27 @@ class FilterEditorView extends StatelessWidget {
   }
 
   /// Öffnet das Popup für die Bildauswahl des aktuell ausgewählten Filters im angegebenen [context].
-  void _openSelectionPopup(final BuildContext context) {
+  void _openSelectionPopup(
+      final BuildContext context, final FilterEditorViewModel vm) {
     final theme = Theme.of(context);
     showDialog(
       context: context,
       barrierColor: theme.colorScheme.surface.withAlpha(180),
-      builder: (final context) => const ImageSelectionPopup(),
+      builder: (final context) => ImageSelectionPopup(
+        onChanged: vm.onChanged,
+      ),
     );
   }
 
   /// Öffnet das [FilterMetaPopup] zum Anzeigen und Verändern der Filter-Metadaten des aktuellen Filters im gegebenen [context].
-  void _openFilterMetaPopup(final BuildContext context, final Filter filter) {
+  void _openFilterMetaPopup(final BuildContext context,
+      final FilterEditorViewModel vm, final Filter filter) {
     final theme = Theme.of(context);
     showDialog(
       context: context,
       barrierColor: theme.colorScheme.surface.withAlpha(180),
-      builder: (final context) => FilterMetaPopup(filter),
+      builder: (final context) =>
+          FilterMetaPopup(filter, onChanged: vm.onChanged),
     );
   }
 

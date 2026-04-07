@@ -11,7 +11,10 @@ import 'package:open_mask/ui/widgets/form_header_text.dart';
 /// Popup, welches zum Auswählen eines Bildes für den aktuell ausgewählten Bildfilter im Editor dient.
 class ImageSelectionPopup extends StatefulWidget {
   /// Standard-Konstruktor.
-  const ImageSelectionPopup({super.key});
+  const ImageSelectionPopup({super.key, this.onChanged});
+
+  /// Kann gesetzt werden, falls über Änderungen informiert werden soll.
+  final VoidCallback? onChanged;
 
   @override
   State<ImageSelectionPopup> createState() => _ImageSelectionPopupState();
@@ -83,6 +86,7 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
                     SnackBarService.showMessage(
                         'Fehler beim Laden des Bildes!');
                   } else if (context.mounted) {
+                    widget.onChanged?.call();
                     context.pop();
                   }
                 },
@@ -124,6 +128,7 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
           if (!success) {
             SnackBarService.showMessage('Fehler beim Laden des Bildes!');
           } else if (context.mounted) {
+            widget.onChanged?.call();
             context.pop();
           }
         },
@@ -201,8 +206,9 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
   /// Öffnet die Galerieauswahl.
   Future<void> _pickImage() async {
     bool success = await FilterStore.instance.pickSelectedEditedFilterImage();
-    if (success && mounted) {
-      context.pop();
+    if (success) {
+      widget.onChanged?.call();
+      if (mounted) context.pop();
     }
   }
 

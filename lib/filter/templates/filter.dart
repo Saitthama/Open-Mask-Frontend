@@ -50,7 +50,7 @@ abstract class Filter implements IFilter {
         'uuid': uuid,
         'meta': meta.toJSON(),
         'config': config?.toJSON() ?? {},
-        'type': type.toString(),
+        'type': type.name,
         if (parentId != null) 'parentId': parentId,
         // TODO: evtl. wichtige Eigenschaften wie Ersteller und Name aus der Datenbank laden, statt der Id
       };

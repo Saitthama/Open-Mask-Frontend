@@ -7,28 +7,35 @@ import 'package:open_mask/data/services/image_service.dart';
 /// Klasse zum Speichern eines Filter-Bildes, welches das Bild selbst mit dazugehörigen Metadaten enthält.
 class FilterImage {
   /// Standard-Konstruktor.
-  FilterImage(
-      {this.id,
-      required this.filename,
-      this.assetPath,
-      this.imageUrl,
-      this.image,
-      final Uint8List? rawData,
-      final int? width,
-      final int? height})
-      : _width = width,
+  FilterImage({
+    this.id,
+    required this.filename,
+    this.assetPath,
+    this.imageUrl,
+    this.image,
+    final Uint8List? rawData,
+    final int? width,
+    final int? height,
+    final ImageMimeType? mimeType,
+  })  : _width = width,
         _height = height {
     this.rawData = rawData;
+    if (mimeType != null) {
+      _mimeType = mimeType;
+    }
   }
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory FilterImage.fromJSON(final Map<String, dynamic> json) => FilterImage(
-      id: json['id'] as int,
+      id: json['id'] as int?,
       filename: json['filename'] ?? 'filter_image',
       assetPath: json['assetPath'],
       imageUrl: json['imageUrl'],
-      width: json['width'] as int,
-      height: json['height'] as int);
+      mimeType: json['mimeType'] == null
+          ? null
+          : mimeTypeFromString(json['mimeType']),
+      width: json['width'] as int?,
+      height: json['height'] as int?);
 
   /// Eindeutige Datenbank-ID des Filters.
   final int? id;
@@ -179,6 +186,7 @@ class FilterImage {
         filename: filename,
         assetPath: assetPath,
         imageUrl: imageUrl,
+        rawData: rawData,
         image: image?.clone());
   }
 }

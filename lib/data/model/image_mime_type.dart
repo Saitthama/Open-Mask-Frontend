@@ -14,6 +14,13 @@ enum ImageMimeType {
   final List<int>? magicBytes;
 }
 
+/// Findet den passenden [ImageMimeType] durch den String.
+ImageMimeType mimeTypeFromString(final String mimeString) {
+  return ImageMimeType.values.firstWhere(
+      (final element) => element.mimeString == mimeString,
+      orElse: () => throw ArgumentError('Unbekannter MIME-Type $mimeString'));
+}
+
 ImageMimeType detectMimeType(final Uint8List bytes) {
   if (bytes.length < 12) return ImageMimeType.unknown;
 

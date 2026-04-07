@@ -20,7 +20,7 @@ class MouthFilter extends ImageFilter {
       : super(
             type: FilterType.mouth,
             defaultAssetPath: 'assets/images/filter/mouth.png',
-            defaultImageFilename: 'mouth.png',
+            defaultImageFilename: 'mouth',
             defaultOffset: Offset.zero,
             defaultScale: const Scale(1.3, 1.0));
 

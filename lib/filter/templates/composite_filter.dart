@@ -23,14 +23,13 @@ class CompositeFilter extends Filter {
   factory CompositeFilter.fromJSON(final Map<String, dynamic> json) {
     CompositeFilter compositeFilter = CompositeFilter(
         id: json['id'] as int?,
-        uuid: json['uui'],
+        uuid: json['uuid'],
         meta: FilterMeta.fromJson(json['meta']),
         parentId: json['parentId'] as int?);
 
-    List<IFilter> filterList = compositeFilter.filterList;
     List<Map<String, dynamic>> filterListAsJSON = json['filterList'];
     for (final Map<String, dynamic> filterAsJSON in filterListAsJSON) {
-      filterList.add(FilterFactory.fromJSON(filterAsJSON));
+      compositeFilter.addFilter(FilterFactory.fromJSON(filterAsJSON));
     }
 
     return compositeFilter;
