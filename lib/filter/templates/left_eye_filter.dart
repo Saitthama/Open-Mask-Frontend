@@ -8,7 +8,8 @@ import 'package:open_mask/filter/templates/image_filter.dart';
 class LeftEyeFilter extends ImageFilter {
   /// Standard-Konstruktor.
   LeftEyeFilter(
-      {super.id,
+      {required super.id,
+      required super.uuid,
       required super.meta,
       required super.config,
       super.parentId,
@@ -16,7 +17,7 @@ class LeftEyeFilter extends ImageFilter {
       : super(
             type: FilterType.leftEye,
             defaultAssetPath: 'assets/images/filter/red_glowing_eye.png',
-            defaultImageFilename: 'eye.png');
+            defaultImageFilename: 'eye');
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory LeftEyeFilter.fromJSON(final Map<String, dynamic> json) {

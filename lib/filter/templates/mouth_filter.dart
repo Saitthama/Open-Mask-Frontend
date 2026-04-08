@@ -11,7 +11,8 @@ import 'package:open_mask/filter/templates/image_filter.dart';
 class MouthFilter extends ImageFilter {
   /// Standard-Konstruktor.
   MouthFilter(
-      {super.id,
+      {required super.id,
+      required super.uuid,
       required super.meta,
       required super.config,
       super.parentId,
@@ -19,7 +20,7 @@ class MouthFilter extends ImageFilter {
       : super(
             type: FilterType.mouth,
             defaultAssetPath: 'assets/images/filter/mouth.png',
-            defaultImageFilename: 'mouth.png',
+            defaultImageFilename: 'mouth',
             defaultOffset: Offset.zero,
             defaultScale: const Scale(1.3, 1.0));
 

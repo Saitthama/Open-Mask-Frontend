@@ -1,4 +1,4 @@
-/// Enum, welches alle möglichen Filterarten/Filtertypen enthält
+/// Enum, welches alle möglichen Filterarten/Filtertypen enthält.
 enum FilterType {
   composite('Composite-Filter'),
   mustache('Schnurrbart'),
@@ -20,7 +20,7 @@ enum FilterType {
   final String displayName;
 }
 
-/// Findet den passenden [FilterType] durch das String
+/// Findet den passenden [FilterType] durch den String.
 FilterType filterTypeFromString(final String value) {
   return FilterType.values.firstWhere(
       (final element) =>

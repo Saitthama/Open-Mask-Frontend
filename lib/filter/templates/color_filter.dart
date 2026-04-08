@@ -7,6 +7,7 @@ abstract class ColorFilter extends Filter {
   /// Standard-Konstruktor.
   ColorFilter(
       {required super.id,
+      required super.uuid,
       required super.meta,
       required super.type,
       required super.parentId,
@@ -19,19 +20,23 @@ abstract class ColorFilter extends Filter {
       final Map<String, dynamic> json,
       final ColorFilter Function(
               {required int? id,
+              required String uuid,
               required FilterMeta meta,
-              required Color color})
+              required Color color,
+              required int? parentId})
           filterCreator) {
     Map<String, dynamic> colorJson = json['color'];
 
     return filterCreator(
-        id: int.tryParse(json['id']),
+        id: json['id'] as int?,
+        uuid: json['uuid'],
         meta: FilterMeta.fromJson(json['meta']),
         color: Color.from(
             alpha: colorJson['alpha'],
             red: colorJson['red'],
             green: colorJson['green'],
-            blue: colorJson['blue']));
+            blue: colorJson['blue']),
+        parentId: json['parentId'] as int?);
   }
 
   /// Farbe, die verwendet werden soll.

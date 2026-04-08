@@ -14,12 +14,12 @@ class FilterConfig {
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory FilterConfig.fromJSON(final Map<String, dynamic> json) =>
       FilterConfig(
-          offset: Offset(double.tryParse(json['offsetX']) ?? defaultOffset.dx,
-              double.tryParse(json['offsetY']) ?? defaultOffset.dy),
-          scale: Scale(double.tryParse(json['scaleX']) ?? defaultScale.scaleX,
-              double.tryParse(json['scaleY']) ?? defaultScale.scaleY),
-          rotation: double.tryParse(json['rotation']) ?? defaultRotation,
-          opacity: double.tryParse(json['opacity']) ?? defaultOpacity);
+          offset: Offset(json['offsetX'] as double? ?? defaultOffset.dx,
+              json['offsetY'] as double? ?? defaultOffset.dy),
+          scale: Scale(json['scaleX'] as double? ?? defaultScale.scaleX,
+              json['scaleY'] as double? ?? defaultScale.scaleY),
+          rotation: json['rotation'] as double? ?? defaultRotation,
+          opacity: json['opacity'] as double? ?? defaultOpacity);
 
   /// Standardmäßiges Offset ([offset]).
   static const Offset defaultOffset = Offset.zero;

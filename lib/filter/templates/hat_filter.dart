@@ -10,7 +10,8 @@ import 'package:open_mask/filter/templates/image_filter.dart';
 class HatFilter extends ImageFilter {
   /// Standard-Konstruktor.
   HatFilter(
-      {super.id,
+      {required super.id,
+      required super.uuid,
       required super.meta,
       required super.config,
       super.parentId,
@@ -18,7 +19,7 @@ class HatFilter extends ImageFilter {
       : super(
             type: FilterType.hat,
             defaultAssetPath: 'assets/images/filter/hat.png',
-            defaultImageFilename: 'hat.png',
+            defaultImageFilename: 'hat',
             defaultScale: const Scale(1.3, 1.2));
 
   /// Factory-Methode zur JSON‑Deserialisierung.

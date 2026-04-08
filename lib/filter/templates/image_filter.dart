@@ -13,6 +13,7 @@ abstract class ImageFilter extends Filter {
   /// Standard-Konstruktor.
   ImageFilter(
       {required super.id,
+      required super.uuid,
       required super.meta,
       required super.type,
       required FilterConfig super.config,
@@ -43,8 +44,9 @@ abstract class ImageFilter extends Filter {
       final ImageFilter Function(
               {required FilterConfig config,
               required FilterImage? filterImage,
-              int? id,
-              int? parentId,
+              required int? id,
+              required String uuid,
+              required int? parentId,
               required FilterMeta meta})
           filterCreator) {
     Map<String, dynamic> configJson = json['config'] ?? {};
@@ -55,10 +57,11 @@ abstract class ImageFilter extends Filter {
     FilterConfig filterConfig = FilterConfig.fromJSON(configJson);
 
     return filterCreator(
-        id: json['id'] as int,
+        id: json['id'] as int?,
+        uuid: json['uuid'],
         meta: FilterMeta.fromJson(json['meta']),
         config: filterConfig,
-        parentId: json['parentId'] as int,
+        parentId: json['parentId'] as int?,
         filterImage: filterImage);
   }
 

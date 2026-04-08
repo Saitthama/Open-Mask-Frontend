@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:open_mask/data/services/image_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
+import 'package:open_mask/data/services/storage_service.dart';
 import 'package:synchronized/synchronized.dart';
 
 /// Service zur Verwaltung der Kamerafunktionen.
@@ -138,7 +139,8 @@ class CameraService {
     final String filename = ImageService.getImageFileName('.png');
     File? imageFile;
     if (image != null) {
-      imageFile = await ImageService.savePhotoToAppGallery(image!, filename);
+      imageFile =
+          await StorageService.instance.savePhotoToAppGallery(image!, filename);
     }
 
     if (isFrontCamera == true && imageFile != null) {
