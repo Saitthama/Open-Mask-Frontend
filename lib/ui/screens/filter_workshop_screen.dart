@@ -87,7 +87,7 @@ class _FilterWorkshopScreenState extends State<FilterWorkshopScreen> {
                   ),
                   FilterList(
                     getFilterList: () => FilterStore.instance.communityFilters,
-                    onDelete: null,
+                    onDelete: FilterStore.instance.removeCommunityFilter,
                     onFork: (final filter) {
                       FilterStore.instance.addLocalFilter(filter.fork());
                     },

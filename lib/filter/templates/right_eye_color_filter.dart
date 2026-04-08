@@ -9,7 +9,11 @@ import 'package:open_mask/filter/templates/color_filter.dart'
 class RightEyeColorFilter extends om_color_filter.ColorFilter {
   /// Standard-Konstruktor.
   RightEyeColorFilter(
-      {super.id, required super.meta, super.parentId, super.color})
+      {required super.id,
+      required super.uuid,
+      required super.meta,
+      super.parentId,
+      super.color})
       : super(type: FilterType.rightColorEye) {
     if (meta.iconIsDefault) {
       meta.icon = const Icon(

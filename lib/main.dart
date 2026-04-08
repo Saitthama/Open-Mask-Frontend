@@ -74,11 +74,10 @@ class OpenMask extends StatelessWidget {
           useMaterial3: true,
           dividerColor: Colors.black,
           iconTheme: const IconThemeData(color: Colors.black),
-          buttonTheme: const ButtonThemeData(
-              colorScheme:
-                  ColorScheme.highContrastLight(primary: Colors.black)),
+          buttonTheme: ButtonThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.indigo, primary: Colors.indigo[900])),
           appBarTheme: const AppBarTheme(
-              backgroundColor: Colors.white,
               foregroundColor: Colors.black,
               titleTextStyle: TextStyle(color: Colors.black, fontSize: 23)),
           inputDecorationTheme: InputDecorationTheme(

@@ -114,9 +114,9 @@ class FilterMeta {
         'name': name,
         'description': description,
         'published': isPublic,
-        'createdBy': createdBy?.toJSON(),
-        'createdAt': createdAt?.toIso8601String(),
-        'updatedAt': updatedAt?.toIso8601String(),
+        if (createdBy != null) 'createdBy': createdBy?.toJSON(),
+        if (createdAt != null) 'createdAt': createdAt?.toIso8601String(),
+        if (updatedAt != null) 'updatedAt': updatedAt?.toIso8601String(),
       };
 
   /// Erstellt eine Kopie der Metadaten.

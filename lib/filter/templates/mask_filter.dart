@@ -8,7 +8,8 @@ import 'package:open_mask/filter/templates/image_filter.dart';
 class MaskFilter extends ImageFilter {
   /// Standard-Konstruktor.
   MaskFilter(
-      {super.id,
+      {required super.id,
+      required super.uuid,
       required super.meta,
       required super.config,
       super.parentId,
@@ -16,7 +17,7 @@ class MaskFilter extends ImageFilter {
       : super(
             type: FilterType.mask,
             defaultAssetPath: 'assets/images/filter/mask.png',
-            defaultImageFilename: 'mask.png',
+            defaultImageFilename: 'mask',
             defaultOffset: const Offset(0.0, -25));
 
   /// Factory-Methode zur JSON‑Deserialisierung.

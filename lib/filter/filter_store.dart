@@ -1,16 +1,28 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:open_mask/data/model/scale.dart';
+import 'package:open_mask/data/services/auth_service.dart';
 import 'package:open_mask/data/services/image_service.dart';
+import 'package:open_mask/data/services/storage_service.dart';
 import 'package:open_mask/filter/filter_factory.dart';
 import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/filter/templates/composite_filter.dart';
 import 'package:open_mask/filter/templates/filter.dart';
+import 'package:open_mask/filter/templates/hat_filter.dart';
 import 'package:open_mask/filter/templates/image_filter.dart';
+import 'package:open_mask/filter/templates/left_eye_color_filter.dart';
+import 'package:open_mask/filter/templates/left_eye_filter.dart';
+import 'package:open_mask/filter/templates/mask_filter.dart' as om_mf;
+import 'package:open_mask/filter/templates/mouth_filter.dart';
+import 'package:open_mask/filter/templates/mustache_filter.dart';
+import 'package:open_mask/filter/templates/right_eye_color_filter.dart';
+import 'package:open_mask/filter/templates/right_eye_filter.dart';
 import 'package:path/path.dart';
 
 /// Datenhalter-Klasse, welche globale Filterdaten speichert.
@@ -55,6 +67,7 @@ class FilterStore extends ChangeNotifier {
 
   set selectedFilter(final IFilter? newSelectedFilter) {
     if (newSelectedFilter != _selectedFilter) {
+      _selectedFilter?.dispose();
       newSelectedFilter?.load(); // neuen Filter asynchron laden
     }
     _selectedFilter = newSelectedFilter;
@@ -63,6 +76,7 @@ class FilterStore extends ChangeNotifier {
 
   set currentlyEditedFilter(final IFilter? newSelectedEditorFilter) {
     if (newSelectedEditorFilter != _currentlyEditedFilter) {
+      _currentlyEditedFilter?.dispose();
       newSelectedEditorFilter?.load().then((final value) =>
           notifyListeners()); // Filter für die Bearbeitung asynchron laden
     }
@@ -110,8 +124,19 @@ class FilterStore extends ChangeNotifier {
   }
 
   /// Entfernt den angegebenen [filter] aus den [localFilters], falls dieser vorhanden ist.
-  bool removeLocalFilter(final IFilter filter) {
-    final bool success = _localFilters.remove(filter);
+  Future<bool> removeLocalFilter(final IFilter filter) async {
+    bool success = _localFilters.remove(filter);
+    success =
+        success && await StorageService.instance.deleteFilter(filter as Filter);
+    notifyListeners();
+    return success;
+  }
+
+  /// Entfernt den angegebenen [filter] aus den [localFilters], falls dieser vorhanden ist.
+  Future<bool> removeCommunityFilter(final IFilter filter) async {
+    bool success = _communityFilters.remove(filter);
+    success =
+        success && await StorageService.instance.deleteFilter(filter as Filter);
     notifyListeners();
     return success;
   }
@@ -177,16 +202,12 @@ class FilterStore extends ChangeNotifier {
       return false;
     }
     final imageFilter = selectedEditedFilter as ImageFilter;
-    final previousAssetPath = imageFilter.filterImage.assetPath;
-    imageFilter.filterImage.assetPath = assetPath;
-    final filename = basename(assetPath);
-    bool success = await imageFilter.filterImage.loadFromAsset();
+    final filename = basenameWithoutExtension(assetPath);
+    final filterImage = FilterImage(filename: filename, assetPath: assetPath);
+    bool success = await filterImage.load();
     if (success) {
-      imageFilter.filterImage.imageUrl = null;
-      imageFilter.filterImage.filename = filename;
-    } else {
-      imageFilter.filterImage.assetPath = previousAssetPath;
-      await imageFilter.load();
+      imageFilter.filterImage.dispose();
+      imageFilter.filterImage = filterImage;
     }
     notifyListeners();
     return success;
@@ -199,16 +220,15 @@ class FilterStore extends ChangeNotifier {
       return false;
     }
     final imageFilter = selectedEditedFilter as ImageFilter;
-    final previousUrl = imageFilter.filterImage.imageUrl;
-    imageFilter.filterImage.imageUrl = url;
     final filename = url.split('/').last;
-    bool success = await imageFilter.filterImage.loadFromURL();
+    final filterImage = FilterImage(
+      filename: filename.split('.').first,
+      imageUrl: url,
+    );
+    bool success = await filterImage.load();
     if (success) {
-      imageFilter.filterImage.assetPath = null;
-      imageFilter.filterImage.filename = filename;
-    } else {
-      imageFilter.filterImage.imageUrl = previousUrl;
-      await imageFilter.load();
+      imageFilter.filterImage.dispose();
+      imageFilter.filterImage = filterImage;
     }
     notifyListeners();
     return success;
@@ -227,20 +247,175 @@ class FilterStore extends ChangeNotifier {
       return false;
     }
 
-    ImageFilter imageFilter =
-        (FilterStore.instance.selectedEditedFilter as ImageFilter);
+    ImageFilter imageFilter = (selectedEditedFilter as ImageFilter);
     File imageFile = File(xFileImage.path);
-    ui.Image image = await ImageService.loadUiImageFromFile(imageFile);
-    imageFilter.filterImage.image?.dispose();
+    Uint8List rawData = await ImageService.loadImageFromFile(imageFile);
+    ui.Image image = await ImageService.uint8ListToUiImage(rawData);
+    imageFilter.filterImage.dispose();
     FilterImage filterImage = FilterImage(
         image: image,
-        filename: '${imageFilter.type}',
+        rawData: rawData,
+        filename: basenameWithoutExtension(imageFile.path),
         width: image.width,
         height: image.height);
     imageFilter.filterImage = filterImage;
-    imageFilter.filterImage.filename = basename(imageFile.path);
     notifyListeners();
     return true;
+  }
+
+  /// Lädt alle vordefinierten sowie lokal gespeicherten Filter für den aktuellen Benutzer.
+  Future<void> initialize() async {
+    // TODO: Vordefinierte Filter als Assets speichern
+    // Augen:
+    LeftEyeFilter leftEye =
+        FilterFactory.create(FilterType.leftEye) as LeftEyeFilter;
+    leftEye.meta.name = 'Linkes rotes Auge';
+    leftEye.meta.icon = Image.asset(leftEye.defaultAssetPath);
+    RightEyeFilter rightEye =
+        FilterFactory.create(FilterType.rightEye) as RightEyeFilter;
+    rightEye.meta.name = 'Rechtes rotes Auge';
+    rightEye.meta.icon = Image.asset(rightEye.defaultAssetPath);
+    CompositeFilter eyes =
+        FilterFactory.create(FilterType.composite) as CompositeFilter;
+    eyes.addFilter(leftEye);
+    eyes.addFilter(rightEye);
+    eyes.meta.name = 'Rote Augen';
+    eyes.meta.description = 'Leuchtende rote Augen';
+    eyes.meta.icon = Row(children: [
+      Image.asset(leftEye.defaultAssetPath),
+      Image.asset(rightEye.defaultAssetPath)
+    ]);
+    addLocalFilter(eyes);
+
+    // Mund
+    addLocalFilter(FilterFactory.create(FilterType.mouth));
+    MouthFilter creepyMouth =
+        (FilterFactory.create(FilterType.mouth) as MouthFilter)
+          ..filterImage = FilterImage(
+              filename: 'creepy_mouth',
+              assetPath: 'assets/images/filter/creepy_mouth.png')
+          ..meta.icon = Image.asset('assets/images/filter/creepy_mouth.png')
+          ..meta.name = 'Unheimliches Lächeln'
+          ..config.offset = const Offset(0.0, 4.0)
+          ..config.scale = const Scale(2.0, 2.0);
+    addLocalFilter(creepyMouth);
+
+    // Mund und Augen
+    CompositeFilter creepyFace =
+        (FilterFactory.create(FilterType.composite) as CompositeFilter)
+          ..meta.name = 'Unheimliches Gesicht'
+          ..meta.description =
+              'Unheimlicher Zusammengesetzter Filter aus Augen und Mund'
+          ..meta.icon = Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [eyes.meta.icon, creepyMouth.meta.icon],
+          );
+    creepyFace.addFilter(creepyMouth);
+    creepyFace.addFilter(eyes);
+    addLocalFilter(creepyFace);
+
+    selectedFilter = creepyFace;
+
+    // Composite-Filter
+    MustacheFilter mustache1 = (FilterFactory.create(FilterType.mustache)
+        as MustacheFilter)
+      ..meta.description = 'Standardschnurrbart';
+    MustacheFilter mustache2 = (FilterFactory.create(FilterType.mustache)
+        as MustacheFilter)
+      ..config.offset = const Offset(0, -11.5)
+      ..config.scale = const Scale(0.5, 0.5)
+      ..config.opacity = 0.5
+      ..filterImage = FilterImage(
+          filename: 'online_mustache',
+          imageUrl: 'https://pngimg.com/uploads/moustache/moustache_PNG43.png');
+    HatFilter hatFilter = (FilterFactory.create(FilterType.hat) as HatFilter)
+      ..meta.name = 'Hut-Filter'
+      ..meta.description = 'Filter mit dem Standardhut';
+    om_mf.MaskFilter maskFilter = ((FilterFactory.create(FilterType.mask)
+      ..config?.opacity = 0.5) as om_mf.MaskFilter);
+    maskFilter.meta.name = 'Transparente Maske';
+    maskFilter.meta.icon =
+        Opacity(opacity: 0.5, child: Image.asset(maskFilter.defaultAssetPath));
+    CompositeFilter compositeFilter =
+        (FilterFactory.create(FilterType.composite) as CompositeFilter)
+          ..meta.name = 'Hut-Schnurrbart-Filter'
+          ..meta.description = 'Schnurrbart und Hut';
+    compositeFilter.addFilter(mustache1);
+    compositeFilter.addFilter(mustache2);
+    compositeFilter.addFilter(hatFilter);
+    compositeFilter.addFilter(maskFilter);
+
+    addLocalFilter(compositeFilter);
+
+    om_mf.MaskFilter mask = (FilterFactory.create(FilterType.mask)
+        as om_mf.MaskFilter)
+      ..meta.name = 'Standardmaske';
+    CompositeFilter hatAndMask =
+        (FilterFactory.create(FilterType.composite) as CompositeFilter)
+          ..meta.name = 'Hut & Maske'
+          ..meta.description = 'Zusammengesetzter Filter mit Hut & Maske';
+    hatAndMask.addFilter(mask);
+    hatAndMask.addFilter(hatFilter);
+    addLocalFilter(hatAndMask);
+
+    // Hüte:
+    addLocalFilter(FilterFactory.create(FilterType.hat));
+    HatFilter cowboyHat = (FilterFactory.create(FilterType.hat) as HatFilter)
+      ..filterImage = FilterImage(
+          filename: 'detective_hat',
+          assetPath: 'assets/images/filter/detective_hat.png')
+      ..meta.name = 'Detektivhut'
+      ..meta.description = 'Brauner Detektivhut'
+      ..meta.icon = Image.asset('assets/images/filter/detective_hat.png')
+      ..config.scale = const Scale(1.65, 1.65)
+      ..config.offset = const Offset(0, -14);
+    addLocalFilter(cowboyHat);
+    HatFilter brownHat = (FilterFactory.create(FilterType.hat) as HatFilter)
+      ..filterImage = FilterImage(
+          filename: 'brown_hat',
+          assetPath: 'assets/images/filter/brown_hat.png')
+      ..meta.name = 'Brauner Hut'
+      ..meta.description = 'Brauner Standardhut'
+      ..meta.icon = Image.asset('assets/images/filter/brown_hat.png')
+      ..config.scale = const Scale(1.65, 1.65)
+      ..config.offset = const Offset(0, -14);
+    addLocalFilter(brownHat);
+
+    // Masken:
+    addLocalFilter(FilterFactory.create(FilterType.mask));
+
+    // Farbaugen
+    IFilter leftColorEye = (FilterFactory.create(FilterType.leftColorEye)
+        as LeftEyeColorFilter)
+      ..color = Colors.red;
+    IFilter rightColorEye = (FilterFactory.create(FilterType.rightColorEye)
+        as RightEyeColorFilter)
+      ..color = Colors.red;
+    CompositeFilter colorEyes =
+        FilterFactory.create(FilterType.composite) as CompositeFilter;
+    colorEyes.meta.name = 'Farbaugen';
+    Widget eyeIcon = const Icon(
+      Icons.remove_red_eye_rounded,
+      color: Colors.black,
+    );
+    colorEyes.meta.icon = Row(spacing: 5, children: [eyeIcon, eyeIcon]);
+    colorEyes.addFilter(leftColorEye);
+    colorEyes.addFilter(rightColorEye);
+    addLocalFilter(colorEyes);
+
+    notifyListeners();
+
+    List<IFilter> filters = await StorageService.instance.loadAllFilters();
+    _localFilters.addAll(filters.where((final filter) =>
+        (filter as Filter).meta.createdBy?.id ==
+            AuthService.instance.user?.id ||
+        filter.meta.createdBy == null));
+    communityFilters = filters
+        .where((final filter) =>
+            (filter as Filter).meta.createdBy?.id !=
+                AuthService.instance.user?.id &&
+            filter.meta.createdBy != null)
+        .toList();
   }
 
   /// Setzt den lokalen Filter-Speicher vollständig zurück und löscht alle enthaltenen Filter.

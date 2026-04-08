@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:open_mask/data/services/image_service.dart';
+import 'package:open_mask/data/services/storage_service.dart';
 import 'package:open_mask/ui/screens/gallery_screen.dart';
 import 'package:open_mask/ui/views/gallery_view.dart';
 import 'package:synchronized/synchronized.dart';
@@ -22,7 +23,7 @@ class GalleryViewModel extends ChangeNotifier {
 
   /// Initialisiert das View-Model und die nötigen Attribute wie [elements].
   Future<void> initialize() async {
-    _elements = await ImageService.loadLocalPhotos();
+    _elements = await StorageService.instance.loadLocalPhotos();
     notifyListeners();
   }
 

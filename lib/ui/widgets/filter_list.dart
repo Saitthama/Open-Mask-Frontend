@@ -8,14 +8,13 @@ import 'filter_list_tile.dart';
 /// Zeigt eine Liste von Filtern (als [FilterListTile]) an.
 class FilterList extends StatefulWidget {
   /// Konstruktor, über den die darzustellende [getFilterList] angegeben wird.
-  const FilterList(
-      {super.key,
-      required this.getFilterList,
-      this.onEdit,
-      this.onDelete,
-      this.onFork,
-      this.changeNotifier,
-      this.extraScrollHeight = 80});
+  const FilterList({super.key,
+    required this.getFilterList,
+    this.onEdit,
+    this.onDelete,
+    this.onFork,
+    this.changeNotifier,
+    this.extraScrollHeight = 80});
 
   /// List der darzustellenden Filter.
   final List<IFilter> Function() getFilterList;
@@ -61,7 +60,9 @@ class _FilterListState extends State<FilterList> {
 
   @override
   Widget build(final BuildContext context) {
-    return widget.getFilterList().isEmpty
+    return widget
+        .getFilterList()
+        .isEmpty
         ? _emptyFilterList(context)
         : _filterList(widget.getFilterList());
   }
@@ -78,12 +79,12 @@ class _FilterListState extends State<FilterList> {
         return FilterListTile(
           filter: filter,
           onEdit:
-              widget.onEdit == null ? null : () => widget.onEdit?.call(filter),
+          widget.onEdit == null ? null : () => widget.onEdit?.call(filter),
           onDelete: widget.onDelete == null
               ? null
               : () => widget.onDelete?.call(filter),
           onFork:
-              widget.onFork == null ? null : () => widget.onFork?.call(filter),
+          widget.onFork == null ? null : () => widget.onFork?.call(filter),
         );
       },
     );

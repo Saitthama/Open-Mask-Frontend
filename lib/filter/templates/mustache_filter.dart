@@ -10,7 +10,8 @@ import 'package:open_mask/filter/templates/image_filter.dart';
 class MustacheFilter extends ImageFilter {
   /// Standard-Konstruktor.
   MustacheFilter(
-      {super.id,
+      {required super.id,
+      required super.uuid,
       required super.meta,
       required super.config,
       super.parentId,
@@ -18,7 +19,7 @@ class MustacheFilter extends ImageFilter {
       : super(
             type: FilterType.mustache,
             defaultAssetPath: 'assets/images/filter/mustache.png',
-            defaultImageFilename: 'mustache.png',
+            defaultImageFilename: 'mustache',
             defaultOffset: const Offset(0.0, -10),
             defaultScale: const Scale(0.4, 0.4));
 

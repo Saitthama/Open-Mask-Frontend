@@ -6,11 +6,13 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/face_detection_service.dart';
 import 'package:open_mask/data/services/image_service.dart';
+import 'package:open_mask/data/services/storage_service.dart';
 import 'package:open_mask/filter/filter_store.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/filter/templates/color_filter.dart'
     as om_color_filter;
 import 'package:open_mask/filter/templates/composite_filter.dart';
+import 'package:open_mask/filter/templates/filter.dart';
 import 'package:open_mask/ui/screens/filter_editor_screen.dart';
 import 'package:open_mask/ui/views/filter_editor_view.dart';
 import 'package:path_provider/path_provider.dart';
@@ -25,7 +27,10 @@ class FilterEditorViewModel extends ChangeNotifier {
   FilterEditorViewModel(final BuildContext context)
       : faceDetectionService =
             Provider.of<FaceDetectionService>(context, listen: false) {
-    FilterStore.instance.addListener(() => notifyListeners());
+    FilterStore.instance.addListener(() {
+      _saved = false;
+      notifyListeners();
+    });
   }
 
   /// Service für die Erkennung der Dummy-Gesichter.
@@ -67,6 +72,9 @@ class FilterEditorViewModel extends ChangeNotifier {
 
   /// Gibt an, ob die Skalierungsauswahl angezeigt werden soll.
   bool _showScaleSelection = false;
+
+  /// Gibt an, ob der Filter bereits gespeichert wurde.
+  bool _saved = false;
 
   /// Asset-Pfad des Dummy-Bildes.
   String get dummyAssetPath => _dummyAssetPaths[_selectedDummyIndex];
@@ -112,7 +120,7 @@ class FilterEditorViewModel extends ChangeNotifier {
   bool get showScaleSelection => _showScaleSelection;
 
   /// Gibt an, ob der Filter bereits gespeichert wurde.
-  bool get saved => FilterStore.instance.localFilters.contains(currentFilter);
+  bool get saved => _saved;
 
   /// Gibt an, ob der [selectedEditedFilter] bearbeitet werden kann.
   bool get isEditable =>
@@ -169,7 +177,7 @@ class FilterEditorViewModel extends ChangeNotifier {
 
   /// Löscht den [selectedEditedFilter]. Falls der [selectedEditedFilter] der [currentFilter] ist, werden beide gelöscht.
   /// Falls er Teil des [currentFilter] ist, wird nur der [selectedEditedFilter] aus dem [CompositeFilter] gelöscht.
-  void delete() {
+  void remove() {
     if (currentFilter is! CompositeFilter ||
         currentFilter == selectedEditedFilter) {
       FilterStore.instance.selectedEditedFilter = null;
@@ -178,6 +186,7 @@ class FilterEditorViewModel extends ChangeNotifier {
       CompositeFilter composite = currentFilter as CompositeFilter;
 
       composite.removeFilter(selectedEditedFilter);
+      _saved = false;
       FilterStore.instance.evaluateSelectedEditedFilter();
 
       //notifyListeners(); // wird bereits durch den FilterStore indirekt aufgerufen
@@ -189,6 +198,7 @@ class FilterEditorViewModel extends ChangeNotifier {
     if (currentFilter is! CompositeFilter) return;
     CompositeFilter current = (currentFilter as CompositeFilter);
     current.reorderFilter(oldIndex, newIndex);
+    _saved = false;
     notifyListeners();
   }
 
@@ -197,9 +207,13 @@ class FilterEditorViewModel extends ChangeNotifier {
     if (!isEditable || selectedEditedFilter?.config == null) {
       return;
     }
-    selectedEditedFilter!.config!.offset =
-        Offset(newDx.roundToDouble(), selectedEditedFilter!.config!.offset.dy);
-    notifyListeners();
+    final double roundedDx = newDx.roundToDouble();
+    if (selectedEditedFilter!.config!.offset.dx != roundedDx) {
+      selectedEditedFilter!.config!.offset =
+          Offset(roundedDx, selectedEditedFilter!.config!.offset.dy);
+      _saved = false;
+      notifyListeners();
+    }
   }
 
   /// Setzt den y-Wert des Offsets des [selectedEditedFilter] auf den gerundeten Wert von [newDy].
@@ -207,9 +221,13 @@ class FilterEditorViewModel extends ChangeNotifier {
     if (!isEditable || selectedEditedFilter?.config == null) {
       return;
     }
-    selectedEditedFilter!.config!.offset =
-        Offset(selectedEditedFilter!.config!.offset.dx, newDy.roundToDouble());
-    notifyListeners();
+    final double roundedDy = newDy.roundToDouble();
+    if (selectedEditedFilter!.config!.offset.dy != roundedDy) {
+      selectedEditedFilter!.config!.offset =
+          Offset(selectedEditedFilter!.config!.offset.dx, roundedDy);
+      _saved = false;
+      notifyListeners();
+    }
   }
 
   /// Schaltet die Transparenz-Scalebar-Anzeige ([showOpacitySelection]) um.
@@ -241,8 +259,11 @@ class FilterEditorViewModel extends ChangeNotifier {
     if (!isEditable || selectedEditedFilter?.config == null) {
       return;
     }
-    selectedEditedFilter!.config!.opacity = opacity;
-    notifyListeners();
+    if (selectedEditedFilter!.config!.opacity != opacity) {
+      selectedEditedFilter!.config!.opacity = opacity;
+      _saved = false;
+      notifyListeners();
+    }
   }
 
   /// Setzt die Rotation des [selectedEditedFilter] auf [rotation].
@@ -250,8 +271,11 @@ class FilterEditorViewModel extends ChangeNotifier {
     if (!isEditable || selectedEditedFilter?.config == null) {
       return;
     }
-    selectedEditedFilter!.config!.rotation = rotation;
-    notifyListeners();
+    if (selectedEditedFilter!.config!.rotation != rotation) {
+      selectedEditedFilter!.config!.rotation = rotation;
+      _saved = false;
+      notifyListeners();
+    }
   }
 
   /// Setzt die Skalierung des [selectedEditedFilter] auf [scale].
@@ -259,8 +283,12 @@ class FilterEditorViewModel extends ChangeNotifier {
     if (!isEditable || selectedEditedFilter?.config == null) {
       return;
     }
-    selectedEditedFilter!.config!.scale = Scale(scale, scale);
-    notifyListeners();
+    if (selectedEditedFilter!.config!.scale.scaleY != scale ||
+        selectedEditedFilter!.config!.scale.scaleX != scale) {
+      selectedEditedFilter!.config!.scale = Scale(scale, scale);
+      _saved = false;
+      notifyListeners();
+    }
   }
 
   /// Setzt die Farbe des Filters, falls dieser ein Farbfilter ist.
@@ -268,21 +296,36 @@ class FilterEditorViewModel extends ChangeNotifier {
     if (selectedEditedFilter is! om_color_filter.ColorFilter) {
       return;
     }
-    (selectedEditedFilter as om_color_filter.ColorFilter).color = color;
-    FilterStore.instance.selectedEditedFilter = selectedEditedFilter;
+
+    if ((selectedEditedFilter as om_color_filter.ColorFilter).color != color) {
+      (selectedEditedFilter as om_color_filter.ColorFilter).color = color;
+      _saved = false;
+      FilterStore.instance.selectedEditedFilter = selectedEditedFilter;
+    }
   }
 
   /// Überprüft, ob der [currentFilter] bereits existiert und speichert ihn gegebenenfalls.
   /// Entfernt [currentFilter] aus der Bearbeitung, falls dieser zuvor schon gespeichert wurde.
-  void save() {
+  Future<void> save() async {
     if (currentFilter == null) {
       return;
     }
-    if (saved) {
-      FilterStore.instance.currentlyEditedFilter = null;
+    if (!saved) {
+      if (!FilterStore.instance.localFilters.contains(currentFilter)) {
+        FilterStore.instance.addLocalFilter(currentFilter!);
+      }
+      await StorageService.instance.saveFilter(currentFilter as Filter);
+      _saved = true;
+      notifyListeners();
     } else {
-      FilterStore.instance.addLocalFilter(currentFilter!);
+      FilterStore.instance.currentlyEditedFilter = null;
     }
+  }
+
+  /// Setzt [saved] auf false und benachrichtigt Listener.
+  void onChanged() {
+    _saved = false;
+    notifyListeners();
   }
 
   /// Wechselt den [dummyAssetPath] zum nächsten Dummy.

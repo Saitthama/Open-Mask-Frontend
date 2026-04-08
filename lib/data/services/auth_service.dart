@@ -61,6 +61,8 @@ class AuthService extends ChangeNotifier {
 
       _loggedIn = success;
       notifyListeners();
+      FilterStore.instance
+          .initialize(); // asynchron im Hintergrund die Filter initialisieren
       return success;
     } catch (e) {
       SnackBarService.showMessage('Fehler: $e');

@@ -10,10 +10,13 @@ import 'package:open_mask/ui/widgets/text_with_checkbox.dart';
 /// Popup zum Anzeigen und Bearbeiten von Filter-Metadaten.
 class FilterMetaPopup extends StatefulWidget {
   /// Standard-Konstruktor.
-  const FilterMetaPopup(this.filter, {super.key});
+  const FilterMetaPopup(this.filter, {super.key, this.onChanged});
 
   /// Der Filter, dessen Metadaten angezeigt werden sollen.
   final Filter filter;
+
+  /// Kann gesetzt werden, falls über Änderungen informiert werden soll.
+  final VoidCallback? onChanged;
 
   @override
   State<FilterMetaPopup> createState() => _FilterMetaPopupState();
@@ -72,20 +75,22 @@ class _FilterMetaPopupState extends State<FilterMetaPopup> {
                       EditableTextTile(
                           getText: () => widget.filter.meta.name,
                           setText: isEditable
-                              ? (final newName) => {
-                                    widget.filter.meta.name = newName,
-                                    setState(() {})
-                                  }
+                              ? (final newName) {
+                                  widget.filter.meta.name = newName;
+                                  widget.onChanged?.call();
+                                  setState(() {});
+                                }
                               : null),
                       const FormHeaderText('Beschreibung'),
                       EditableTextTile(
                           getText: () => widget.filter.meta.description,
                           setText: isEditable
-                              ? (final newDescription) => {
-                                    widget.filter.meta.description =
-                                        newDescription,
-                                    setState(() {})
-                                  }
+                              ? (final newDescription) {
+                                  widget.filter.meta.description =
+                                      newDescription;
+                                  widget.onChanged?.call();
+                                  setState(() {});
+                                }
                               : null),
                       const FormHeaderText('Ersteller'),
                       Padding(
@@ -111,10 +116,11 @@ class _FilterMetaPopupState extends State<FilterMetaPopup> {
                           uncheckedText: 'Nicht öffentlich',
                           getValue: () => widget.filter.meta.isPublic,
                           setValue: isEditable
-                              ? (final value) => {
-                                    widget.filter.meta.isPublic = value,
-                                    setState(() {})
-                                  }
+                              ? (final value) {
+                                  widget.filter.meta.isPublic = value;
+                                  widget.onChanged?.call();
+                                  setState(() {});
+                                }
                               : null),
                     ],
                   ),

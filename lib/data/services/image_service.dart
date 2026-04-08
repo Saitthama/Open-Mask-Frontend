@@ -12,7 +12,6 @@ import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/ui/painter/face_filter_painter.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 
 /// Service für bildbezogene Operationen.
 class ImageService {
@@ -174,53 +173,11 @@ class ImageService {
     DeviceOrientation.landscapeRight: 270,
   };
 
-  /// Liefert den Galerie-Ordner der App zurück bzw. erstellt diesen, wenn nötig.
-  static Future<Directory> getAppGalleryDirectory() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final galleryDir = Directory('${dir.path}/photos');
-
-    if (!await galleryDir.exists()) {
-      await galleryDir.create(recursive: true);
-    }
-
-    return galleryDir;
-  }
-
-  /// Speichert ein aufgenommenes Foto ([picture]) in die App-Galerie unter dem Namen [filename].
-  static Future<File> savePhotoToAppGallery(
-      final XFile picture, final String filename) async {
-    final dir = await getAppGalleryDirectory();
-    final file = File('${dir.path}/$filename');
-    return File(picture.path).copy(file.path);
-  }
-
-  /// Speichert das übergebene [image] in die App-Galerie mit dem angegebenen [filename].
-  static Future<File> saveUiImageToAppGallery(
-      final ui.Image image, final String filename) async {
-    final dir = await getAppGalleryDirectory();
-    final File file = File('${dir.path}/$filename');
-    return saveUiImageToFile(image, file);
-  }
-
   /// Speichert das übergebene [image] in das angegebene [file].
   static Future<File> saveUiImageToFile(
       final ui.Image image, final File file) async {
     final Uint8List imageData = await uiImageToUint8List(image);
     return file.writeAsBytes(imageData, flush: true);
-  }
-
-  /// Lädt Fotos aus der App-Galerie.
-  static Future<List<File>> loadLocalPhotos() async {
-    final dir = await getAppGalleryDirectory();
-    final files = Directory(dir.path)
-        .listSync()
-        .whereType<File>()
-        .where((final file) =>
-            file.path.endsWith('.png') || file.path.endsWith('.jpg'))
-        .toList()
-      ..sort((final a, final b) => b.path.compareTo(a.path)); // neueste zuerst
-
-    return files;
   }
 
   /// Lädt ein Bild aus einem [File], findet Gesichter mit dem [faceDetector] und wendet den [filter] auf sie an.
