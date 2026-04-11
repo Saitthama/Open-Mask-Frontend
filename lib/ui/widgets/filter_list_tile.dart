@@ -44,7 +44,7 @@ class FilterListTile extends StatelessWidget {
           filter: filter,
           isSelected: false,
           size: const Size(30, 30),
-          isEditable: true,
+          isEditable: onEdit != null,
         ),
         title: Text(
           filter.meta.name,
