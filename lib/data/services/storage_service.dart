@@ -474,6 +474,11 @@ class StorageService {
       return null;
     }
 
+    return await importFilterFromFile(filterPack);
+  }
+
+  /// Importiert den Filter aus dem angegebenen [filterPack].
+  Future<IFilter?> importFilterFromFile(final File filterPack) async {
     final destinationDir = await ensureDirExists(
         Directory('${userFiltersDir.path}/${basename(filterPack.path)}.tmp'));
     try {
@@ -488,5 +493,34 @@ class StorageService {
 
     destinationDir.delete(recursive: true);
     return filter;
+  }
+
+  /// Öffnet eine Dateiauswahl und importiert alle ausgewählten Filter.
+  Future<List<IFilter>> importFilterList() async {
+    _docsDir ??= await getApplicationDocumentsDirectory();
+    FilePickerResult? result = await FilePicker.pickFiles(
+        dialogTitle: 'Filterdatei zum Importieren auswählen',
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+        allowMultiple: true);
+
+    List<File> filterPacks = [];
+    if (result != null) {
+      for (final file in result.files) {
+        if (file.path == null) continue;
+        filterPacks.add(File(file.path!));
+      }
+    } else {
+      return [];
+    }
+
+    List<IFilter> filters = [];
+    for (final filterPack in filterPacks) {
+      IFilter? filter = await importFilterFromFile(filterPack);
+      if (filter == null) continue;
+      filters.add(filter);
+    }
+
+    return filters;
   }
 }

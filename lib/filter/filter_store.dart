@@ -140,21 +140,23 @@ class FilterStore extends ChangeNotifier {
     return success;
   }
 
-  /// Importiert den [filter] und speichert ihn. Falls dieser vom aktuellen Nutzer erstellt wurde,
+  /// Importiert die Filter aus der [filterList] und speichert sie. Falls dieser vom aktuellen Nutzer erstellt wurde,
   /// wird dieser in den [localFilters] gespeichert. Falls nicht, wird er zu den [communityFilters]
   /// hinzugefügt. Filter mit bereits existierender UUID werden geforkt.
-  Future<void> importFilter(final IFilter filter) async {
-    final Filter filterToAdd =
-        await StorageService.instance.filterExists(filter as Filter)
-            ? filter.fork(createdByUser: false)
-            : filter;
+  Future<void> importFilters(final List<IFilter> filterList) async {
+    for (final filter in filterList) {
+      final Filter filterToAdd =
+          await StorageService.instance.filterExists(filter as Filter)
+              ? filter.fork(createdByUser: false)
+              : filter;
 
-    if (filter.meta.createdBy?.id == AuthService.instance.user?.id) {
-      addLocalFilter(filterToAdd);
-    } else {
-      addCommunityFilter(filterToAdd);
+      if (filter.meta.createdBy?.id == AuthService.instance.user?.id) {
+        addLocalFilter(filterToAdd);
+      } else {
+        addCommunityFilter(filterToAdd);
+      }
+      await StorageService.instance.saveFilter(filterToAdd);
     }
-    await StorageService.instance.saveFilter(filterToAdd);
   }
 
   /// Liefert alle eigenen [localFilters] zurück.

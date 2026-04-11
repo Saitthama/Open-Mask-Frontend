@@ -47,10 +47,10 @@ class _FilterWorkshopViewState extends State<FilterWorkshopView> {
                   BlueTextButton(
                     'Importieren',
                     onPressed: () async {
-                      IFilter? filter =
-                          await StorageService.instance.importFilter();
-                      if (filter != null) {
-                        await FilterStore.instance.importFilter(filter);
+                      List<IFilter> filters =
+                          await StorageService.instance.importFilterList();
+                      if (filters.isNotEmpty) {
+                        await FilterStore.instance.importFilters(filters);
                       }
                     },
                   ),
