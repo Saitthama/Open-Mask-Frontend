@@ -3,11 +3,13 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as img;
 import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/ui/painter/face_filter_painter.dart';
@@ -215,6 +217,31 @@ class ImageService {
         await picture.toImage(image.width, image.height);
 
     return await saveUiImageToFile(mirroredImage, file);
+  }
+
+  /// Liefert das Bild als neu skalierte Version zurück. <p>
+  /// Das Seitenverhältnis wird beibehalten und die kleinere Seite (Breite/Höhe) wird auf die entsprechende gerundete [size] gesetzt. <br>
+  /// Das neu skalierte Bild wird mit PNG-Kodierung zurückgeliefert.</p>
+  static Future<Uint8List> resizeImage(
+      final Uint8List data, final Size size) async {
+    // Ausführung in einem separaten Isolate, um UI-Ruckler zu vermeiden
+    return await compute((final _) => _decodeAndResize(data, size), null);
+  }
+
+  /// Decodiert das Bild und skaliert es neu.
+  static Uint8List _decodeAndResize(final Uint8List data, final Size size) {
+    // 1. Dekodieren der Bytes in ein Image-Objekt
+    img.Image? image = img.decodeImage(data);
+    if (image == null) return data;
+    if (image.height < size.height && image.width < size.width) return data;
+
+    // 2. Größe ändern
+    final width = image.width <= image.height ? size.width.round() : null;
+    final height = image.height < image.width ? size.height.round() : null;
+    img.Image resized = img.copyResize(image, width: width, height: height);
+
+    // 3. Zurück in Uint8List als JPG kodieren
+    return Uint8List.fromList(img.encodePng(resized));
   }
 
   /// Umwandlung eines [CameraImage] in ein [InputImage], damit es für das Google ML Kit lesbar ist (https://pub.dev/packages/google_mlkit_commons).

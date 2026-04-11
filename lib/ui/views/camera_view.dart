@@ -130,7 +130,7 @@ class CameraView extends StatelessWidget {
                                 child: (FilterStore.instance.selectedFilter
                                         as Filter)
                                     .meta
-                                    .icon,
+                                    .iconAsWidget,
                               ),
                             ),
                           ),

@@ -65,9 +65,10 @@ class _FilterWorkshopViewState extends State<FilterWorkshopView> {
                               SnackBarService.showMessage(
                                   'Filter als ${basename(paths.first)} exportiert');
                             } else if (paths.length > 1) {
-                              final dirName = paths.first
+                              final parts = paths.first
                                   .replaceAll('primary:', '')
-                                  .split('/')[paths.length - 2];
+                                  .split('/');
+                              final dirName = parts[parts.length - 2];
                               SnackBarService.showMessage(
                                   '${paths.length} Filter in $dirName exportiert');
                             }

@@ -14,9 +14,7 @@ class ColorMaskFilter extends ColorFilter {
       super.parentUuid,
       super.color})
       : super(type: FilterType.colorMask) {
-    if (meta.iconIsDefault) {
-      meta.icon = Image.asset('assets/images/filter/app_mask.png');
-    }
+    meta.iconAsWidget = Image.asset('assets/images/filter/app_mask.png');
   }
 
   /// Factory-Methode zur JSON‑Deserialisierung.

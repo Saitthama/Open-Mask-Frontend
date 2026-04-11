@@ -41,7 +41,11 @@ class FilterListTile extends StatelessWidget {
       decoration: BoxDecoration(color: isSelected ? Colors.blue : null),
       child: ListTile(
         leading: FilterIcon(
-            filter: filter, isSelected: false, size: const Size(30, 30)),
+          filter: filter,
+          isSelected: false,
+          size: const Size(30, 30),
+          isEditable: true,
+        ),
         title: Text(
           filter.meta.name,
           style: TextStyle(color: isSelected ? Colors.white : null),

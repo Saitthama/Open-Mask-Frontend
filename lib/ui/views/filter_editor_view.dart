@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:open_mask/data/services/storage_service.dart';
+import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_store.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/filter/templates/color_filter.dart'
@@ -442,6 +443,13 @@ class FilterEditorView extends StatelessWidget {
       context: context,
       barrierColor: theme.colorScheme.surface.withAlpha(180),
       builder: (final context) => ImageSelectionPopup(
+        getImage: () =>
+            FilterStore.instance.selectedEditedFilter is! ImageFilter
+                ? FilterImage(filename: '')
+                : (FilterStore.instance.selectedEditedFilter as ImageFilter)
+                    .filterImage,
+        setImage: (final FilterImage? image) =>
+            FilterStore.instance.setSelectedEditedFilterImage(image),
         onChanged: vm.onChanged,
       ),
     );

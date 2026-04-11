@@ -10,6 +10,7 @@ import 'package:open_mask/data/model/image_mime_type.dart';
 import 'package:open_mask/data/services/auth_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/filter/filter_factory.dart';
+import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/filter/templates/composite_filter.dart';
 import 'package:open_mask/filter/templates/filter.dart';
@@ -219,20 +220,39 @@ class StorageService {
       filterAsJSON.remove('filterList');
     }
 
-    File file = File('${filterDir.path}/filter.json');
-    await file.writeAsString(jsonEncode(filterAsJSON));
+    FilterImage? icon = filter.meta.icon;
+    if (icon != null) {
+      await writeFilterImage(filterDir, icon);
+    }
 
     if (filter is ImageFilter) {
-      if (filter.filterImage.rawData == null) {
-        final success = await filter.filterImage.load();
-        if (!success) return;
-      }
-      File imageFile = File(
-          '${filterDir.path}/${filter.filterImage.filename}.${filter.filterImage.mimeType?.extension}');
-      await imageFile.writeAsBytes(filter.filterImage.rawData!, flush: true);
-      if (filter.filterImage.image == null) {
-        filter.filterImage.dispose(); // wird nicht gerade verwendet
-      }
+      await writeFilterImage(filterDir, filter.filterImage);
+    }
+
+    File file = File('${filterDir.path}/filter.json');
+    await file.writeAsString(jsonEncode(filterAsJSON));
+  }
+
+  /// Schreibt das übergebene [image] in das [directory].
+  Future<void> writeFilterImage(
+      final Directory directory, final FilterImage image) async {
+    if (image.rawData == null) {
+      final success = await image.loadRawData();
+      if (!success) return;
+    }
+    File imageFile = File(
+        '${directory.path}/${image.filename}.${image.mimeType?.extension}');
+    int i = 0;
+    for (i = 1; await imageFile.exists(); i++) {
+      imageFile = File(
+          '${directory.path}/${image.filename} ($i).${image.mimeType?.extension}');
+    }
+    if (i != 0) {
+      image.filename = basenameWithoutExtension(imageFile.path);
+    }
+    await imageFile.writeAsBytes(image.rawData!, flush: true);
+    if (image.image == null) {
+      image.dispose(); // wird gerade nicht verwendet
     }
   }
 
@@ -291,13 +311,22 @@ class StorageService {
       }
     }
 
-    if (filter is! ImageFilter) return;
+    FilterImage? icon = (filter as Filter).meta.icon;
+    if (icon != null) {
+      File iconFile = File(
+          '${filterDir.path}/${icon.filename}.${icon.mimeType?.extension}');
+      if (await iconFile.exists()) {
+        icon.rawData = await ImageService.loadImageFromFile(iconFile);
+      }
+    }
 
-    File imageFile = File(
-        '${filterDir.path}/${filter.filterImage.filename}.${filter.filterImage.mimeType?.extension}');
-    if (!await imageFile.exists()) return;
-    filter.filterImage.rawData =
-        await ImageService.loadImageFromFile(imageFile);
+    if (filter is ImageFilter) {
+      File imageFile = File(
+          '${filterDir.path}/${filter.filterImage.filename}.${filter.filterImage.mimeType?.extension}');
+      if (!await imageFile.exists()) return;
+      filter.filterImage.rawData =
+          await ImageService.loadImageFromFile(imageFile);
+    }
   }
 
   /// Baut rekursiv den Filter als JSON aus dem angegebenen Ordner auf.

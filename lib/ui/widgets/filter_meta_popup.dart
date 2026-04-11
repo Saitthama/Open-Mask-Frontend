@@ -47,9 +47,11 @@ class _FilterMetaPopupState extends State<FilterMetaPopup> {
               Row(
                 children: [
                   FilterIcon(
-                      filter: widget.filter,
-                      isSelected: false,
-                      size: const Size(40, 40)),
+                    filter: widget.filter,
+                    isSelected: false,
+                    size: const Size(40, 40),
+                    isEditable: true,
+                  ),
                   Expanded(
                       child: Text(
                     'Filter-Metadaten',

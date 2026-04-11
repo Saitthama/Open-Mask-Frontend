@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/cupertino.dart';
 import 'package:open_mask/data/model/image_mime_type.dart';
 import 'package:open_mask/data/services/image_service.dart';
 
@@ -58,6 +59,14 @@ class FilterImage {
   /// Geladenes Bild (aus Asset, DB, URL oder lokaler Bildauswahl).
   ui.Image? image;
 
+  Widget? get imageAsWidget {
+    final rawData = this.rawData;
+    if (rawData != null) {
+      return Image.memory(rawData);
+    }
+    return null;
+  }
+
   /// Geladene Rohdaten des Bildes ([image]) (aus Asset, DB, URL oder lokaler Bildauswahl).
   Uint8List? _rawData;
 
@@ -71,13 +80,13 @@ class FilterImage {
   }
 
   /// Breite des Bildes in Pixel.
-  final int? _width;
+  int? _width;
 
   /// Breite des Bildes in Pixel. Liefert die aktuelle Breite des Bildes [image] (oder beim Fehlen dessens den bei der Initialisierung zugewiesenen Wert).
   int? get width => image?.width ?? _width;
 
   /// Höhe des Bildes in Pixel.
-  final int? _height;
+  int? _height;
 
   /// Höhe des Bildes in Pixel. Liefert die aktuelle Höhe des Bildes [image] (oder beim Fehlen dessens den bei der Initialisierung zugewiesenen Wert).
   int? get height => image?.height ?? _height;
@@ -94,6 +103,33 @@ class FilterImage {
 
   /// Gibt an, ob erfolglos versucht wurde, das Bild zu laden.
   bool get failedToLoad => _failedToLoad;
+
+  /// Skaliert das Bild auf die neue [size]. <p>
+  /// Das Seitenverhältnis wird beibehalten und die kleinere Seite (Breite/Höhe) wird auf die entsprechende gerundete [size] gesetzt. <br>
+  /// Falls die [size] nicht gegeben ist, wird die intern gesetzte Größe verwendet. <br>
+  /// Das Bild wird mit PNG neu kodiert, wenn erfolgreich.</p
+  Future<void> resize(final Size? size) async {
+    _width = size?.width.round() ?? _width ?? _height;
+    _height = size?.height.round() ?? _height ?? _width;
+    if (_width == null) {
+      return;
+    }
+
+    if (rawData == null) {
+      await loadRawData(); // ruft resize intern wieder auf
+      return;
+    }
+
+    final newData = await ImageService.resizeImage(
+        rawData!, Size(_width!.toDouble(), _height!.toDouble()));
+    if (newData == rawData) {
+      return;
+    }
+    rawData = newData;
+    if (image != null) {
+      await loadFromRawData();
+    }
+  }
 
   /// Lädt das Bild aus den Rohdaten. <br>
   /// Liefert true zurück, wenn das Bild erfolgreich geladen werden konnte.
@@ -142,6 +178,7 @@ class FilterImage {
   /// [failedToLoad] wird auf true gesetzt, falls das Laden fehlgeschlagen ist.
   Future<bool> loadRawData() async {
     if (rawData != null) {
+      await resize(null);
       return true;
     }
     if (isLoading) {
@@ -154,6 +191,10 @@ class FilterImage {
     if (imageUrl != null) {
       rawData ??= await ImageService.loadImageFromURL(imageUrl!);
     }
+    if (rawData != null) {
+      await resize(null);
+    }
+
     _isLoading = false;
     _failedToLoad = rawData == null;
     return rawData != null;

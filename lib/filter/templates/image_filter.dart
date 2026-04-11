@@ -33,9 +33,7 @@ abstract class ImageFilter extends Filter {
     if (config.scale == FilterConfig.defaultScale && defaultScale != null) {
       config.scale = defaultScale!;
     }
-    if (meta.iconIsDefault) {
-      meta.icon = Image.asset(defaultAssetPath);
-    }
+    meta.iconAsWidget = Image.asset(defaultAssetPath);
   }
 
   /// Factory-Methode zur JSON‑Deserialisierung.

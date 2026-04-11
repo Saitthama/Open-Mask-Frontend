@@ -15,12 +15,10 @@ class RightEyeColorFilter extends om_color_filter.ColorFilter {
       super.parentUuid,
       super.color})
       : super(type: FilterType.rightColorEye) {
-    if (meta.iconIsDefault) {
-      meta.icon = const Icon(
-        Icons.remove_red_eye_rounded,
-        color: Colors.black,
-      );
-    }
+    meta.iconAsWidget = const Icon(
+      Icons.remove_red_eye_rounded,
+      color: Colors.black,
+    );
   }
 
   /// Factory-Methode zur JSON‑Deserialisierung.
