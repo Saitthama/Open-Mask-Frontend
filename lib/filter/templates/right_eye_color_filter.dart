@@ -12,7 +12,7 @@ class RightEyeColorFilter extends om_color_filter.ColorFilter {
       {required super.id,
       required super.uuid,
       required super.meta,
-      super.parentId,
+      super.parentUuid,
       super.color})
       : super(type: FilterType.rightColorEye) {
     if (meta.iconIsDefault) {

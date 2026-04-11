@@ -16,7 +16,7 @@ class CompositeFilter extends Filter {
       {required super.id,
       required super.uuid,
       required super.meta,
-      super.parentId})
+      super.parentUuid})
       : super(config: null, type: FilterType.composite);
 
   /// Factory-Methode zur JSON‑Deserialisierung.
@@ -25,7 +25,7 @@ class CompositeFilter extends Filter {
         id: json['id'] as int?,
         uuid: json['uuid'],
         meta: FilterMeta.fromJson(json['meta']),
-        parentId: json['parentId'] as int?);
+        parentUuid: json['parentUUID'] as String?);
 
     List<Map<String, dynamic>> filterListAsJSON = json['filterList'];
     for (final Map<String, dynamic> filterAsJSON in filterListAsJSON) {

@@ -26,8 +26,12 @@ class FilterMeta {
       isPublic: json['published'],
       createdBy:
           json['createdBy'] == null ? null : User.fromJson(json['createdBy']),
-      createdAt: DateTime.tryParse(json['createdAt']),
-      updatedAt: DateTime.tryParse(json['updatedAt']));
+      createdAt: json['createdAt'] == null
+          ? DateTime.now()
+          : DateTime.tryParse(json['createdAt']),
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.tryParse(json['updatedAt']));
 
   /// Standardmäßiger Name ([name]).
   static const String defaultName = 'Neuer Filter';

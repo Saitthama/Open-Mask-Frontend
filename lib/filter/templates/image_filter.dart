@@ -17,7 +17,7 @@ abstract class ImageFilter extends Filter {
       required super.meta,
       required super.type,
       required FilterConfig super.config,
-      required super.parentId,
+      required super.parentUuid,
       required final FilterImage? filterImage,
       required this.defaultImageFilename,
       required this.defaultAssetPath,
@@ -46,7 +46,7 @@ abstract class ImageFilter extends Filter {
               required FilterImage? filterImage,
               required int? id,
               required String uuid,
-              required int? parentId,
+              required String? parentUuid,
               required FilterMeta meta})
           filterCreator) {
     Map<String, dynamic> configJson = json['config'] ?? {};
@@ -61,7 +61,7 @@ abstract class ImageFilter extends Filter {
         uuid: json['uuid'],
         meta: FilterMeta.fromJson(json['meta']),
         config: filterConfig,
-        parentId: json['parentId'] as int?,
+        parentUuid: json['parentUUID'] as String?,
         filterImage: filterImage);
   }
 
