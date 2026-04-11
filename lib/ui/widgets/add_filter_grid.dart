@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:open_mask/filter/filter_factory.dart';
+import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/filter_store.dart';
 import 'package:open_mask/filter/filter_type.dart';
 import 'package:open_mask/filter/i_filter.dart';
@@ -28,11 +29,14 @@ class AddFilterGrid extends StatelessWidget {
       color: Colors.black,
     );
 
-    Widget? defaultIcon;
+    Widget? defaultIconAsWidget;
+
+    FilterImage? defaultIcon;
 
     void onTap(final Filter element) {
-      if (element.meta.icon == newIcon) {
+      if (element.meta.iconAsWidget == newIcon) {
         element.meta.icon = defaultIcon;
+        element.meta.iconAsWidget = defaultIconAsWidget;
         FilterStore.instance.addFilterToEdit(element);
       } else {
         FilterStore.instance.addFilterToEdit(element.fork());
@@ -55,7 +59,9 @@ class AddFilterGrid extends StatelessWidget {
                 FilterFactory.create(filterType, isCreatedByUser: true)
                     as Filter;
             defaultIcon = newFilter.meta.icon;
-            newFilter.meta.icon = newIcon;
+            newFilter.meta.icon = null;
+            defaultIconAsWidget = newFilter.meta.iconAsWidget;
+            newFilter.meta.iconAsWidget = newIcon;
 
             return FilterTile(
               filter: newFilter,
