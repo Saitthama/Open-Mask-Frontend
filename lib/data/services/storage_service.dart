@@ -3,9 +3,14 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter_archive/flutter_archive.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:open_mask/data/model/image_mime_type.dart';
 import 'package:open_mask/data/services/auth_service.dart';
+import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/filter/filter_factory.dart';
+import 'package:open_mask/filter/filter_image.dart';
 import 'package:open_mask/filter/i_filter.dart';
 import 'package:open_mask/filter/templates/composite_filter.dart';
 import 'package:open_mask/filter/templates/filter.dart';
@@ -27,9 +32,8 @@ class StorageService {
   Directory? _docsDir;
 
   /// Ordner für alle Dateien des aktuellen Nutzers.
-  Directory get userDir =>
-      Directory(
-          '${_docsDir!.path}/users/${AuthService.instance.user?.id ?? ''}');
+  Directory get userDir => Directory(
+      '${_docsDir!.path}/users/${AuthService.instance.user?.id ?? ''}');
 
   /// Ordner für die Photos des aktuellen Nutzers.
   Directory get userPhotosDir => Directory('${userDir.path}/photos');
@@ -142,13 +146,20 @@ class StorageService {
 
   /// Geht sicher, dass der Ordner existiert.
   Future<Directory> ensureDirExists(final Directory dir) async {
+    _docsDir ??= await getApplicationDocumentsDirectory();
     if (!await dir.exists()) await dir.create(recursive: true);
     return dir;
   }
 
+  /// Liefert zurück, ob der angegebene [filter] bereits lokal gespeichert wurde.
+  Future<bool> filterExists(final Filter filter) async {
+    _docsDir ??= await getApplicationDocumentsDirectory();
+    return await filterDir(filter).exists();
+  }
+
   /// Speichert ein aufgenommenes Foto ([picture]) in die App-Galerie unter dem Namen [filename].
-  Future<File> savePhotoToAppGallery(final XFile picture,
-      final String filename) async {
+  Future<File> savePhotoToAppGallery(
+      final XFile picture, final String filename) async {
     _docsDir ??= await getApplicationDocumentsDirectory();
     final dir = await ensureDirExists(userPhotosDir);
     final file = File('${dir.path}/$filename');
@@ -156,8 +167,8 @@ class StorageService {
   }
 
   /// Speichert das übergebene [image] in die App-Galerie mit dem angegebenen [filename].
-  Future<File> saveUiImageToAppGallery(final ui.Image image,
-      final String filename) async {
+  Future<File> saveUiImageToAppGallery(
+      final ui.Image image, final String filename) async {
     _docsDir ??= await getApplicationDocumentsDirectory();
     final dir = await ensureDirExists(userPhotosDir);
     final File file = File('${dir.path}/$filename');
@@ -171,12 +182,9 @@ class StorageService {
     final files = Directory(dir.path)
         .listSync()
         .whereType<File>()
-        .where((final file) =>
-        ImageMimeType.values
+        .where((final file) => ImageMimeType.values
             .map((final ImageMimeType mimeType) => mimeType.extension)
-            .contains(file.path
-            .split('.')
-            .last))
+            .contains(file.path.split('.').last))
         .toList()
       ..sort((final a, final b) => b.path.compareTo(a.path)); // neueste zuerst
 
@@ -193,8 +201,6 @@ class StorageService {
 
     final filterAsJSON = filter.toExportAsJSON();
     await _saveFilterRecursively(dir, filter, filterAsJSON);
-
-    final entities = dir.listSync(recursive: true);
     return dir;
   }
 
@@ -208,27 +214,45 @@ class StorageService {
         final Filter child = filterList[i] as Filter;
         final Map<String, dynamic> childAsJSON = filterListAsJSON[i];
         final Directory childDir =
-        await ensureDirExists(filterChildDir(filterDir, i));
+            await ensureDirExists(filterChildDir(filterDir, i));
         await _saveFilterRecursively(childDir, child, childAsJSON);
       }
       filterAsJSON.remove('filterList');
     }
 
-    File file = File('${filterDir.path}/filter.json');
-    await file.writeAsString(jsonEncode(filterAsJSON));
+    FilterImage? icon = filter.meta.icon;
+    if (icon != null) {
+      await writeFilterImage(filterDir, icon);
+    }
 
     if (filter is ImageFilter) {
-      if (filter.filterImage.rawData == null) {
-        final success = await filter.filterImage.load();
-        if (!success) return;
-      }
-      File imageFile = File(
-          '${filterDir.path}/${filter.filterImage.filename}.${filter.filterImage
-              .mimeType?.extension}');
-      await imageFile.writeAsBytes(filter.filterImage.rawData!, flush: true);
-      if (filter.filterImage.image == null) {
-        filter.filterImage.dispose(); // wird nicht gerade verwendet
-      }
+      await writeFilterImage(filterDir, filter.filterImage);
+    }
+
+    File file = File('${filterDir.path}/filter.json');
+    await file.writeAsString(jsonEncode(filterAsJSON));
+  }
+
+  /// Schreibt das übergebene [image] in das [directory].
+  Future<void> writeFilterImage(
+      final Directory directory, final FilterImage image) async {
+    if (image.rawData == null) {
+      final success = await image.loadRawData();
+      if (!success) return;
+    }
+    File imageFile = File(
+        '${directory.path}/${image.filename}.${image.mimeType?.extension}');
+    int i = 0;
+    for (i = 1; await imageFile.exists(); i++) {
+      imageFile = File(
+          '${directory.path}/${image.filename} ($i).${image.mimeType?.extension}');
+    }
+    if (i != 0) {
+      image.filename = basenameWithoutExtension(imageFile.path);
+    }
+    await imageFile.writeAsBytes(image.rawData!, flush: true);
+    if (image.image == null) {
+      image.dispose(); // wird gerade nicht verwendet
     }
   }
 
@@ -255,7 +279,7 @@ class StorageService {
     }
 
     Map<String, dynamic>? filterAsJSON =
-    await _loadFilterAsJSONRecursively(filterDir);
+        await _loadFilterAsJSONRecursively(filterDir);
     if (filterAsJSON == null) {
       return null;
     }
@@ -266,8 +290,8 @@ class StorageService {
   }
 
   /// Lädt die Ressourcen des Filters rekursiv aus dem angegebenen Ordner.
-  Future<void> _loadFilterResourcesRecursively(final Directory filterDir,
-      final IFilter filter) async {
+  Future<void> _loadFilterResourcesRecursively(
+      final Directory filterDir, final IFilter filter) async {
     final childrenDir = Directory('${filterDir.path}/children');
     if (await childrenDir.exists() && filter is CompositeFilter) {
       final childDirs = childrenDir.listSync().whereType<Directory>();
@@ -277,8 +301,8 @@ class StorageService {
         final dirName = basename(childDir.path);
         final index = int.tryParse(dirName);
         final child = (index != null && index < children.length && index >= 0
-            ? children[index]
-            : null) ??
+                ? children[index]
+                : null) ??
             children
                 .where((final element) => (element as Filter).uuid == dirName)
                 .firstOrNull;
@@ -287,14 +311,22 @@ class StorageService {
       }
     }
 
-    if (filter is! ImageFilter) return;
+    FilterImage? icon = (filter as Filter).meta.icon;
+    if (icon != null) {
+      File iconFile = File(
+          '${filterDir.path}/${icon.filename}.${icon.mimeType?.extension}');
+      if (await iconFile.exists()) {
+        icon.rawData = await ImageService.loadImageFromFile(iconFile);
+      }
+    }
 
-    File imageFile = File(
-        '${filterDir.path}/${filter.filterImage.filename}.${filter.filterImage
-            .mimeType?.extension}');
-    if (!await imageFile.exists()) return;
-    filter.filterImage.rawData =
-    await ImageService.loadImageFromFile(imageFile);
+    if (filter is ImageFilter) {
+      File imageFile = File(
+          '${filterDir.path}/${filter.filterImage.filename}.${filter.filterImage.mimeType?.extension}');
+      if (!await imageFile.exists()) return;
+      filter.filterImage.rawData =
+          await ImageService.loadImageFromFile(imageFile);
+    }
   }
 
   /// Baut rekursiv den Filter als JSON aus dem angegebenen Ordner auf.
@@ -305,7 +337,7 @@ class StorageService {
       return null;
     }
     final Map<String, dynamic> filterAsJSON =
-    jsonDecode(await jsonFile.readAsString());
+        jsonDecode(await jsonFile.readAsString());
 
     final childrenDir = Directory('${filterDir.path}/children');
     if (!await childrenDir.exists()) {
@@ -325,7 +357,7 @@ class StorageService {
     });
     for (final Directory childDir in childDirs) {
       final Map<String, dynamic>? childAsJSON =
-      await _loadFilterAsJSONRecursively(childDir);
+          await _loadFilterAsJSONRecursively(childDir);
       if (childAsJSON == null) {
         continue;
       }
@@ -354,14 +386,141 @@ class StorageService {
     return true;
   }
 
-  /// Exportiert den Filter in den angegebenen [outputPath].
-  Future<File> exportFilter(final Filter filter,
-      final String outputPath) async {
-    return File('');
+  /// Exportiert den Filter in einen vom Nutzer gewählten Ordner. <p>
+  /// Der Filterordner wird dafür zu einer Zip-Datei komprimiert. <br>
+  /// Liefert den Pfad zur exportierten Datei oder null zurück,
+  /// je nachdem, ob der Export erfolgreich war. </p>
+  Future<String?> exportFilter(final Filter filter) async {
+    if (!await FlutterFileDialog.isPickDirectorySupported()) {
+      SnackBarService.showMessage('Ordner auswählen wird nicht unterstützt!');
+      return null;
+    }
+
+    final pickedDirectory = await FlutterFileDialog.pickDirectory();
+
+    if (pickedDirectory == null) {
+      return null;
+    }
+
+    return exportFilterToDirectory(filter, pickedDirectory);
+  }
+
+  /// Exportiert den [filter] in [pickedDirectory] als Zip-Datei.
+  Future<String?> exportFilterToDirectory(
+      final Filter filter, final DirectoryLocation pickedDirectory) async {
+    _docsDir ??= await getApplicationDocumentsDirectory();
+    final fileName = '${filter.meta.name}.zip';
+    final tmpFile = File('${userFiltersDir.path}/$fileName');
+    await tmpFile.create();
+
+    final dataDir = filterDir(filter);
+    if (!await dataDir.exists()) {
+      await saveFilter(filter);
+    }
+    try {
+      await ZipFile.createFromDirectory(
+          sourceDir: dataDir, zipFile: tmpFile, recurseSubDirs: true);
+    } catch (e) {
+      SnackBarService.showMessage('Fehler beim Export des Filters!');
+      return null;
+    }
+
+    final filePath = await FlutterFileDialog.saveFileToDirectory(
+      directory: pickedDirectory,
+      data: tmpFile.readAsBytesSync(),
+      mimeType: 'application/zip',
+      fileName: fileName,
+      replace: true,
+    );
+
+    tmpFile.delete(recursive: true);
+    return filePath;
+  }
+
+  /// Exportiert eine Liste von Filtern.
+  Future<List<String>> exportFilterList(final List<Filter> filterList) async {
+    List<String> paths = [];
+
+    if (!await FlutterFileDialog.isPickDirectorySupported()) {
+      SnackBarService.showMessage('Ordner auswählen wird nicht unterstützt!');
+    }
+
+    final pickedDirectory = await FlutterFileDialog.pickDirectory();
+    if (pickedDirectory == null) {
+      return paths;
+    }
+    for (final filter in filterList) {
+      final String? path =
+          await exportFilterToDirectory(filter, pickedDirectory);
+      if (path != null) {
+        paths.add(path);
+      }
+    }
+    return paths;
+  }
+
+  /// Öffnet eine Dateiauswahl und importiert den Filter.
+  Future<IFilter?> importFilter() async {
+    _docsDir ??= await getApplicationDocumentsDirectory();
+    FilePickerResult? result = await FilePicker.pickFiles(
+        dialogTitle: 'Filterdatei zum Importieren auswählen',
+        type: FileType.custom,
+        allowedExtensions: ['zip']);
+
+    File filterPack;
+    if (result != null) {
+      filterPack = File(result.files.single.path!);
+    } else {
+      return null;
+    }
+
+    return await importFilterFromFile(filterPack);
   }
 
   /// Importiert den Filter aus dem angegebenen [filterPack].
-  Future<IFilter> importFilter(final File filterPack) async {
-    return FilterFactory.fromJSON({});
+  Future<IFilter?> importFilterFromFile(final File filterPack) async {
+    final destinationDir = await ensureDirExists(
+        Directory('${userFiltersDir.path}/${basename(filterPack.path)}.tmp'));
+    try {
+      await ZipFile.extractToDirectory(
+          zipFile: filterPack, destinationDir: destinationDir);
+    } catch (e) {
+      SnackBarService.showMessage('Fehler beim Import der Datei!');
+      return null;
+    }
+
+    IFilter? filter = await loadFilter(destinationDir);
+
+    destinationDir.delete(recursive: true);
+    return filter;
+  }
+
+  /// Öffnet eine Dateiauswahl und importiert alle ausgewählten Filter.
+  Future<List<IFilter>> importFilterList() async {
+    _docsDir ??= await getApplicationDocumentsDirectory();
+    FilePickerResult? result = await FilePicker.pickFiles(
+        dialogTitle: 'Filterdatei zum Importieren auswählen',
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+        allowMultiple: true);
+
+    List<File> filterPacks = [];
+    if (result != null) {
+      for (final file in result.files) {
+        if (file.path == null) continue;
+        filterPacks.add(File(file.path!));
+      }
+    } else {
+      return [];
+    }
+
+    List<IFilter> filters = [];
+    for (final filterPack in filterPacks) {
+      IFilter? filter = await importFilterFromFile(filterPack);
+      if (filter == null) continue;
+      filters.add(filter);
+    }
+
+    return filters;
   }
 }

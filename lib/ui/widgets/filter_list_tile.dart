@@ -12,7 +12,9 @@ class FilterListTile extends StatelessWidget {
       required this.filter,
       required this.onEdit,
       required this.onDelete,
-      required this.onFork});
+      required this.onFork,
+      required this.onSelected,
+      required this.isSelected});
 
   /// Der darzustellende Filter.
   final Filter filter;
@@ -26,42 +28,62 @@ class FilterListTile extends StatelessWidget {
   /// Wird beim Drücken des Fork-Buttons aufgerufen.
   final VoidCallback? onFork;
 
+  /// Wird aufgerufen, wenn das Element in einem Bereich angeklickt wird,
+  /// der nicht bereits durch eine andere Aktion belegt ist, und dient zum Auswählen des Filters.
+  final Function(Filter filter)? onSelected;
+
+  /// Gibt an, ob der Filter ausgewählt ist.
+  final bool isSelected;
+
   @override
   Widget build(final BuildContext context) {
-    return ListTile(
-      leading: FilterIcon(
-          filter: filter, isSelected: false, size: const Size(30, 30)),
-      title: Text(filter.meta.name),
-      trailing: FittedBox(
-        child: Row(
-          children: [
-            if (onDelete != null)
-              IconButton(
-                  onPressed: onDelete,
-                  icon: const Icon(
-                    Icons.delete_rounded,
-                    color: Colors.red,
-                  )),
-            if (onFork != null)
-              IconButton(
-                  onPressed: onFork,
-                  icon: const Icon(Icons.fork_right_rounded)),
-            if (onEdit != null)
-              IconButton(
-                  onPressed: onEdit, icon: const Icon(Icons.edit_rounded)),
-            if (onEdit == null)
-              IconButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      barrierColor:
-                          Theme.of(context).colorScheme.surface.withAlpha(180),
-                      builder: (final context) => FilterMetaPopup(filter),
-                    );
-                  },
-                  icon: const Icon(Icons.info_outline_rounded))
-          ],
+    return Container(
+      decoration: BoxDecoration(color: isSelected ? Colors.blue : null),
+      child: ListTile(
+        leading: FilterIcon(
+          filter: filter,
+          isSelected: false,
+          size: const Size(30, 30),
+          isEditable: onEdit != null,
         ),
+        title: Text(
+          filter.meta.name,
+          style: TextStyle(color: isSelected ? Colors.white : null),
+        ),
+        trailing: FittedBox(
+          child: Row(
+            children: [
+              if (onDelete != null)
+                IconButton(
+                    onPressed: onDelete,
+                    icon: const Icon(
+                      Icons.delete_rounded,
+                      color: Colors.red,
+                    )),
+              if (onFork != null)
+                IconButton(
+                    onPressed: onFork,
+                    icon: const Icon(Icons.fork_right_rounded)),
+              if (onEdit != null)
+                IconButton(
+                    onPressed: onEdit, icon: const Icon(Icons.edit_rounded)),
+              if (onEdit == null)
+                IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        barrierColor: Theme.of(context)
+                            .colorScheme
+                            .surface
+                            .withAlpha(180),
+                        builder: (final context) => FilterMetaPopup(filter),
+                      );
+                    },
+                    icon: const Icon(Icons.info_outline_rounded))
+            ],
+          ),
+        ),
+        onTap: () => onSelected?.call(filter),
       ),
     );
   }

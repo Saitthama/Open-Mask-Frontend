@@ -14,7 +14,7 @@ class MustacheFilter extends ImageFilter {
       required super.uuid,
       required super.meta,
       required super.config,
-      super.parentId,
+      super.parentUuid,
       required super.filterImage})
       : super(
             type: FilterType.mustache,

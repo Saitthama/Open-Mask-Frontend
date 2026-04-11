@@ -10,7 +10,7 @@ abstract class ColorFilter extends Filter {
       required super.uuid,
       required super.meta,
       required super.type,
-      required super.parentId,
+      required super.parentUuid,
       this.color =
           const Color.from(alpha: 255, red: 255, green: 255, blue: 255)})
       : super(config: null);
@@ -23,7 +23,7 @@ abstract class ColorFilter extends Filter {
               required String uuid,
               required FilterMeta meta,
               required Color color,
-              required int? parentId})
+              required String? parentUuid})
           filterCreator) {
     Map<String, dynamic> colorJson = json['color'];
 
@@ -36,7 +36,7 @@ abstract class ColorFilter extends Filter {
             red: colorJson['red'],
             green: colorJson['green'],
             blue: colorJson['blue']),
-        parentId: json['parentId'] as int?);
+        parentUuid: json['parentUUID'] as String?);
   }
 
   /// Farbe, die verwendet werden soll.
@@ -62,8 +62,8 @@ abstract class ColorFilter extends Filter {
   void dispose() {}
 
   @override
-  ColorFilter fork() {
-    ColorFilter fork = super.fork() as ColorFilter;
+  ColorFilter fork({final bool createdByUser = true}) {
+    ColorFilter fork = super.fork(createdByUser: createdByUser) as ColorFilter;
     fork.color = color;
     return fork;
   }

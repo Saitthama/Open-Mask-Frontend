@@ -1,12 +1,6 @@
-import 'dart:io';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/auth_service.dart';
-import 'package:open_mask/data/services/image_service.dart';
 import 'package:open_mask/data/services/storage_service.dart';
 import 'package:open_mask/filter/filter_factory.dart';
 import 'package:open_mask/filter/filter_image.dart';
@@ -23,7 +17,6 @@ import 'package:open_mask/filter/templates/mouth_filter.dart';
 import 'package:open_mask/filter/templates/mustache_filter.dart';
 import 'package:open_mask/filter/templates/right_eye_color_filter.dart';
 import 'package:open_mask/filter/templates/right_eye_filter.dart';
-import 'package:path/path.dart';
 
 /// Datenhalter-Klasse, welche globale Filterdaten speichert.
 class FilterStore extends ChangeNotifier {
@@ -117,7 +110,7 @@ class FilterStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Fügt den angegebenen [filter] zu den lokalen Filtern hinzu.
+  /// Fügt den angegebenen [filter] zu den [localFilters] hinzu.
   void addLocalFilter(final IFilter filter) {
     _localFilters.add(filter);
     notifyListeners();
@@ -132,13 +125,38 @@ class FilterStore extends ChangeNotifier {
     return success;
   }
 
-  /// Entfernt den angegebenen [filter] aus den [localFilters], falls dieser vorhanden ist.
+  /// Fügt den angegebenen [filter] zu den [communityFilters] hinzu.
+  void addCommunityFilter(final IFilter filter) {
+    _communityFilters.add(filter);
+    notifyListeners();
+  }
+
+  /// Entfernt den angegebenen [filter] aus den [communityFilters], falls dieser vorhanden ist.
   Future<bool> removeCommunityFilter(final IFilter filter) async {
     bool success = _communityFilters.remove(filter);
     success =
         success && await StorageService.instance.deleteFilter(filter as Filter);
     notifyListeners();
     return success;
+  }
+
+  /// Importiert die Filter aus der [filterList] und speichert sie. Falls dieser vom aktuellen Nutzer erstellt wurde,
+  /// wird dieser in den [localFilters] gespeichert. Falls nicht, wird er zu den [communityFilters]
+  /// hinzugefügt. Filter mit bereits existierender UUID werden geforkt.
+  Future<void> importFilters(final List<IFilter> filterList) async {
+    for (final filter in filterList) {
+      final Filter filterToAdd =
+          await StorageService.instance.filterExists(filter as Filter)
+              ? filter.fork(createdByUser: false)
+              : filter;
+
+      if (filter.meta.createdBy?.id == AuthService.instance.user?.id) {
+        addLocalFilter(filterToAdd);
+      } else {
+        addCommunityFilter(filterToAdd);
+      }
+      await StorageService.instance.saveFilter(filterToAdd);
+    }
   }
 
   /// Liefert alle eigenen [localFilters] zurück.
@@ -194,73 +212,16 @@ class FilterStore extends ChangeNotifier {
     addFilterToEdit(filter);
   }
 
-  /// Lädt das Filterbild des aktuell im Editor ausgewählten Filters vom angegebenen [assetPath]. <br>
+  /// Setzt das Filterbild des aktuell im Editor ausgewählten Filters auf [filterImage]
   /// Liefert true zurück, wenn das Asset erfolgreich gesetzt und geladen wurde.
-  Future<bool> loadSelectedEditedFilterImageFromAsset(
-      final String assetPath) async {
+  void setSelectedEditedFilterImage(final FilterImage? filterImage) {
     if (selectedEditedFilter is! ImageFilter) {
-      return false;
+      return;
     }
     final imageFilter = selectedEditedFilter as ImageFilter;
-    final filename = basenameWithoutExtension(assetPath);
-    final filterImage = FilterImage(filename: filename, assetPath: assetPath);
-    bool success = await filterImage.load();
-    if (success) {
-      imageFilter.filterImage.dispose();
-      imageFilter.filterImage = filterImage;
-    }
-    notifyListeners();
-    return success;
-  }
-
-  /// Lädt das Filterbild des aktuell im Editor ausgewählten Filters von der angegebenen [url]. <br>
-  /// Liefert true zurück, wenn das Bild erfolgreich heruntergeladen wurde.
-  Future<bool> loadSelectedEditedFilterImageFromUrl(final String url) async {
-    if (selectedEditedFilter is! ImageFilter) {
-      return false;
-    }
-    final imageFilter = selectedEditedFilter as ImageFilter;
-    final filename = url.split('/').last;
-    final filterImage = FilterImage(
-      filename: filename.split('.').first,
-      imageUrl: url,
-    );
-    bool success = await filterImage.load();
-    if (success) {
-      imageFilter.filterImage.dispose();
-      imageFilter.filterImage = filterImage;
-    }
-    notifyListeners();
-    return success;
-  }
-
-  /// Wählt ein neues Filterbild für den aktuell im Editor ausgewählten Filter mit dem [ImagePicker] <br>
-  /// Liefert false zurück, wenn der aktuelle Filter kein Bildfilter ist oder das Bild nicht erfolgreich ausgewählt wurde.
-  Future<bool> pickSelectedEditedFilterImage() async {
-    if (selectedEditedFilter is! ImageFilter) {
-      return false;
-    }
-    final imagePicker = ImagePicker();
-    XFile? xFileImage =
-        await imagePicker.pickImage(source: ImageSource.gallery);
-    if (xFileImage == null) {
-      return false;
-    }
-
-    ImageFilter imageFilter = (selectedEditedFilter as ImageFilter);
-    File imageFile = File(xFileImage.path);
-    Uint8List rawData = await ImageService.loadImageFromFile(imageFile);
-    ui.Image image = await ImageService.uint8ListToUiImage(rawData);
     imageFilter.filterImage.dispose();
-    FilterImage filterImage = FilterImage(
-        image: image,
-        rawData: rawData,
-        filename: basenameWithoutExtension(imageFile.path),
-        width: image.width,
-        height: image.height);
-    imageFilter.filterImage = filterImage;
+    imageFilter.filterImage = filterImage ?? FilterImage(filename: '');
     notifyListeners();
-    return true;
   }
 
   /// Lädt alle vordefinierten sowie lokal gespeicherten Filter für den aktuellen Benutzer.
@@ -270,18 +231,18 @@ class FilterStore extends ChangeNotifier {
     LeftEyeFilter leftEye =
         FilterFactory.create(FilterType.leftEye) as LeftEyeFilter;
     leftEye.meta.name = 'Linkes rotes Auge';
-    leftEye.meta.icon = Image.asset(leftEye.defaultAssetPath);
+    leftEye.meta.iconAsWidget = Image.asset(leftEye.defaultAssetPath);
     RightEyeFilter rightEye =
         FilterFactory.create(FilterType.rightEye) as RightEyeFilter;
     rightEye.meta.name = 'Rechtes rotes Auge';
-    rightEye.meta.icon = Image.asset(rightEye.defaultAssetPath);
+    rightEye.meta.iconAsWidget = Image.asset(rightEye.defaultAssetPath);
     CompositeFilter eyes =
         FilterFactory.create(FilterType.composite) as CompositeFilter;
     eyes.addFilter(leftEye);
     eyes.addFilter(rightEye);
     eyes.meta.name = 'Rote Augen';
     eyes.meta.description = 'Leuchtende rote Augen';
-    eyes.meta.icon = Row(children: [
+    eyes.meta.iconAsWidget = Row(children: [
       Image.asset(leftEye.defaultAssetPath),
       Image.asset(rightEye.defaultAssetPath)
     ]);
@@ -289,15 +250,15 @@ class FilterStore extends ChangeNotifier {
 
     // Mund
     addLocalFilter(FilterFactory.create(FilterType.mouth));
-    MouthFilter creepyMouth =
-        (FilterFactory.create(FilterType.mouth) as MouthFilter)
-          ..filterImage = FilterImage(
-              filename: 'creepy_mouth',
-              assetPath: 'assets/images/filter/creepy_mouth.png')
-          ..meta.icon = Image.asset('assets/images/filter/creepy_mouth.png')
-          ..meta.name = 'Unheimliches Lächeln'
-          ..config.offset = const Offset(0.0, 4.0)
-          ..config.scale = const Scale(2.0, 2.0);
+    MouthFilter creepyMouth = (FilterFactory.create(FilterType.mouth)
+        as MouthFilter)
+      ..filterImage = FilterImage(
+          filename: 'creepy_mouth',
+          assetPath: 'assets/images/filter/creepy_mouth.png')
+      ..meta.iconAsWidget = Image.asset('assets/images/filter/creepy_mouth.png')
+      ..meta.name = 'Unheimliches Lächeln'
+      ..config.offset = const Offset(0.0, 4.0)
+      ..config.scale = const Scale(2.0, 2.0);
     addLocalFilter(creepyMouth);
 
     // Mund und Augen
@@ -306,9 +267,9 @@ class FilterStore extends ChangeNotifier {
           ..meta.name = 'Unheimliches Gesicht'
           ..meta.description =
               'Unheimlicher Zusammengesetzter Filter aus Augen und Mund'
-          ..meta.icon = Column(
+          ..meta.iconAsWidget = Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [eyes.meta.icon, creepyMouth.meta.icon],
+            children: [eyes.meta.iconAsWidget, creepyMouth.meta.iconAsWidget],
           );
     creepyFace.addFilter(creepyMouth);
     creepyFace.addFilter(eyes);
@@ -334,7 +295,7 @@ class FilterStore extends ChangeNotifier {
     om_mf.MaskFilter maskFilter = ((FilterFactory.create(FilterType.mask)
       ..config?.opacity = 0.5) as om_mf.MaskFilter);
     maskFilter.meta.name = 'Transparente Maske';
-    maskFilter.meta.icon =
+    maskFilter.meta.iconAsWidget =
         Opacity(opacity: 0.5, child: Image.asset(maskFilter.defaultAssetPath));
     CompositeFilter compositeFilter =
         (FilterFactory.create(FilterType.composite) as CompositeFilter)
@@ -366,7 +327,8 @@ class FilterStore extends ChangeNotifier {
           assetPath: 'assets/images/filter/detective_hat.png')
       ..meta.name = 'Detektivhut'
       ..meta.description = 'Brauner Detektivhut'
-      ..meta.icon = Image.asset('assets/images/filter/detective_hat.png')
+      ..meta.iconAsWidget =
+          Image.asset('assets/images/filter/detective_hat.png')
       ..config.scale = const Scale(1.65, 1.65)
       ..config.offset = const Offset(0, -14);
     addLocalFilter(cowboyHat);
@@ -376,7 +338,7 @@ class FilterStore extends ChangeNotifier {
           assetPath: 'assets/images/filter/brown_hat.png')
       ..meta.name = 'Brauner Hut'
       ..meta.description = 'Brauner Standardhut'
-      ..meta.icon = Image.asset('assets/images/filter/brown_hat.png')
+      ..meta.iconAsWidget = Image.asset('assets/images/filter/brown_hat.png')
       ..config.scale = const Scale(1.65, 1.65)
       ..config.offset = const Offset(0, -14);
     addLocalFilter(brownHat);
@@ -398,7 +360,7 @@ class FilterStore extends ChangeNotifier {
       Icons.remove_red_eye_rounded,
       color: Colors.black,
     );
-    colorEyes.meta.icon = Row(spacing: 5, children: [eyeIcon, eyeIcon]);
+    colorEyes.meta.iconAsWidget = Row(spacing: 5, children: [eyeIcon, eyeIcon]);
     colorEyes.addFilter(leftColorEye);
     colorEyes.addFilter(rightColorEye);
     addLocalFilter(colorEyes);

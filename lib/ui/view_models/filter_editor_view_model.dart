@@ -2,10 +2,12 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:open_mask/data/model/scale.dart';
 import 'package:open_mask/data/services/face_detection_service.dart';
 import 'package:open_mask/data/services/image_service.dart';
+import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/data/services/storage_service.dart';
 import 'package:open_mask/filter/filter_store.dart';
 import 'package:open_mask/filter/i_filter.dart';
@@ -15,6 +17,7 @@ import 'package:open_mask/filter/templates/composite_filter.dart';
 import 'package:open_mask/filter/templates/filter.dart';
 import 'package:open_mask/ui/screens/filter_editor_screen.dart';
 import 'package:open_mask/ui/views/filter_editor_view.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -304,8 +307,18 @@ class FilterEditorViewModel extends ChangeNotifier {
     }
   }
 
+  /// Importiert einen Filter, um eine Fork von ihm zur Bearbeitung hinzuzufügen.
+  Future<void> import() async {
+    IFilter? filter = await StorageService.instance.importFilter();
+    if (filter == null) {
+      return;
+    }
+
+    FilterStore.instance.addFilterToEdit(filter.fork());
+  }
+
   /// Überprüft, ob der [currentFilter] bereits existiert und speichert ihn gegebenenfalls.
-  /// Entfernt [currentFilter] aus der Bearbeitung, falls dieser zuvor schon gespeichert wurde.
+  /// Ruft [export] auf, falls der Filter bereits gespeichert wurde.
   Future<void> save() async {
     if (currentFilter == null) {
       return;
@@ -318,7 +331,11 @@ class FilterEditorViewModel extends ChangeNotifier {
       _saved = true;
       notifyListeners();
     } else {
-      FilterStore.instance.currentlyEditedFilter = null;
+      String? path =
+          await StorageService.instance.exportFilter(currentFilter as Filter);
+      if (path != null) {
+        SnackBarService.showMessage('Filter als ${basename(path)} exportiert');
+      }
     }
   }
 
