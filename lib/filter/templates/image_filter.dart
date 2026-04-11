@@ -17,7 +17,7 @@ abstract class ImageFilter extends Filter {
       required super.meta,
       required super.type,
       required FilterConfig super.config,
-      required super.parentId,
+      required super.parentUuid,
       required final FilterImage? filterImage,
       required this.defaultImageFilename,
       required this.defaultAssetPath,
@@ -33,9 +33,7 @@ abstract class ImageFilter extends Filter {
     if (config.scale == FilterConfig.defaultScale && defaultScale != null) {
       config.scale = defaultScale!;
     }
-    if (meta.iconIsDefault) {
-      meta.icon = Image.asset(defaultAssetPath);
-    }
+    meta.iconAsWidget = Image.asset(defaultAssetPath);
   }
 
   /// Factory-Methode zur JSON‑Deserialisierung.
@@ -46,7 +44,7 @@ abstract class ImageFilter extends Filter {
               required FilterImage? filterImage,
               required int? id,
               required String uuid,
-              required int? parentId,
+              required String? parentUuid,
               required FilterMeta meta})
           filterCreator) {
     Map<String, dynamic> configJson = json['config'] ?? {};
@@ -61,7 +59,7 @@ abstract class ImageFilter extends Filter {
         uuid: json['uuid'],
         meta: FilterMeta.fromJson(json['meta']),
         config: filterConfig,
-        parentId: json['parentId'] as int?,
+        parentUuid: json['parentUUID'] as String?,
         filterImage: filterImage);
   }
 
@@ -112,8 +110,8 @@ abstract class ImageFilter extends Filter {
       {...super.toJSON(), 'filterImage': filterImage.toJSON()};
 
   @override
-  ImageFilter fork() {
-    ImageFilter fork = super.fork() as ImageFilter;
+  ImageFilter fork({final bool createdByUser = true}) {
+    ImageFilter fork = super.fork(createdByUser: createdByUser) as ImageFilter;
     fork.filterImage = filterImage.fork();
     fork.position = position;
     fork.filterSize = filterSize;

@@ -14,7 +14,7 @@ abstract class Filter implements IFilter {
       required this.meta,
       required final config,
       required this.type,
-      required this.parentId})
+      required this.parentUuid})
       : _config = config;
 
   /// Eindeutige Datenbank-ID des Filters.
@@ -36,12 +36,13 @@ abstract class Filter implements IFilter {
   final FilterType type;
 
   /// Id des Parent-Filters, falls der Filter ein Fork ist.
-  final int? parentId;
+  final String? parentUuid;
 
   @override
-  Filter fork() {
-    return FilterFactory.createType(type, meta.fork(),
-        id: id, config: config?.fork(), parentId: id) as Filter;
+  Filter fork({final bool createdByUser = true}) {
+    return FilterFactory.createType(
+        type, meta.fork(createdByUser: createdByUser),
+        config: config?.fork(), parentUuid: uuid) as Filter;
   }
 
   @override
@@ -51,8 +52,7 @@ abstract class Filter implements IFilter {
         'meta': meta.toJSON(),
         'config': config?.toJSON() ?? {},
         'type': type.name,
-        if (parentId != null) 'parentId': parentId,
-        // TODO: evtl. wichtige Eigenschaften wie Ersteller und Name aus der Datenbank laden, statt der Id
+        if (parentUuid != null) 'parentUUID': parentUuid,
       };
 
   @override
