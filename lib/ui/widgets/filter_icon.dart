@@ -14,6 +14,7 @@ class FilterIcon extends StatefulWidget {
     required this.isSelected,
     required this.size,
     this.isEditable = false,
+    this.onChanged,
   });
 
   /// Filter, dessen Icon dargestellt werden soll.
@@ -27,6 +28,9 @@ class FilterIcon extends StatefulWidget {
 
   /// Gibt an, ob ein neues Icon durch anklicken ausgewählt können werden soll.
   final bool isEditable;
+
+  /// Kann gesetzt werden, falls über Änderungen informiert werden soll.
+  final VoidCallback? onChanged;
 
   @override
   State<FilterIcon> createState() => _FilterIconState();
@@ -119,7 +123,10 @@ class _FilterIconState extends State<FilterIcon> {
           await widget.filter.meta.resizeIcon();
           StorageService.instance.saveFilter(widget.filter);
         },
-        onChanged: () => setState(() {}),
+        onChanged: () {
+          setState(() {});
+          widget.onChanged?.call();
+        },
       ),
     ).then((final _) => setState(() {
           isTappedDown =
