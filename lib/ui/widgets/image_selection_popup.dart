@@ -112,7 +112,7 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
     final urlController =
         TextEditingController(text: widget.getImage().imageUrl);
     final urlSelection = [
-      const FormHeaderText('Url'),
+      const FormHeaderText('URL'),
       TextFormField(
           controller: urlController,
           decoration: const InputDecoration(
@@ -121,7 +121,7 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
             return (value == null ||
                     value.isEmpty ||
                     Uri.tryParse(value) == null)
-                ? 'Bitte gültige Url eingeben'
+                ? 'Bitte gültige URL eingeben'
                 : null;
           }),
       BlueTextButton(
@@ -177,17 +177,21 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
                       icon: const Icon(Icons.close_rounded))
                 ],
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 10,
-                children: [
-                  if (_imageSelectionType == _ImageSelectionType.overview)
-                    ...overview,
-                  if (_imageSelectionType == _ImageSelectionType.asset)
-                    ...assetSelection,
-                  if (_imageSelectionType == _ImageSelectionType.url)
-                    ...urlSelection,
-                ],
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: 10,
+                    children: [
+                      if (_imageSelectionType == _ImageSelectionType.overview)
+                        ...overview,
+                      if (_imageSelectionType == _ImageSelectionType.asset)
+                        ...assetSelection,
+                      if (_imageSelectionType == _ImageSelectionType.url)
+                        ...urlSelection,
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
