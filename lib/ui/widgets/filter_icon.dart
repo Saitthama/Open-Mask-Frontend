@@ -42,15 +42,12 @@ class _FilterIconState extends State<FilterIcon> {
   bool isTappedDown = false;
 
   @override
-  void initState() {
-    super.initState();
-    widget.filter.meta.icon?.loadRawData().then((final value) {
-      if (value == true) setState(() {});
-    });
-  }
-
-  @override
   Widget build(final BuildContext context) {
+    if (widget.filter.meta.icon?.rawData == null) {
+      widget.filter.meta.icon?.loadRawData().then((final value) {
+        if (value == true && context.mounted) setState(() {});
+      });
+    }
     final theme = Theme.of(context);
     final isDarkMode =
         MediaQuery.of(context).platformBrightness == Brightness.dark;

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,7 +52,9 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
         InteractiveViewer(
           maxScale: 10,
           minScale: 1,
-          child: Image.memory(widget.getImage().rawData!),
+          child: widget.getImage().rawData != null
+              ? Image.memory(widget.getImage().rawData!)
+              : widget.getImage().imageAsWidget!,
         ),
       BlueTextButton('Bild aus Galerie auswählen',
           stretch: true,
@@ -211,13 +212,10 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
 
     File imageFile = File(xFileImage.path);
     Uint8List rawData = await ImageService.loadImageFromFile(imageFile);
-    ui.Image image = await ImageService.uint8ListToUiImage(rawData);
     FilterImage newFilterImage = FilterImage(
-        image: image,
         rawData: rawData,
-        filename: path.basenameWithoutExtension(imageFile.path),
-        width: image.width,
-        height: image.height);
+        filename: path.basenameWithoutExtension(imageFile.path));
+    await newFilterImage.loadFromRawData();
 
     widget.setImage(newFilterImage);
     widget.onChanged?.call();

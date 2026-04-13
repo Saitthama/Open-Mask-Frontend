@@ -13,7 +13,6 @@ class FilterImage {
     required this.filename,
     this.assetPath,
     this.imageUrl,
-    this.image,
     final Uint8List? rawData,
     final int? width,
     final int? height,
@@ -227,7 +226,6 @@ class FilterImage {
         filename: filename,
         assetPath: assetPath,
         imageUrl: imageUrl,
-        rawData: rawData,
-        image: image?.clone());
+        rawData: rawData);
   }
 }
