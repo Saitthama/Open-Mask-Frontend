@@ -25,7 +25,8 @@ abstract class ImageFilter extends Filter {
       this.defaultOffset})
       : _config = config {
     if (filterImage != null) {
-      this.filterImage = filterImage;
+      _filterImage = filterImage;
+      meta.icon ??= filterImage.fork();
     }
     meta.iconAsWidget = Image.asset(defaultAssetPath);
     if (config.offset == FilterConfig.defaultOffset && defaultOffset != null) {
@@ -73,7 +74,8 @@ abstract class ImageFilter extends Filter {
   /// Bild mit Metadaten.
   set filterImage(final FilterImage value) {
     _filterImage = value;
-    meta.icon ??= filterImage.fork();
+    meta.icon = filterImage.fork();
+    meta.resizeIcon();
   }
 
   /// Konfiguration aller ImageFilter, die vorhanden sein muss und nicht [null] sein darf.
