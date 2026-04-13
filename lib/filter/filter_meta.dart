@@ -161,6 +161,6 @@ class FilterMeta {
       createdAt: DateTime.now(),
       isPublic: _isPublic,
       icon: _icon?.fork(),
-    );
+    ).._iconAsWidget = _iconAsWidget;
   }
 }

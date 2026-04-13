@@ -53,7 +53,9 @@ class _EditableTextTileState extends State<EditableTextTile> {
 
   @override
   Widget build(final BuildContext context) {
-    controller.text = widget.getText();
+    if (!isEditing) {
+      controller.text = widget.getText();
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,

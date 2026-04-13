@@ -281,14 +281,17 @@ class FilterStore extends ChangeNotifier {
     MustacheFilter mustache1 = (FilterFactory.create(FilterType.mustache)
         as MustacheFilter)
       ..meta.description = 'Standardschnurrbart';
-    MustacheFilter mustache2 = (FilterFactory.create(FilterType.mustache)
-        as MustacheFilter)
-      ..config.offset = const Offset(0, -11.5)
-      ..config.scale = const Scale(0.5, 0.5)
-      ..config.opacity = 0.5
-      ..filterImage = FilterImage(
-          filename: 'online_mustache',
-          imageUrl: 'https://pngimg.com/uploads/moustache/moustache_PNG43.png');
+    final mustache2Image = FilterImage(
+        filename: 'online_mustache',
+        imageUrl: 'https://pngimg.com/uploads/moustache/moustache_PNG43.png');
+    final mustache2Icon = mustache2Image.fork()..loadRawData();
+    MustacheFilter mustache2 =
+        (FilterFactory.create(FilterType.mustache) as MustacheFilter)
+          ..config.offset = const Offset(0, -11.5)
+          ..config.scale = const Scale(0.5, 0.5)
+          ..config.opacity = 0.5
+          ..filterImage = mustache2Image
+          ..meta.icon = mustache2Icon;
     HatFilter hatFilter = (FilterFactory.create(FilterType.hat) as HatFilter)
       ..meta.name = 'Hut-Filter'
       ..meta.description = 'Filter mit dem Standardhut';
@@ -321,24 +324,27 @@ class FilterStore extends ChangeNotifier {
 
     // Hüte:
     addLocalFilter(FilterFactory.create(FilterType.hat));
-    HatFilter cowboyHat = (FilterFactory.create(FilterType.hat) as HatFilter)
-      ..filterImage = FilterImage(
-          filename: 'detective_hat',
-          assetPath: 'assets/images/filter/detective_hat.png')
+    final cowboyHatImage = FilterImage(
+        filename: 'detective_hat',
+        assetPath: 'assets/images/filter/detective_hat.png');
+    final cowboyHatIcon = cowboyHatImage.fork()..loadRawData();
+    HatFilter detectiveHat = (FilterFactory.create(FilterType.hat) as HatFilter)
+      ..filterImage = cowboyHatImage
       ..meta.name = 'Detektivhut'
       ..meta.description = 'Brauner Detektivhut'
-      ..meta.iconAsWidget =
-          Image.asset('assets/images/filter/detective_hat.png')
+      ..meta.icon = cowboyHatIcon
       ..config.scale = const Scale(1.65, 1.65)
       ..config.offset = const Offset(0, -14);
-    addLocalFilter(cowboyHat);
+    addLocalFilter(detectiveHat);
+    final brownHatImage = FilterImage(
+        filename: 'brown_hat', assetPath: 'assets/images/filter/brown_hat.png')
+      ..loadRawData();
+    final brownHatIcon = brownHatImage.fork()..loadRawData();
     HatFilter brownHat = (FilterFactory.create(FilterType.hat) as HatFilter)
-      ..filterImage = FilterImage(
-          filename: 'brown_hat',
-          assetPath: 'assets/images/filter/brown_hat.png')
+      ..filterImage = brownHatImage
       ..meta.name = 'Brauner Hut'
       ..meta.description = 'Brauner Standardhut'
-      ..meta.iconAsWidget = Image.asset('assets/images/filter/brown_hat.png')
+      ..meta.icon = brownHatIcon
       ..config.scale = const Scale(1.65, 1.65)
       ..config.offset = const Offset(0, -14);
     addLocalFilter(brownHat);
