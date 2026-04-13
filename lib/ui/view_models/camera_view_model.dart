@@ -224,6 +224,7 @@ class CameraViewModel extends ChangeNotifier with WidgetsBindingObserver {
   @override
   void dispose() {
     FilterStore.instance.selectedFilter = null;
+    FilterStore.instance.removeListener(notifyListeners);
     _cameraLive = false;
     pageVisible = false;
     WidgetsBinding.instance.removeObserver(this);

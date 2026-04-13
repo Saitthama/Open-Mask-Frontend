@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,7 +52,9 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
         InteractiveViewer(
           maxScale: 10,
           minScale: 1,
-          child: Image.memory(widget.getImage().rawData!),
+          child: widget.getImage().rawData != null
+              ? Image.memory(widget.getImage().rawData!)
+              : widget.getImage().imageAsWidget!,
         ),
       BlueTextButton('Bild aus Galerie auswählen',
           stretch: true,
@@ -112,7 +113,7 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
     final urlController =
         TextEditingController(text: widget.getImage().imageUrl);
     final urlSelection = [
-      const FormHeaderText('Url'),
+      const FormHeaderText('URL'),
       TextFormField(
           controller: urlController,
           decoration: const InputDecoration(
@@ -121,7 +122,7 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
             return (value == null ||
                     value.isEmpty ||
                     Uri.tryParse(value) == null)
-                ? 'Bitte gültige Url eingeben'
+                ? 'Bitte gültige URL eingeben'
                 : null;
           }),
       BlueTextButton(
@@ -177,17 +178,21 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
                       icon: const Icon(Icons.close_rounded))
                 ],
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 10,
-                children: [
-                  if (_imageSelectionType == _ImageSelectionType.overview)
-                    ...overview,
-                  if (_imageSelectionType == _ImageSelectionType.asset)
-                    ...assetSelection,
-                  if (_imageSelectionType == _ImageSelectionType.url)
-                    ...urlSelection,
-                ],
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: 10,
+                    children: [
+                      if (_imageSelectionType == _ImageSelectionType.overview)
+                        ...overview,
+                      if (_imageSelectionType == _ImageSelectionType.asset)
+                        ...assetSelection,
+                      if (_imageSelectionType == _ImageSelectionType.url)
+                        ...urlSelection,
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -207,13 +212,10 @@ class _ImageSelectionPopupState extends State<ImageSelectionPopup> {
 
     File imageFile = File(xFileImage.path);
     Uint8List rawData = await ImageService.loadImageFromFile(imageFile);
-    ui.Image image = await ImageService.uint8ListToUiImage(rawData);
     FilterImage newFilterImage = FilterImage(
-        image: image,
         rawData: rawData,
-        filename: path.basenameWithoutExtension(imageFile.path),
-        width: image.width,
-        height: image.height);
+        filename: path.basenameWithoutExtension(imageFile.path));
+    await newFilterImage.loadFromRawData();
 
     widget.setImage(newFilterImage);
     widget.onChanged?.call();
