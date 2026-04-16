@@ -147,10 +147,14 @@ class FilterImage {
 
   /// Versucht das Bild aus der URL ([loadFromURL]) und dem Asset ([loadFromAsset]) zu laden, je nachdem was angegeben wurde. <br>
   /// Falls beides angegeben wurde, wird das Asset zuerst versucht zu laden). <br>
-  /// [failedToLoad] wird auf true gesetzt, falls das Laden fehlgeschlagen ist.
+  /// [failedToLoad] wird auf true gesetzt, falls das Laden fehlgeschlagen ist. <br>
+  /// Gibt true zurück, falls der Filter bereits geladen war, oder erfolgreich geladen wurde.
   Future<bool> load() async {
     if (isLoading) {
       return false;
+    }
+    if (rawData != null && image != null) {
+      return true;
     }
     if (rawData != null) {
       final bool success = await loadFromRawData();

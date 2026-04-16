@@ -60,7 +60,9 @@ class FilterStore extends ChangeNotifier {
 
   set selectedFilter(final IFilter? newSelectedFilter) {
     if (newSelectedFilter != _selectedFilter) {
-      _selectedFilter?.dispose();
+      if (_selectedFilter != _currentlyEditedFilter) {
+        _selectedFilter?.dispose();
+      }
       newSelectedFilter?.load(); // neuen Filter asynchron laden
     }
     _selectedFilter = newSelectedFilter;
@@ -69,7 +71,9 @@ class FilterStore extends ChangeNotifier {
 
   set currentlyEditedFilter(final IFilter? newSelectedEditorFilter) {
     if (newSelectedEditorFilter != _currentlyEditedFilter) {
-      _currentlyEditedFilter?.dispose();
+      if (_currentlyEditedFilter != _selectedFilter) {
+        _currentlyEditedFilter?.dispose();
+      }
       newSelectedEditorFilter?.load().then((final value) =>
           notifyListeners()); // Filter für die Bearbeitung asynchron laden
     }
