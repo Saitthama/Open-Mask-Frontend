@@ -38,28 +38,38 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=keystore.jks" >> android/key.properties
 
+      - name: Extract Version
+        id: get_version
+        run: |
+          # Entfernt das 'v' vom Tag (v1.0.0 -> 1.0.0)
+          VERSION_NAME=${GITHUB_REF_NAME#v}
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          # Nutzt die GitHub Run Number als Build-Nummer
+          echo "BUILD_NUMBER=${{ github.run_number }}" >> $GITHUB_ENV
+
       #- name: Build AAB
-      #  run: flutter build appbundle --release
+      #  run: flutter build appbundle --release --build-name=$VERSION_NAME --build-number=$BUILD_NUMBER
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --build-name=$VERSION_NAME --build-number=$BUILD_NUMBER
       - name: Build Split APKs
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release --build-name=$VERSION_NAME --build-number=$BUILD_NUMBER --split-per-abi
 
       - name: Rename APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/open-mask.apk
+        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/open-mask-$VERSION_NAME.apk
       - name: Rename armeabi-v7a-APK
-        run: mv build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk build/app/outputs/flutter-apk/open-mask-armeabi-v7a.apk
+        run: mv build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk build/app/outputs/flutter-apk/open-mask-armeabi-v7a-$VERSION_NAME.apk
       - name: Rename arm64-v8a-APK
-        run: mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/app/outputs/flutter-apk/open-mask-arm64-v8a.apk
+        run: mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/app/outputs/flutter-apk/open-mask-arm64-v8a-$VERSION_NAME.apk
       - name: Rename x86_64-APK
-        run: mv build/app/outputs/flutter-apk/app-x86_64-release.apk build/app/outputs/flutter-apk/open-mask-x86_64.apk
-        
+        run: mv build/app/outputs/flutter-apk/app-x86_64-release.apk build/app/outputs/flutter-apk/open-mask-x86_64-$VERSION_NAME.apk
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             build/app/outputs/flutter-apk/*.apk
           #  build/app/outputs/bundle/release/*.aab
+          generate_release_notes: true
           tag_name: ${{ github.ref_name }} # Nutzt den Tag-Namen (z.B. v1.0.0)
           name: Release ${{ github.ref_name }}
           draft: false
