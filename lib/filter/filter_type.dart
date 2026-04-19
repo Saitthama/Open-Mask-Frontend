@@ -16,14 +16,15 @@ enum FilterType {
   /// Konstruktor.
   const FilterType(this.displayName);
 
+  /// Findet den passenden [FilterType] durch den [text].
+  factory FilterType.ofText(final String text) {
+    return FilterType.values.firstWhere(
+        (final element) =>
+            element.toString().split('.')[1].toLowerCase() ==
+            text.toLowerCase(),
+        orElse: () => throw ArgumentError('Unbekannter Filter-Typ: $text'));
+  }
+
   /// Anzeigename des Filtertyps.
   final String displayName;
-}
-
-/// Findet den passenden [FilterType] durch den String.
-FilterType filterTypeFromString(final String value) {
-  return FilterType.values.firstWhere(
-      (final element) =>
-          element.toString().split('.')[1].toLowerCase() == value.toLowerCase(),
-      orElse: () => throw ArgumentError('Unbekannter Filter-Typ $value'));
 }

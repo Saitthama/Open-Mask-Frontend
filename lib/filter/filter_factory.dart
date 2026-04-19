@@ -113,7 +113,7 @@ class FilterFactory {
 
   /// Stellt einen Filter aus einem JSON-Objekt wieder her.
   static IFilter fromJSON(final Map<String, dynamic> json) {
-    FilterType filterType = filterTypeFromString(json['type']);
+    FilterType filterType = FilterType.ofText(json['type']);
     switch (filterType) {
       case FilterType.composite:
         return CompositeFilter.fromJSON(json);
