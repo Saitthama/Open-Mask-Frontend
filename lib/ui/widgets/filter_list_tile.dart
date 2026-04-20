@@ -37,6 +37,7 @@ class FilterListTile extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final Color? onBackground = isSelected ? Colors.white : null;
     return Container(
       decoration: BoxDecoration(color: isSelected ? Colors.blue : null),
       child: ListTile(
@@ -48,7 +49,7 @@ class FilterListTile extends StatelessWidget {
         ),
         title: Text(
           filter.meta.name,
-          style: TextStyle(color: isSelected ? Colors.white : null),
+          style: TextStyle(color: onBackground),
         ),
         trailing: FittedBox(
           child: Row(
@@ -63,10 +64,17 @@ class FilterListTile extends StatelessWidget {
               if (onFork != null)
                 IconButton(
                     onPressed: onFork,
-                    icon: const Icon(Icons.fork_right_rounded)),
+                    icon: Icon(
+                      Icons.fork_right_rounded,
+                      color: onBackground,
+                    )),
               if (onEdit != null)
                 IconButton(
-                    onPressed: onEdit, icon: const Icon(Icons.edit_rounded)),
+                    onPressed: onEdit,
+                    icon: Icon(
+                      Icons.edit_rounded,
+                      color: onBackground,
+                    )),
               if (onEdit == null)
                 IconButton(
                     onPressed: () {
@@ -79,7 +87,10 @@ class FilterListTile extends StatelessWidget {
                         builder: (final context) => FilterMetaPopup(filter),
                       );
                     },
-                    icon: const Icon(Icons.info_outline_rounded))
+                    icon: Icon(
+                      Icons.info_outline_rounded,
+                      color: onBackground,
+                    ))
             ],
           ),
         ),
